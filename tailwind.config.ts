@@ -25,19 +25,19 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#1D1D1F",
+          DEFAULT: "#2D1810", // Dark brown from logo
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#C4BCB7",
-          foreground: "#1D1D1F",
+          DEFAULT: "#C4BCB7", // Warm beige from logo
+          foreground: "#2D1810",
         },
         muted: {
           DEFAULT: "#F5F5F7",
-          foreground: "#8E8E93",
+          foreground: "#6B5E59",
         },
         accent: {
-          DEFAULT: "#424245",
+          DEFAULT: "#8B7355", // Complementary warm tone
           foreground: "#FFFFFF",
         },
       },
@@ -69,6 +69,10 @@ export default {
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
+      },
+      fontFamily: {
+        sans: ['Optima', 'sans-serif'], // Elegant font that matches logo's sophistication
+        heading: ['Optima', 'serif'],
       },
     },
   },
