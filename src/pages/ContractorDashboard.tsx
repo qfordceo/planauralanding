@@ -1,25 +1,196 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 export default function ContractorDashboard() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [registering, setRegistering] = useState(false);
+  const [contractor, setContractor] = useState(null);
+  const [formData, setFormData] = useState({
+    business_name: "",
+    contact_name: "",
+    phone: "",
+    address: "",
+    contractor_types: ["general"],
+  });
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/auth?mode=signin&type=contractor');
-      }
-    };
-
     checkAuth();
-  }, [navigate]);
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/auth?mode=signin&type=contractor');
+      return;
+    }
+
+    // Check if contractor profile exists
+    const { data: contractor } = await supabase
+      .from("contractors")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .single();
+
+    if (contractor) {
+      setContractor(contractor);
+    } else {
+      setRegistering(true);
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { data, error } = await supabase
+      .from("contractors")
+      .insert([
+        {
+          ...formData,
+          user_id: session.user.id,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create contractor profile. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      setContractor(data);
+      setRegistering(false);
+      toast({
+        title: "Success!",
+        description: "Your contractor profile has been created.",
+      });
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (registering) {
+    return (
+      <div className="container max-w-2xl mx-auto px-4 py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Complete Your Contractor Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="business_name">Business Name</Label>
+                <Input
+                  id="business_name"
+                  required
+                  value={formData.business_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, business_name: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contact_name">Contact Name</Label>
+                <Input
+                  id="contact_name"
+                  required
+                  value={formData.contact_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, contact_name: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Business Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                />
+              </div>
+              <Button type="submit" className="w-full">
+                Complete Registration
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Contractor Dashboard</h1>
-      <p>Coming soon...</p>
+      <h1 className="text-2xl font-bold mb-6">Welcome, {contractor.business_name}!</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Portfolio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Showcase your work by adding photos and descriptions of completed projects.
+            </p>
+            <Button className="w-full">Manage Portfolio</Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Availability</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Set your working hours and manage your schedule.
+            </p>
+            <Button className="w-full">Manage Schedule</Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>References</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Add references from past clients to build trust.
+            </p>
+            <Button className="w-full">Manage References</Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

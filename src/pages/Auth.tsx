@@ -1,37 +1,62 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { AuthError } from "@supabase/supabase-js"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function Auth() {
   const [searchParams] = useSearchParams()
   const mode = searchParams.get("mode") || "signin"
+  const type = searchParams.get("type") || "client"
   const navigate = useNavigate()
   const { toast } = useToast()
+  const [isContractor, setIsContractor] = useState(type === "contractor")
 
   useEffect(() => {
-    // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_IN" && session) {
-          // Get user profile to check admin status
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("is_admin")
-            .eq("id", session.user.id)
-            .single()
+          if (isContractor) {
+            // Check if contractor profile exists
+            const { data: contractor } = await supabase
+              .from("contractors")
+              .select("id")
+              .eq("user_id", session.user.id)
+              .single()
 
-          toast({
-            title: "Welcome!",
-            description: profile?.is_admin ? "Signed in as admin." : "Successfully signed in.",
-          })
-          navigate("/")
+            if (contractor) {
+              toast({
+                title: "Welcome back!",
+                description: "Successfully signed in as contractor.",
+              })
+              navigate("/contractor-dashboard")
+            } else if (mode === "signup") {
+              // New contractor registration
+              toast({
+                title: "Welcome!",
+                description: "Please complete your contractor profile.",
+              })
+              navigate("/contractor-dashboard")
+            } else {
+              toast({
+                title: "Error",
+                description: "No contractor profile found. Please sign up as a contractor.",
+                variant: "destructive",
+              })
+              await supabase.auth.signOut()
+            }
+          } else {
+            toast({
+              title: "Welcome!",
+              description: "Successfully signed in.",
+            })
+            navigate("/")
+          }
         } else if (event === "SIGNED_OUT") {
-          navigate('/auth')
+          navigate("/auth")
         }
       }
     )
@@ -39,7 +64,7 @@ export default function Auth() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [navigate, toast])
+  }, [navigate, toast, isContractor, mode])
 
   return (
     <div className="container max-w-lg py-20 animate-fade-up">
@@ -55,6 +80,32 @@ export default function Auth() {
           </p>
         </CardHeader>
         <CardContent>
+          <Tabs defaultValue={type} className="mb-8">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger 
+                value="client" 
+                onClick={() => setIsContractor(false)}
+              >
+                Client
+              </TabsTrigger>
+              <TabsTrigger 
+                value="contractor" 
+                onClick={() => setIsContractor(true)}
+              >
+                Contractor
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="client">
+              <p className="text-sm text-muted-foreground mb-6">
+                Sign in as a client to browse floor plans and schedule appointments.
+              </p>
+            </TabsContent>
+            <TabsContent value="contractor">
+              <p className="text-sm text-muted-foreground mb-6">
+                Sign in as a contractor to manage your profile, portfolio, and appointments.
+              </p>
+            </TabsContent>
+          </Tabs>
           <SupabaseAuth
             supabaseClient={supabase}
             appearance={{
