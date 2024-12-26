@@ -55,13 +55,14 @@ export default function FloorPlans() {
 
       return data;
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to load floor plans",
-        variant: "destructive",
-      });
-      console.error('Error fetching floor plans:', error);
+    meta: {
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to load floor plans",
+          variant: "destructive",
+        });
+      }
     }
   });
 
