@@ -79,7 +79,8 @@ Deno.serve(async (req) => {
         image_url: property.photoUrls?.[0] || null,
         price_per_acre: pricePerAcre ? Math.round(pricePerAcre) : null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        last_fetched_at: new Date().toISOString() // Set the last fetch time
       };
     });
 

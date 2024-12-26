@@ -44,32 +44,51 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
     enabled: open, // Only fetch when modal is open
   });
 
-  // Trigger the scraping function when the modal opens
+  // Check if we should fetch new listings and trigger the scrape if needed
   useEffect(() => {
     if (open) {
-      console.log("Triggering scrape function");
-      supabase.functions
-        .invoke("scrape-listings")
-        .then((response) => {
-          console.log("Scrape response:", response);
-          if (response.data.success) {
-            // Refetch the listings after successful scrape
-            refetch();
-          } else {
-            toast({
-              title: "Error",
-              description: "Failed to fetch latest listings",
-              variant: "destructive",
-            });
+      console.log("Checking if we should fetch new listings");
+      supabase.rpc('should_fetch_listings')
+        .single()
+        .then(({ data: shouldFetch, error }) => {
+          if (error) {
+            console.error("Error checking fetch status:", error);
+            return;
           }
-        })
-        .catch((error) => {
-          console.error("Error invoking scrape function:", error);
-          toast({
-            title: "Error",
-            description: "Failed to fetch latest listings",
-            variant: "destructive",
-          });
+
+          console.log("Should fetch new listings:", shouldFetch);
+          if (shouldFetch) {
+            console.log("Triggering scrape function");
+            supabase.functions
+              .invoke("scrape-listings")
+              .then((response) => {
+                console.log("Scrape response:", response);
+                if (response.data.success) {
+                  // Refetch the listings after successful scrape
+                  refetch();
+                  toast({
+                    title: "Success",
+                    description: "Latest listings fetched successfully",
+                  });
+                } else {
+                  toast({
+                    title: "Error",
+                    description: "Failed to fetch latest listings",
+                    variant: "destructive",
+                  });
+                }
+              })
+              .catch((error) => {
+                console.error("Error invoking scrape function:", error);
+                toast({
+                  title: "Error",
+                  description: "Failed to fetch latest listings",
+                  variant: "destructive",
+                });
+              });
+          } else {
+            console.log("Using cached listings (less than 24 hours old)");
+          }
         });
     }
   }, [open, toast, refetch]);

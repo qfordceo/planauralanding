@@ -62,6 +62,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          last_fetched_at: string | null
           price: number | null
           price_per_acre: number | null
           realtor_url: string | null
@@ -75,6 +76,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          last_fetched_at?: string | null
           price?: number | null
           price_per_acre?: number | null
           realtor_url?: string | null
@@ -88,6 +90,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          last_fetched_at?: string | null
           price?: number | null
           price_per_acre?: number | null
           realtor_url?: string | null
@@ -125,7 +128,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      should_fetch_listings: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
