@@ -62,13 +62,14 @@ Deno.serve(async (req) => {
         const acres = (Math.random() * 5 + 0.5).toFixed(2);
         const pricePerAcre = Math.floor(Math.random() * 100000) + 100000;
         const price = Math.floor(Number(acres) * pricePerAcre);
+        const uniqueId = crypto.randomUUID();
 
         return {
           title: `${description} in ${location}`,
           price: price,
           acres: Number(acres),
           address: `${streetNum} ${location} ${streetType}, Dallas, TX`,
-          realtor_url: `https://www.realtor.com/realestateandhomes-search/Dallas_TX/type-land`,
+          realtor_url: `https://www.realtor.com/realestateandhomes-search/Dallas_TX/type-land/${uniqueId}`,
           image_url: `https://images.unsplash.com/photo-${imageIds[i]}-9049fed747ef`,
           updated_at: new Date().toISOString()
         };
