@@ -25,50 +25,67 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
-    // Fetch properties from Rentcast API using the v2 search endpoint
-    const response = await fetch('https://api.rentcast.io/v2/properties/search', {
-      method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'content-type': 'application/json',
-        'authorization': `Bearer ${rentcastApiKey}`
-      },
-      body: JSON.stringify({
-        "latitude": 32.7767,  // Dallas latitude
-        "longitude": -96.7970, // Dallas longitude
-        "propertyType": ["LAND"],
-        "status": ["FOR_SALE"],
-        "radius": 50, // 50 mile radius
-        "limit": 50,
-        "sortBy": "created",
-        "sortOrder": "desc"
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Rentcast API error:', response.status, errorText);
-      throw new Error(`Rentcast API error: ${response.status} ${errorText}`);
+    // Fetch properties from Rentcast API
+    const apiUrl = 'https://api.rentcast.io/v2/properties/search'
+    const requestBody = {
+      latitude: 32.7767,  // Dallas latitude
+      longitude: -96.7970, // Dallas longitude
+      propertyType: ["LAND"],
+      status: ["FOR_SALE"],
+      radius: 50, // 50 mile radius
+      limit: 50,
+      sortBy: "created",
+      sortOrder: "desc"
     }
 
-    const data = await response.json();
-    console.log(`Fetched ${data.properties?.length || 0} properties from Rentcast`);
+    console.log('Making request to Rentcast API:', {
+      url: apiUrl,
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${rentcastApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${rentcastApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Rentcast API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: errorText
+      })
+      throw new Error(`Rentcast API error: ${response.status} ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log(`Fetched ${data.properties?.length || 0} properties from Rentcast`)
 
     if (!data.properties || data.properties.length === 0) {
-      console.log('No properties returned from Rentcast API');
+      console.log('No properties returned from Rentcast API')
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'No properties found' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
 
     // Transform properties data to match our schema
     const listings = data.properties.map((property: any) => {
-      const acres = property.squareFootage ? property.squareFootage / 43560 : null;
-      const pricePerAcre = acres && property.price ? property.price / acres : null;
+      const acres = property.squareFootage ? property.squareFootage / 43560 : null
+      const pricePerAcre = acres && property.price ? property.price / acres : null
 
       return {
         title: property.description || `${acres ? Math.round(acres * 100) / 100 : 'Unknown'} Acre Land in ${property.city}`,
@@ -81,34 +98,34 @@ Deno.serve(async (req) => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         last_fetched_at: new Date().toISOString()
-      };
-    });
+      }
+    })
 
-    console.log('Transformed listings:', listings);
+    console.log('Transformed listings:', listings)
 
     // Clear existing listings and insert new ones
     const { error: deleteError } = await supabase
       .from('land_listings')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
+      .neq('id', '00000000-0000-0000-0000-000000000000')
 
     if (deleteError) {
-      console.error('Error deleting existing listings:', deleteError);
-      throw deleteError;
+      console.error('Error deleting existing listings:', deleteError)
+      throw deleteError
     }
 
     // Insert new listings
     const { data: insertedListings, error: insertError } = await supabase
       .from('land_listings')
       .insert(listings)
-      .select();
+      .select()
 
     if (insertError) {
-      console.error('Error inserting listings:', insertError);
-      throw insertError;
+      console.error('Error inserting listings:', insertError)
+      throw insertError
     }
 
-    console.log(`Successfully inserted ${insertedListings.length} listings`);
+    console.log(`Successfully inserted ${insertedListings.length} listings`)
 
     return new Response(
       JSON.stringify({ 
@@ -119,7 +136,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({ 
         success: false, 
