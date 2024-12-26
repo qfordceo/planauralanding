@@ -37,7 +37,7 @@ const Index = () => {
                 Join Waitlist
               </Link>
               <a
-                href="mailto:contact@planaura.com"
+                href="mailto:sales@planaura.com"
                 className="w-full sm:w-auto px-8 py-3 rounded-full border border-border text-foreground font-medium hover:bg-muted transition-colors"
               >
                 Contact Us
