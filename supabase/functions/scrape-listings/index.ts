@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
     // Fetch properties from Rentcast API
     const apiUrl = 'https://api.rentcast.io/v2/listings/search'
-    const params = new URLSearchParams({
+    const searchParams = {
       latitude: '32.7767',  // Dallas latitude
       longitude: '-96.7970', // Dallas longitude
       propertyType: 'LAND',
@@ -36,17 +36,22 @@ Deno.serve(async (req) => {
       limit: '50',
       sortBy: 'created',
       sortOrder: 'desc'
+    }
+
+    const url = new URL(apiUrl)
+    Object.entries(searchParams).forEach(([key, value]) => {
+      url.searchParams.append(key, value)
     })
 
     console.log('Making request to Rentcast API:', {
-      url: `${apiUrl}?${params.toString()}`,
+      url: url.toString(),
       method: 'GET',
       headers: {
         'apikey': rentcastApiKey,
       }
     })
 
-    const response = await fetch(`${apiUrl}?${params.toString()}`, {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'apikey': rentcastApiKey,
