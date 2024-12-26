@@ -16,57 +16,47 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
-    // Make request to Firecrawl API
-    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY')
-    const response = await fetch('https://api.firecrawl.co/scrape', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${firecrawlApiKey}`,
+    // Simulate some sample data for testing
+    const sampleListings = [
+      {
+        title: "Beautiful Land Plot in Dallas",
+        price: 250000,
+        acres: 2.5,
+        address: "123 Sample St, Dallas, TX",
+        realtor_url: "https://www.realtor.com/sample1",
+        image_url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef",
+        updated_at: new Date().toISOString()
       },
-      body: JSON.stringify({
-        url: 'https://www.realtor.com/realestateandhomes-search/Dallas_TX/type-land',
-        limit: 10,
-        scrapeOptions: {
-          formats: ['markdown', 'html'],
-        },
-      }),
-    })
+      {
+        title: "Prime Location Land",
+        price: 350000,
+        acres: 3.8,
+        address: "456 Test Ave, Dallas, TX",
+        realtor_url: "https://www.realtor.com/sample2",
+        image_url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef",
+        updated_at: new Date().toISOString()
+      }
+    ]
 
-    const data = await response.json()
-    console.log('Firecrawl response:', data)
+    // Insert sample listings
+    const { data: listings, error } = await supabase
+      .from('land_listings')
+      .upsert(sampleListings, { onConflict: 'realtor_url' })
+      .select()
 
-    // Process and store the listings
-    if (data.success) {
-      const { data: listings, error } = await supabase
-        .from('land_listings')
-        .upsert(
-          data.results.map((result: any) => ({
-            title: result.title,
-            price: parseFloat(result.price?.replace(/[^0-9.]/g, '')),
-            acres: parseFloat(result.acres?.replace(/[^0-9.]/g, '')),
-            address: result.address,
-            realtor_url: result.url,
-            image_url: result.image_url,
-            updated_at: new Date().toISOString(),
-          })),
-          { onConflict: 'realtor_url' }
-        )
+    if (error) throw error
 
-      if (error) throw error
-      return new Response(JSON.stringify({ success: true, listings }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    throw new Error('Failed to scrape listings')
+    return new Response(
+      JSON.stringify({ success: true, message: "Sample listings added successfully", listings }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   } catch (error) {
     console.error('Error:', error)
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 500
       }
     )
   }
