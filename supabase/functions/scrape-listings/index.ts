@@ -35,10 +35,10 @@ Deno.serve(async (req) => {
       longitude: '-96.7970',
       propertyType: 'LAND',
       status: 'ACTIVE',
-      daysOld: '90',
-      limit: '50',
+      daysOld: '180',  // Increased from 90 to 180 days
+      limit: '100',    // Increased from 50 to 100
       offset: '0',
-      radius: '20',
+      radius: '50',    // Increased from 20 to 50 miles
       sortBy: 'DISTANCE',
       sortOrder: 'ASC'
     }
