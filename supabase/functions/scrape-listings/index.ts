@@ -49,14 +49,14 @@ Deno.serve(async (req) => {
       url: url.toString(),
       method: 'GET',
       headers: {
-        'apikey': rentcastApiKey,
+        'X-Api-Key': rentcastApiKey,
       }
     })
 
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'apikey': rentcastApiKey,
+        'X-Api-Key': rentcastApiKey,
       }
     })
 
