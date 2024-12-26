@@ -6,9 +6,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { InfoIcon } from "lucide-react";
 
 interface ListingsModalProps {
   open: boolean;
@@ -93,7 +100,7 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
                   <p className="text-sm text-muted-foreground mb-2">
                     {listing.address}
                   </p>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-2">
                     <span className="text-lg font-bold">
                       ${listing.price?.toLocaleString()}
                     </span>
@@ -101,15 +108,30 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
                       {listing.acres} acres
                     </span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1 text-sm text-primary">
+                            <InfoIcon className="h-4 w-4" />
+                            ${Math.round(listing.price / listing.acres).toLocaleString()}/acre
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Price per acre in this area</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </CardContent>
                 <CardFooter className="p-4 pt-0">
                   <a
-                    href={listing.realtor_url}
+                    href={listing.realtor_url || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline text-sm"
                   >
-                    View on Realtor.com →
+                    View Details →
                   </a>
                 </CardFooter>
               </Card>
