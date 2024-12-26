@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
     // Fetch properties from Rentcast API
-    const baseUrl = 'https://api.rentcast.io/v2/listings/search'
+    const baseUrl = 'https://api.rentcast.io/v2/properties/search'
     
     // Create URL with encoded parameters
     const url = new URL(baseUrl)
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
       url: url.toString(),
       method: 'GET',
       headers: {
-        'apikey': 'API_KEY_HIDDEN',
+        'apikey': rentcastApiKey,
       }
     })
 
