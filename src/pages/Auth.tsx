@@ -69,7 +69,7 @@ export default function Auth() {
               },
             }}
             providers={[]}
-            redirectTo={window.location.origin}
+            redirectTo="https://fe79dc55-f4c1-41b2-a931-3b7bb0609fd3.lovableproject.com/auth/callback"
             onlyThirdPartyProviders={false}
           />
         </CardContent>
