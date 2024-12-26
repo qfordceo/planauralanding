@@ -25,13 +25,24 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
-    // Fetch properties from Rentcast API using the correct endpoint and method
-    const response = await fetch('https://api.rentcast.io/v1/listings', {
-      method: 'GET',
+    // Fetch properties from Rentcast API using the search endpoint
+    const response = await fetch('https://api.rentcast.io/v1/properties/search', {
+      method: 'POST',
       headers: {
         'accept': 'application/json',
+        'content-type': 'application/json',
         'authorization': rentcastApiKey
-      }
+      },
+      body: JSON.stringify({
+        "latitude": 32.7767,  // Dallas latitude
+        "longitude": -96.7970, // Dallas longitude
+        "propertyType": ["LAND"],
+        "status": ["FOR_SALE"],
+        "radius": 50, // 50 mile radius
+        "limit": 50,
+        "sortBy": "created",
+        "sortOrder": "desc"
+      })
     });
 
     if (!response.ok) {
@@ -41,10 +52,10 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log(`Fetched ${data.listings?.length || 0} listings from Rentcast`);
+    console.log(`Fetched ${data.properties?.length || 0} properties from Rentcast`);
 
-    if (!data.listings || data.listings.length === 0) {
-      console.log('No listings returned from Rentcast API');
+    if (!data.properties || data.properties.length === 0) {
+      console.log('No properties returned from Rentcast API');
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -55,17 +66,17 @@ Deno.serve(async (req) => {
     }
 
     // Transform properties data to match our schema
-    const listings = data.listings.map((property: any) => {
-      const acres = property.lotSize ? property.lotSize / 43560 : null; // Convert sq ft to acres
+    const listings = data.properties.map((property: any) => {
+      const acres = property.squareFootage ? property.squareFootage / 43560 : null;
       const pricePerAcre = acres && property.price ? property.price / acres : null;
 
       return {
         title: property.description || `${acres ? Math.round(acres * 100) / 100 : 'Unknown'} Acre Land in ${property.city}`,
         price: property.price,
         acres: acres ? Math.round(acres * 100) / 100 : null,
-        address: `${property.address || ''}, ${property.city}, ${property.state} ${property.zipCode}`.trim(),
-        realtor_url: property.url || null,
-        image_url: property.photos?.[0] || null,
+        address: `${property.streetAddress || ''}, ${property.city}, ${property.state} ${property.zipCode}`.trim(),
+        realtor_url: property.listingUrl || null,
+        image_url: property.photoUrls?.[0] || null,
         price_per_acre: pricePerAcre ? Math.round(pricePerAcre) : null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
