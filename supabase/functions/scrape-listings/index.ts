@@ -25,13 +25,13 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
-    // Fetch properties from Rentcast API using the search endpoint
-    const response = await fetch('https://api.rentcast.io/v1/properties/search', {
+    // Fetch properties from Rentcast API using the v2 search endpoint
+    const response = await fetch('https://api.rentcast.io/v2/properties/search', {
       method: 'POST',
       headers: {
         'accept': 'application/json',
         'content-type': 'application/json',
-        'authorization': rentcastApiKey
+        'authorization': `Bearer ${rentcastApiKey}`
       },
       body: JSON.stringify({
         "latitude": 32.7767,  // Dallas latitude
@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
         price_per_acre: pricePerAcre ? Math.round(pricePerAcre) : null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        last_fetched_at: new Date().toISOString() // Set the last fetch time
+        last_fetched_at: new Date().toISOString()
       };
     });
 
