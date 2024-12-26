@@ -1,3 +1,7 @@
+import type { FloorPlan, FloorPlanInsert, FloorPlanUpdate } from './floor-plans';
+import type { LandListing, LandListingInsert, LandListingUpdate } from './land-listings';
+import type { Profile, ProfileInsert, ProfileUpdate } from './profiles';
+
 export type Json =
   | string
   | number
