@@ -17,12 +17,13 @@ Deno.serve(async (req) => {
     const rentcastApiKey = Deno.env.get('RENTCAST_API_KEY')
     
     if (!rentcastApiKey) {
+      console.error('RENTCAST_API_KEY is not set')
       throw new Error('RENTCAST_API_KEY is not set')
     }
-    
-    const supabase = createClient(supabaseUrl!, supabaseKey!)
 
     console.log('Starting Rentcast API data fetch...')
+    
+    const supabase = createClient(supabaseUrl!, supabaseKey!)
 
     // Fetch properties from Rentcast API
     const response = await fetch('https://api.rentcast.io/v1/properties/search', {
@@ -36,57 +37,53 @@ Deno.serve(async (req) => {
         "latitude": 32.7767,  // Dallas latitude
         "longitude": -96.7970, // Dallas longitude
         "propertyType": ["LAND"],
-        "status": ["FOR_SALE", "RECENTLY_SOLD"],  // Include recently sold properties for comps
+        "status": ["FOR_SALE"],
         "radius": 50, // 50 mile radius
-        "limit": 50  // Increased limit to get more comps
+        "limit": 50,
+        "sortBy": "created",
+        "sortOrder": "desc"
       })
     });
 
     if (!response.ok) {
-      throw new Error(`Rentcast API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Rentcast API error:', response.status, errorText);
+      throw new Error(`Rentcast API error: ${response.status} ${errorText}`);
     }
 
     const data = await response.json();
     console.log(`Fetched ${data.properties?.length || 0} properties from Rentcast`);
 
-    // Separate active listings and sold properties
-    const activeListings = data.properties?.filter((p: any) => p.status === "FOR_SALE") || [];
-    const soldProperties = data.properties?.filter((p: any) => p.status === "RECENTLY_SOLD") || [];
+    if (!data.properties || data.properties.length === 0) {
+      console.log('No properties returned from Rentcast API');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'No properties found' 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Calculate average price per acre for the area
-    const calculatePricePerAcre = (property: any) => {
-      if (!property.squareFootage || !property.price) return null;
-      const acres = property.squareFootage / 43560;
-      return property.price / acres;
-    };
-
-    const validSoldPrices = soldProperties
-      .map(calculatePricePerAcre)
-      .filter((price: number | null): price is number => price !== null);
-
-    const avgPricePerAcre = validSoldPrices.length > 0
-      ? validSoldPrices.reduce((a: number, b: number) => a + b, 0) / validSoldPrices.length
-      : null;
-
-    console.log(`Average price per acre in the area: $${avgPricePerAcre?.toFixed(2)}`);
-
-    // Transform active listings data to match our schema
-    const listings = activeListings.map((property: any) => {
+    // Transform properties data to match our schema
+    const listings = data.properties.map((property: any) => {
       const acres = property.squareFootage ? property.squareFootage / 43560 : null;
-      const pricePerAcre = acres ? property.price / acres : null;
+      const pricePerAcre = acres && property.price ? property.price / acres : null;
 
       return {
-        title: `${acres ? Math.round(acres) : 'Unknown'} Acre Land in ${property.city}`,
+        title: property.description || `${acres ? Math.round(acres * 100) / 100 : 'Unknown'} Acre Land in ${property.city}`,
         price: property.price,
         acres: acres ? Math.round(acres * 100) / 100 : null,
-        address: `${property.streetAddress}, ${property.city}, ${property.state} ${property.zipCode}`,
+        address: `${property.streetAddress || ''}, ${property.city}, ${property.state} ${property.zipCode}`.trim(),
         realtor_url: property.listingUrl || null,
         image_url: property.photoUrls?.[0] || null,
         price_per_acre: pricePerAcre ? Math.round(pricePerAcre) : null,
-        avg_area_price_per_acre: avgPricePerAcre ? Math.round(avgPricePerAcre) : null,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
     });
+
+    console.log('Transformed listings:', listings);
 
     // Clear existing listings and insert new ones
     const { error: deleteError } = await supabase
@@ -110,6 +107,8 @@ Deno.serve(async (req) => {
       throw insertError;
     }
 
+    console.log(`Successfully inserted ${insertedListings.length} listings`);
+
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -123,11 +122,11 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message
+        error: error.message || 'An unexpected error occurred'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 // Return 200 even on error since we're handling it gracefully
+        status: 500
       }
     )
   }
