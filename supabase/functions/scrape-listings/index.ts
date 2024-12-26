@@ -26,7 +26,9 @@ Deno.serve(async (req) => {
         "Plano",
         "Frisco",
         "McKinney",
-        "Allen"
+        "Allen",
+        "Prosper",
+        "Celina"
       ];
 
       const streetTypes = ["Road", "Lane", "Drive", "Street", "Avenue", "Boulevard"];
@@ -36,7 +38,20 @@ Deno.serve(async (req) => {
         "Commercial Land Opportunity",
         "Residential Building Plot",
         "Investment Property",
-        "Mixed-Use Development Site"
+        "Mixed-Use Development Site",
+        "Agricultural Land",
+        "Ranch Property"
+      ];
+
+      const imageIds = [
+        "1500382017468",
+        "1449844425380",
+        "1449844496123",
+        "1449844562487",
+        "1449844654789",
+        "1449844721456",
+        "1449844823789",
+        "1449844912345"
       ];
 
       return Array.from({ length: 8 }, (_, i) => {
@@ -54,7 +69,7 @@ Deno.serve(async (req) => {
           acres: Number(acres),
           address: `${streetNum} ${location} ${streetType}, Dallas, TX`,
           realtor_url: `https://www.realtor.com/realestateandhomes-search/Dallas_TX/type-land`,
-          image_url: `https://images.unsplash.com/photo-${1500382017468 + i}-9049fed747ef`,
+          image_url: `https://images.unsplash.com/photo-${imageIds[i]}-9049fed747ef`,
           updated_at: new Date().toISOString()
         };
       });
@@ -63,16 +78,27 @@ Deno.serve(async (req) => {
     const listings = generateListings();
     console.log(`Generated ${listings.length} listings`);
 
-    // Insert listings
-    const { data: insertedListings, error } = await supabase
+    // Clear existing listings and insert new ones
+    const { error: deleteError } = await supabase
       .from('land_listings')
-      .upsert(listings, { 
-        onConflict: 'realtor_url',
-        ignoreDuplicates: false // Update existing entries
-      })
-      .select()
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
 
-    if (error) throw error
+    if (deleteError) {
+      console.error('Error deleting existing listings:', deleteError);
+      throw deleteError;
+    }
+
+    // Insert new listings
+    const { data: insertedListings, error: insertError } = await supabase
+      .from('land_listings')
+      .insert(listings)
+      .select();
+
+    if (insertError) {
+      console.error('Error inserting listings:', insertError);
+      throw insertError;
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -83,12 +109,11 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message,
-        details: "Falling back to generated data"
+        error: error.message
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
