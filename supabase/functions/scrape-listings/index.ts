@@ -26,35 +26,31 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
     // Fetch properties from Rentcast API
-    const apiUrl = 'https://api.rentcast.io/v2/properties/search'
-    const requestBody = {
-      latitude: 32.7767,  // Dallas latitude
-      longitude: -96.7970, // Dallas longitude
-      propertyType: ["LAND"],
-      status: ["FOR_SALE"],
-      radius: 50, // 50 mile radius
-      limit: 50,
-      sortBy: "created",
-      sortOrder: "desc"
-    }
-
-    console.log('Making request to Rentcast API:', {
-      url: apiUrl,
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${rentcastApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
+    const apiUrl = 'https://api.rentcast.io/v2/listings/search'
+    const params = new URLSearchParams({
+      latitude: '32.7767',  // Dallas latitude
+      longitude: '-96.7970', // Dallas longitude
+      propertyType: 'LAND',
+      status: 'FOR_SALE',
+      radius: '50', // 50 mile radius
+      limit: '50',
+      sortBy: 'created',
+      sortOrder: 'desc'
     })
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
+    console.log('Making request to Rentcast API:', {
+      url: `${apiUrl}?${params.toString()}`,
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${rentcastApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
+      }
+    })
+
+    const response = await fetch(`${apiUrl}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${rentcastApiKey}`,
+      }
     })
 
     if (!response.ok) {
@@ -69,31 +65,31 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json()
-    console.log(`Fetched ${data.properties?.length || 0} properties from Rentcast`)
+    console.log(`Fetched ${data.listings?.length || 0} listings from Rentcast`)
 
-    if (!data.properties || data.properties.length === 0) {
-      console.log('No properties returned from Rentcast API')
+    if (!data.listings || data.listings.length === 0) {
+      console.log('No listings returned from Rentcast API')
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'No properties found' 
+          error: 'No listings found' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     // Transform properties data to match our schema
-    const listings = data.properties.map((property: any) => {
-      const acres = property.squareFootage ? property.squareFootage / 43560 : null
-      const pricePerAcre = acres && property.price ? property.price / acres : null
+    const listings = data.listings.map((listing: any) => {
+      const acres = listing.lotSize ? listing.lotSize / 43560 : null // Convert sq ft to acres
+      const pricePerAcre = acres && listing.price ? listing.price / acres : null
 
       return {
-        title: property.description || `${acres ? Math.round(acres * 100) / 100 : 'Unknown'} Acre Land in ${property.city}`,
-        price: property.price,
+        title: listing.description || `${acres ? Math.round(acres * 100) / 100 : 'Unknown'} Acre Land in ${listing.city}`,
+        price: listing.price,
         acres: acres ? Math.round(acres * 100) / 100 : null,
-        address: `${property.streetAddress || ''}, ${property.city}, ${property.state} ${property.zipCode}`.trim(),
-        realtor_url: property.listingUrl || null,
-        image_url: property.photoUrls?.[0] || null,
+        address: `${listing.address || ''}, ${listing.city}, ${listing.state} ${listing.zipcode}`.trim(),
+        realtor_url: listing.listingUrl || null,
+        image_url: listing.photos?.[0] || null,
         price_per_acre: pricePerAcre ? Math.round(pricePerAcre) : null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
