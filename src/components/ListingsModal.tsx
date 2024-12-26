@@ -18,34 +18,7 @@ interface ListingsModalProps {
 export default function ListingsModal({ open, onOpenChange }: ListingsModalProps) {
   const { toast } = useToast();
 
-  // Trigger the scraping function when the modal opens
-  useEffect(() => {
-    if (open) {
-      console.log("Triggering scrape function");
-      supabase.functions
-        .invoke("scrape-listings")
-        .then((response) => {
-          console.log("Scrape response:", response);
-          if (!response.data.success) {
-            toast({
-              title: "Error",
-              description: "Failed to fetch latest listings",
-              variant: "destructive",
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error invoking scrape function:", error);
-          toast({
-            title: "Error",
-            description: "Failed to fetch latest listings",
-            variant: "destructive",
-          });
-        });
-    }
-  }, [open, toast]);
-
-  const { data: listings, isLoading } = useQuery({
+  const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ["land-listings"],
     queryFn: async () => {
       console.log("Fetching listings from database");
@@ -63,6 +36,36 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
     },
     enabled: open, // Only fetch when modal is open
   });
+
+  // Trigger the scraping function when the modal opens
+  useEffect(() => {
+    if (open) {
+      console.log("Triggering scrape function");
+      supabase.functions
+        .invoke("scrape-listings")
+        .then((response) => {
+          console.log("Scrape response:", response);
+          if (response.data.success) {
+            // Refetch the listings after successful scrape
+            refetch();
+          } else {
+            toast({
+              title: "Error",
+              description: "Failed to fetch latest listings",
+              variant: "destructive",
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error invoking scrape function:", error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch latest listings",
+            variant: "destructive",
+          });
+        });
+    }
+  }, [open, toast, refetch]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
