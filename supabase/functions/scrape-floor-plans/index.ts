@@ -15,28 +15,35 @@ serve(async (req) => {
     const { filters } = await req.json()
     console.log('Received filters:', filters)
     
-    // Use a more reliable floor plans website
-    const baseUrl = 'https://www.americanhomestore.net/floor-plans/dallas-fort-worth'
+    // Updated to a working URL for DFW floor plans
+    const baseUrl = 'https://www.americanhomesource.com/dallas-fort-worth-homes'
     console.log('Attempting to fetch URL:', baseUrl)
     
     const response = await fetch(baseUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Cache-Control': 'max-age=0'
       }
-    });
-
+    })
+    
+    console.log('Response status:', response.status)
+    
     if (!response.ok) {
-      console.error('Failed to fetch with status:', response.status)
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
     
     const html = await response.text()
     console.log('Successfully fetched HTML content, length:', html.length)
+    console.log('Sample of content:', html.substring(0, 200)) // Log a sample to verify content
     
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        data: { html } 
+        success: true,
+        data: { html }
       }),
       { 
         headers: { 
@@ -50,7 +57,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: `Failed to fetch floor plans: ${error.message}`
+        error: `Failed to fetch floor plans: ${error.message}`,
+        details: error.stack
       }),
       { 
         headers: { 
