@@ -5,6 +5,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import { AuthError } from "@supabase/supabase-js"
 
 export default function Auth() {
   const [searchParams] = useSearchParams()
@@ -16,7 +17,7 @@ export default function Auth() {
     // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
+        if (event === "SIGNED_IN" && session) {
           // Get user profile to check admin status
           const { data: profile } = await supabase
             .from("profiles")
@@ -29,7 +30,7 @@ export default function Auth() {
             description: profile?.is_admin ? "Signed in as admin." : "Successfully signed in.",
           })
           navigate("/")
-        } else if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+        } else if (event === "SIGNED_OUT") {
           navigate('/auth')
         }
       }
@@ -69,13 +70,7 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={window.location.origin}
-            onError={(error) => {
-              toast({
-                title: "Authentication Error",
-                description: error.message,
-                variant: "destructive",
-              })
-            }}
+            onlyThirdPartyProviders={false}
           />
         </CardContent>
       </Card>
