@@ -26,28 +26,24 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
     // Fetch properties from Rentcast API
-    const apiUrl = 'https://api.rentcast.io/v2/listings/search'
-    const searchParams = {
-      latitude: '32.7767',  // Dallas latitude
-      longitude: '-96.7970', // Dallas longitude
-      propertyType: 'LAND',
-      status: 'FOR_SALE',
-      radius: '50', // 50 mile radius
-      limit: '50',
-      sortBy: 'created',
-      sortOrder: 'desc'
-    }
-
-    const url = new URL(apiUrl)
-    Object.entries(searchParams).forEach(([key, value]) => {
-      url.searchParams.append(key, value)
-    })
+    const baseUrl = 'https://api.rentcast.io/v2/listings/search'
+    
+    // Create URL with encoded parameters
+    const url = new URL(baseUrl)
+    url.searchParams.set('latitude', '32.7767')
+    url.searchParams.set('longitude', '-96.7970')
+    url.searchParams.set('propertyType', 'LAND')
+    url.searchParams.set('status', 'FOR_SALE')
+    url.searchParams.set('radius', '50')
+    url.searchParams.set('limit', '50')
+    url.searchParams.set('sortBy', 'created')
+    url.searchParams.set('sortOrder', 'desc')
 
     console.log('Making request to Rentcast API:', {
       url: url.toString(),
       method: 'GET',
       headers: {
-        'apikey': rentcastApiKey,
+        'apikey': 'API_KEY_HIDDEN',
       }
     })
 
