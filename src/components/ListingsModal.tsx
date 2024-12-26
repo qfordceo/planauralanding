@@ -25,39 +25,42 @@ interface ListingsModalProps {
 export default function ListingsModal({ open, onOpenChange }: ListingsModalProps) {
   const { toast } = useToast();
 
-  const { data: listings, isLoading, refetch } = useQuery({
+  const { data: listings, isLoading, error, refetch } = useQuery({
     queryKey: ["land-listings"],
     queryFn: async () => {
       console.log("Fetching listings from database");
-      const { data, error } = await supabase
-        .from("land_listings")
-        .select("*")
-        .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("land_listings")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching listings:", error);
-        throw error;
+        if (error) {
+          console.error("Error fetching listings:", error);
+          throw error;
+        }
+        
+        console.log("Fetched listings:", data);
+        return data || [];
+      } catch (err) {
+        console.error("Failed to fetch listings:", err);
+        throw err;
       }
-      console.log("Fetched listings:", data);
-      return data;
     },
-    enabled: open, // Only fetch when modal is open
+    enabled: open,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   // Check if we should fetch new listings and trigger the scrape if needed
   useEffect(() => {
     if (open) {
       console.log("Checking if we should fetch new listings");
-      // Using GET method instead of POST for the RPC call
-      supabase.rpc('should_fetch_listings', {}, { 
-        count: 'exact',
-        head: false
-      })
+      supabase.rpc('should_fetch_listings')
         .then(({ data: shouldFetch, error }) => {
           if (error) {
             console.error("Error checking fetch status:", error);
-            // Continue with scraping if we can't determine the last fetch time
-            shouldFetch = true;
+            return;
           }
 
           console.log("Should fetch new listings:", shouldFetch);
@@ -68,7 +71,6 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
               .then((response) => {
                 console.log("Scrape response:", response);
                 if (response.data?.success) {
-                  // Refetch the listings after successful scrape
                   refetch();
                   toast({
                     title: "Success",
@@ -78,7 +80,7 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
                   console.error("Scrape function error:", response.error || response.data?.error);
                   toast({
                     title: "Error",
-                    description: "Failed to fetch latest listings",
+                    description: "Failed to fetch latest listings. Please try again later.",
                     variant: "destructive",
                   });
                 }
@@ -87,7 +89,7 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
                 console.error("Error invoking scrape function:", error);
                 toast({
                   title: "Error",
-                  description: "Failed to fetch latest listings",
+                  description: "Failed to fetch latest listings. Please try again later.",
                   variant: "destructive",
                 });
               });
@@ -98,6 +100,10 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
     }
   }, [open, toast, refetch]);
 
+  if (error) {
+    console.error("Query error:", error);
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -107,6 +113,13 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
         {isLoading ? (
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <p className="text-destructive mb-2">Failed to load listings</p>
+            <p className="text-sm text-muted-foreground">
+              Please try again later
+            </p>
           </div>
         ) : listings && listings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
