@@ -16,9 +16,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from '@supabase/supabase-js'
 
+// Log the environment variables to debug (these will be removed after fixing)
+console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+console.log('VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+// Initialize Supabase with fallback values for development
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase credentials are missing. Please ensure you have connected to Supabase in the Lovable interface.');
+}
+
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  supabaseUrl || '',
+  supabaseAnonKey || ''
 )
 
 const formSchema = z.object({
