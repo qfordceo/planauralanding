@@ -16,85 +16,40 @@ interface CrawlStatusResponse {
 type CrawlResponse = CrawlStatusResponse | ErrorResponse;
 
 export class FirecrawlService {
-  private static API_KEY_STORAGE_KEY = 'firecrawl_api_key';
-
-  static saveApiKey(apiKey: string): void {
-    localStorage.setItem(this.API_KEY_STORAGE_KEY, apiKey);
-    console.log('API key saved successfully');
-  }
-
-  static getApiKey(): string | null {
-    return localStorage.getItem(this.API_KEY_STORAGE_KEY);
-  }
-
-  static async testApiKey(apiKey: string): Promise<boolean> {
-    try {
-      console.log('Testing API key with Firecrawl API');
-      const response = await fetch('https://api.firecrawl.com/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        }
-      });
-      return response.ok;
-    } catch (error) {
-      console.error('Error testing API key:', error);
-      return false;
-    }
-  }
-
   static async crawlWebsite(url: string): Promise<{ success: boolean; error?: string; data?: any }> {
-    const apiKey = this.getApiKey();
-    if (!apiKey) {
-      return { success: false, error: 'API key not found' };
-    }
-
     try {
-      console.log('Making crawl request to Firecrawl API');
-      const response = await fetch('https://api.firecrawl.com/crawl', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          url,
-          limit: 100,
-          scrapeOptions: {
-            formats: ['markdown', 'html'],
-            selectors: {
-              planName: '.plan-name',
-              bedrooms: '.bedrooms',
-              bathrooms: '.bathrooms',
-              squareFeet: '.square-feet',
-              price: '.price',
-              image: 'img.plan-image'
-            }
-          }
-        })
-      });
-
-      if (!response.ok) {
-        const error = await response.text();
-        console.error('Crawl failed:', error);
-        return { 
-          success: false, 
-          error: error || 'Failed to crawl website' 
-        };
-      }
-
-      const data = await response.json();
-      console.log('Crawl successful:', data);
+      console.log('Starting floor plans scrape for URL:', url);
+      
+      // For now, return mock data since we're just demonstrating the UI
+      // In a real implementation, we would use a web scraping solution
       return { 
         success: true,
-        data 
+        data: {
+          html: `
+            <div class="plan-item">
+              <h3 class="plan-name">Modern Farmhouse</h3>
+              <div class="bedrooms">3</div>
+              <div class="bathrooms">2.5</div>
+              <div class="square-feet">2,500</div>
+              <div class="price">$350,000</div>
+              <img src="/placeholder.svg" alt="Floor Plan" />
+            </div>
+            <div class="plan-item">
+              <h3 class="plan-name">Ranch Style Home</h3>
+              <div class="bedrooms">4</div>
+              <div class="bathrooms">3</div>
+              <div class="square-feet">3,000</div>
+              <div class="price">$425,000</div>
+              <img src="/placeholder.svg" alt="Floor Plan" />
+            </div>
+          `
+        }
       };
     } catch (error) {
       console.error('Error during crawl:', error);
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Failed to connect to Firecrawl API' 
+        error: error instanceof Error ? error.message : 'Failed to scrape website' 
       };
     }
   }
