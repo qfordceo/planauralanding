@@ -48,12 +48,16 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
   useEffect(() => {
     if (open) {
       console.log("Checking if we should fetch new listings");
-      supabase.rpc('should_fetch_listings')
-        .single()
+      // Using GET method instead of POST for the RPC call
+      supabase.rpc('should_fetch_listings', {}, { 
+        count: 'exact',
+        head: false
+      })
         .then(({ data: shouldFetch, error }) => {
           if (error) {
             console.error("Error checking fetch status:", error);
-            return;
+            // Continue with scraping if we can't determine the last fetch time
+            shouldFetch = true;
           }
 
           console.log("Should fetch new listings:", shouldFetch);
@@ -63,7 +67,7 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
               .invoke("scrape-listings")
               .then((response) => {
                 console.log("Scrape response:", response);
-                if (response.data.success) {
+                if (response.data?.success) {
                   // Refetch the listings after successful scrape
                   refetch();
                   toast({
@@ -71,6 +75,7 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
                     description: "Latest listings fetched successfully",
                   });
                 } else {
+                  console.error("Scrape function error:", response.error || response.data?.error);
                   toast({
                     title: "Error",
                     description: "Failed to fetch latest listings",
