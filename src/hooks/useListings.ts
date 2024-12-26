@@ -71,12 +71,8 @@ export function useListings(open: boolean) {
               console.log("Scrape response:", { data, error });
               
               if (error) {
-                console.error("Scrape function error:", error);
-                toast({
-                  title: "Error",
-                  description: "Failed to fetch latest listings. Please try again later.",
-                  variant: "destructive",
-                });
+                console.error("Edge function error:", error);
+                // Don't show toast for network errors
                 return;
               }
 
@@ -86,22 +82,21 @@ export function useListings(open: boolean) {
                   title: "Success",
                   description: "Latest listings fetched successfully",
                 });
-              } else {
-                console.error("Scrape function error:", data?.error);
-                toast({
-                  title: "Error",
-                  description: data?.error || "Failed to fetch latest listings. Please try again later.",
-                  variant: "destructive",
-                });
+              } else if (data?.error) {
+                console.error("Scrape function error:", data.error);
+                // Only show toast for actual data errors
+                if (!data.error.includes("No properties found")) {
+                  toast({
+                    title: "Error",
+                    description: "Unable to fetch latest listings. Please try again later.",
+                    variant: "destructive",
+                  });
+                }
               }
             })
             .catch((error) => {
               console.error("Error invoking scrape function:", error);
-              toast({
-                title: "Error",
-                description: "Failed to fetch latest listings. Please try again later.",
-                variant: "destructive",
-              });
+              // Don't show toast for network errors
             });
         } else {
           console.log("Using cached listings (less than 24 hours old)");
