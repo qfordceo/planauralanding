@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import ListingsModal from "@/components/ListingsModal";
+import { FloorPlanScraper } from "@/components/FloorPlanScraper";
 
 const Index = () => {
   const [showListings, setShowListings] = useState(false);
+  const [showFloorPlans, setShowFloorPlans] = useState(false);
 
   return (
     <div className="min-h-screen">
@@ -60,7 +62,13 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="glass-card p-6 rounded-2xl cursor-pointer"
-                onClick={() => feature.title === "Premium Land Plots" && setShowListings(true)}
+                onClick={() => {
+                  if (feature.title === "Premium Land Plots") {
+                    setShowListings(true);
+                  } else if (feature.title === "Floor Plans") {
+                    setShowFloorPlans(true);
+                  }
+                }}
               >
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   {feature.icon}
@@ -74,6 +82,36 @@ const Index = () => {
       </section>
 
       <ListingsModal open={showListings} onOpenChange={setShowListings} />
+      
+      {showFloorPlans && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-xl font-semibold">Floor Plans</h2>
+              <button 
+                onClick={() => setShowFloorPlans(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <FloorPlanScraper />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -100,9 +138,9 @@ const features = [
     ),
   },
   {
-    title: "Expert Contractors",
+    title: "Floor Plans",
     description:
-      "Connect with our network of pre-vetted contractors for your dream home project.",
+      "Browse and customize floor plans to find the perfect layout for your dream home.",
     icon: (
       <svg
         className="w-6 h-6 text-primary"
@@ -114,7 +152,7 @@ const features = [
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
         />
       </svg>
     ),
