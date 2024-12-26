@@ -16,7 +16,7 @@ export default function Auth() {
     // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session) {
+        if (event === 'SIGNED_IN' && session) {
           // Get user profile to check admin status
           const { data: profile } = await supabase
             .from("profiles")
@@ -29,6 +29,8 @@ export default function Auth() {
             description: profile?.is_admin ? "Signed in as admin." : "Successfully signed in.",
           })
           navigate("/")
+        } else if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+          navigate('/auth')
         }
       }
     )
@@ -66,6 +68,14 @@ export default function Auth() {
               },
             }}
             providers={[]}
+            redirectTo={window.location.origin}
+            onError={(error) => {
+              toast({
+                title: "Authentication Error",
+                description: error.message,
+                variant: "destructive",
+              })
+            }}
           />
         </CardContent>
       </Card>
