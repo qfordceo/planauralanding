@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FloorPlan {
@@ -19,6 +18,7 @@ interface FloorPlan {
 export default function FloorPlans() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [floorPlans, setFloorPlans] = useState<FloorPlan[]>([]);
   const [filters, setFilters] = useState({
@@ -34,9 +34,11 @@ export default function FloorPlans() {
 
   const fetchFloorPlans = async () => {
     setIsLoading(true);
+    setError(null);
     setProgress(0);
     
     try {
+      console.log('Fetching floor plans with filters:', filters);
       const { data, error } = await supabase.functions.invoke('scrape-floor-plans', {
         body: { 
           filters: {
@@ -47,6 +49,8 @@ export default function FloorPlans() {
       });
 
       if (error) {
+        console.error('Supabase function error:', error);
+        setError('Failed to load floor plans. Please try again later.');
         toast({
           title: "Error",
           description: "Failed to load floor plans",
@@ -55,12 +59,18 @@ export default function FloorPlans() {
         return;
       }
 
-      if (data?.html) {
-        const parsedPlans = parseFloorPlansData(data.html);
+      if (data?.data?.html) {
+        const parsedPlans = parseFloorPlansData(data.data.html);
+        console.log('Parsed floor plans:', parsedPlans);
         setFloorPlans(parsedPlans);
+        
+        if (parsedPlans.length === 0) {
+          setError('No floor plans found matching your criteria.');
+        }
       }
     } catch (error) {
       console.error('Error fetching floor plans:', error);
+      setError('An unexpected error occurred. Please try again later.');
       toast({
         title: "Error",
         description: "Failed to load floor plans",
@@ -76,13 +86,16 @@ export default function FloorPlans() {
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-      const planElements = doc.querySelectorAll('.plan-item');
+      
+      // Update selectors based on the actual website structure
+      const planElements = doc.querySelectorAll('.home-plan, .floor-plan');
+      console.log('Found plan elements:', planElements.length);
       
       return Array.from(planElements).map(element => ({
-        name: element.querySelector('.plan-name')?.textContent?.trim() || 'Unnamed Plan',
-        bedrooms: element.querySelector('.bedrooms')?.textContent?.trim(),
-        bathrooms: element.querySelector('.bathrooms')?.textContent?.trim(),
-        squareFeet: element.querySelector('.square-feet')?.textContent?.trim(),
+        name: element.querySelector('h2, .plan-name')?.textContent?.trim() || 'Unnamed Plan',
+        bedrooms: element.querySelector('.bedrooms, .beds')?.textContent?.trim(),
+        bathrooms: element.querySelector('.bathrooms, .baths')?.textContent?.trim(),
+        squareFeet: element.querySelector('.square-feet, .sqft')?.textContent?.trim(),
         price: element.querySelector('.price')?.textContent?.trim(),
         imageUrl: element.querySelector('img')?.getAttribute('src') || undefined
       }));
@@ -160,6 +173,12 @@ export default function FloorPlans() {
       </div>
 
       {isLoading && <Progress value={progress} className="mb-8" />}
+      
+      {error && (
+        <Alert className="mb-8">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {floorPlans.map((plan, index) => (

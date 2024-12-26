@@ -12,27 +12,28 @@ serve(async (req) => {
 
   try {
     const { filters } = await req.json()
+    console.log('Received filters:', filters)
     
-    // Construct the URL with filters
-    const baseUrl = 'https://www.floorplans.com/house-plans/';
-    const queryParams = new URLSearchParams({
-      foundation: 'slab',
-      region: 'dallas-fort-worth',
-      ...(filters.bedrooms && { bedrooms: filters.bedrooms }),
-      ...(filters.priceRange && { price: filters.priceRange }),
-      ...(filters.squareFootage && { sqft: filters.squareFootage }),
-      ...(filters.style && { style: filters.style })
+    // Use a reliable floor plans website - adjust as needed
+    const baseUrl = 'https://www.americanhomestore.net/floor-plans';
+    
+    // Log the URL we're trying to fetch
+    console.log('Attempting to fetch URL:', baseUrl)
+    
+    // Fetch the webpage content with proper headers
+    const response = await fetch(baseUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
     });
-    
-    const url = `${baseUrl}?${queryParams.toString()}`;
-    
-    // Fetch the webpage content
-    const response = await fetch(url);
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch floor plans: ${response.statusText}`);
+      console.error('Failed to fetch with status:', response.status)
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    const html = await response.text();
+    const html = await response.text()
+    console.log('Successfully fetched HTML content')
     
     return new Response(
       JSON.stringify({ 
@@ -45,9 +46,9 @@ serve(async (req) => {
           'Content-Type': 'application/json'
         } 
       }
-    );
+    )
   } catch (error) {
-    console.error('Error scraping floor plans:', error);
+    console.error('Error in edge function:', error)
     return new Response(
       JSON.stringify({
         success: false,
@@ -60,6 +61,6 @@ serve(async (req) => {
         },
         status: 500
       }
-    );
+    )
   }
-});
+})
