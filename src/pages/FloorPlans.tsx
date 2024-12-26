@@ -50,21 +50,20 @@ export default function FloorPlans() {
       const { data, error } = await query;
       
       if (error) {
-        console.error('Error fetching floor plans:', error);
-        throw new Error('Failed to fetch floor plans');
+        throw error;
       }
 
       return data;
     },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to load floor plans",
+        variant: "destructive",
+      });
+      console.error('Error fetching floor plans:', error);
+    }
   });
-
-  if (error) {
-    toast({
-      title: "Error",
-      description: "Failed to load floor plans",
-      variant: "destructive",
-    });
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
