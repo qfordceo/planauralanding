@@ -7,7 +7,7 @@ interface FloorPlan {
   bedrooms: number;
   bathrooms: number;
   square_feet: number;
-  price: number;
+  plan_price: number;
   style?: string;
   image_url?: string;
 }
@@ -40,8 +40,8 @@ export function FloorPlanCard({ plan }: { plan: FloorPlan }) {
             <dd>{plan.square_feet.toLocaleString()}</dd>
           </div>
           <div className="flex justify-between">
-            <dt>Price:</dt>
-            <dd>{formatPrice(plan.price)}</dd>
+            <dt>Plan Price:</dt>
+            <dd>{formatPrice(plan.plan_price)}</dd>
           </div>
           {plan.style && (
             <div className="flex justify-between">
