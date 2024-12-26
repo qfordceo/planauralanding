@@ -1,26 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
-
-interface FloorPlan {
-  name: string;
-  bedrooms?: string;
-  bathrooms?: string;
-  squareFeet?: string;
-  price?: string;
-  imageUrl?: string;
-}
+import { FloorPlanFilters } from "@/components/floor-plans/FloorPlanFilters";
+import { FloorPlanCard } from "@/components/floor-plans/FloorPlanCard";
 
 export default function FloorPlans() {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [floorPlans, setFloorPlans] = useState<FloorPlan[]>([]);
   const [filters, setFilters] = useState({
     bedrooms: "",
     priceRange: "",
@@ -28,200 +16,79 @@ export default function FloorPlans() {
     style: ""
   });
 
-  useEffect(() => {
-    fetchFloorPlans();
-  }, []);
+  const { data: floorPlans, isLoading, error } = useQuery({
+    queryKey: ['floor-plans', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('floor_plans')
+        .select('*');
 
-  const fetchFloorPlans = async () => {
-    setIsLoading(true);
-    setError(null);
-    setProgress(0);
-    
-    try {
-      console.log('Fetching floor plans with filters:', filters);
-      const { data, error } = await supabase.functions.invoke('scrape-floor-plans', {
-        body: { 
-          filters: {
-            ...filters,
-            foundation: 'slab' // Always filter for slab foundations
-          }
+      if (filters.bedrooms) {
+        query = query.eq('bedrooms', parseInt(filters.bedrooms));
+      }
+
+      if (filters.style) {
+        query = query.eq('style', filters.style);
+      }
+
+      if (filters.priceRange) {
+        const [min, max] = filters.priceRange.split('-').map(n => parseInt(n) * 1000);
+        query = query.gte('price', min);
+        if (max) {
+          query = query.lt('price', max);
         }
-      });
+      }
 
+      if (filters.squareFootage) {
+        const [min, max] = filters.squareFootage.split('-').map(n => parseInt(n));
+        query = query.gte('square_feet', min);
+        if (max) {
+          query = query.lt('square_feet', max);
+        }
+      }
+
+      const { data, error } = await query;
+      
       if (error) {
-        console.error('Supabase function error:', error);
-        setError('Failed to load floor plans. Please try again later.');
-        toast({
-          title: "Error",
-          description: "Failed to load floor plans",
-          variant: "destructive",
-        });
-        return;
+        console.error('Error fetching floor plans:', error);
+        throw new Error('Failed to fetch floor plans');
       }
 
-      if (data?.data?.html) {
-        const parsedPlans = parseFloorPlansData(data.data.html);
-        console.log('Parsed floor plans:', parsedPlans);
-        setFloorPlans(parsedPlans);
-        
-        if (parsedPlans.length === 0) {
-          setError('No floor plans found matching your criteria.');
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching floor plans:', error);
-      setError('An unexpected error occurred. Please try again later.');
-      toast({
-        title: "Error",
-        description: "Failed to load floor plans",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-      setProgress(100);
-    }
-  };
+      return data;
+    },
+  });
 
-  const parseFloorPlansData = (html: string): FloorPlan[] => {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      
-      // Update selectors based on the actual website structure
-      const planElements = doc.querySelectorAll('.home-plan, .floor-plan');
-      console.log('Found plan elements:', planElements.length);
-      
-      return Array.from(planElements).map(element => ({
-        name: element.querySelector('h2, .plan-name')?.textContent?.trim() || 'Unnamed Plan',
-        bedrooms: element.querySelector('.bedrooms, .beds')?.textContent?.trim(),
-        bathrooms: element.querySelector('.bathrooms, .baths')?.textContent?.trim(),
-        squareFeet: element.querySelector('.square-feet, .sqft')?.textContent?.trim(),
-        price: element.querySelector('.price')?.textContent?.trim(),
-        imageUrl: element.querySelector('img')?.getAttribute('src') || undefined
-      }));
-    } catch (error) {
-      console.error('Error parsing floor plans:', error);
-      return [];
-    }
-  };
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to load floor plans",
+      variant: "destructive",
+    });
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8">Dallas/Fort Worth Floor Plans</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Select
-          value={filters.bedrooms}
-          onValueChange={(value) => setFilters(prev => ({ ...prev, bedrooms: value }))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Bedrooms" />
-          </SelectTrigger>
-          <SelectContent>
-            {[2, 3, 4, 5].map(num => (
-              <SelectItem key={num} value={num.toString()}>
-                {num} Bedrooms
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <FloorPlanFilters filters={filters} setFilters={setFilters} />
 
-        <Select
-          value={filters.priceRange}
-          onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Price Range" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="200-300">$200k - $300k</SelectItem>
-            <SelectItem value="300-400">$300k - $400k</SelectItem>
-            <SelectItem value="400-500">$400k - $500k</SelectItem>
-            <SelectItem value="500+">$500k+</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={filters.squareFootage}
-          onValueChange={(value) => setFilters(prev => ({ ...prev, squareFootage: value }))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Square Footage" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1000-2000">1,000 - 2,000 sqft</SelectItem>
-            <SelectItem value="2000-3000">2,000 - 3,000 sqft</SelectItem>
-            <SelectItem value="3000-4000">3,000 - 4,000 sqft</SelectItem>
-            <SelectItem value="4000+">4,000+ sqft</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={filters.style}
-          onValueChange={(value) => setFilters(prev => ({ ...prev, style: value }))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Home Style" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="modern">Modern</SelectItem>
-            <SelectItem value="traditional">Traditional</SelectItem>
-            <SelectItem value="farmhouse">Farmhouse</SelectItem>
-            <SelectItem value="ranch">Ranch</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {isLoading && <Progress value={progress} className="mb-8" />}
+      {isLoading && <Progress value={30} className="mb-8" />}
       
       {error && (
         <Alert className="mb-8">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>Failed to load floor plans. Please try again later.</AlertDescription>
+        </Alert>
+      )}
+
+      {floorPlans && floorPlans.length === 0 && (
+        <Alert className="mb-8">
+          <AlertDescription>No floor plans found matching your criteria.</AlertDescription>
         </Alert>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {floorPlans.map((plan, index) => (
-          <Card key={index} className="overflow-hidden">
-            {plan.imageUrl && (
-              <img 
-                src={plan.imageUrl} 
-                alt={plan.name} 
-                className="w-full h-48 object-cover"
-              />
-            )}
-            <CardHeader>
-              <CardTitle>{plan.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="space-y-2 text-sm">
-                {plan.bedrooms && (
-                  <div className="flex justify-between">
-                    <dt>Bedrooms:</dt>
-                    <dd>{plan.bedrooms}</dd>
-                  </div>
-                )}
-                {plan.bathrooms && (
-                  <div className="flex justify-between">
-                    <dt>Bathrooms:</dt>
-                    <dd>{plan.bathrooms}</dd>
-                  </div>
-                )}
-                {plan.squareFeet && (
-                  <div className="flex justify-between">
-                    <dt>Square Feet:</dt>
-                    <dd>{plan.squareFeet}</dd>
-                  </div>
-                )}
-                {plan.price && (
-                  <div className="flex justify-between">
-                    <dt>Price:</dt>
-                    <dd>{plan.price}</dd>
-                  </div>
-                )}
-              </dl>
-            </CardContent>
-          </Card>
+        {floorPlans?.map((plan) => (
+          <FloorPlanCard key={plan.id} plan={plan} />
         ))}
       </div>
     </div>

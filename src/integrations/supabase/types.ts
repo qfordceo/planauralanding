@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      floor_plans: {
+        Row: {
+          bathrooms: number
+          bedrooms: number
+          created_at: string
+          description: string | null
+          foundation_type: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price: number
+          square_feet: number
+          style: string | null
+          updated_at: string
+        }
+        Insert: {
+          bathrooms: number
+          bedrooms: number
+          created_at?: string
+          description?: string | null
+          foundation_type?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price: number
+          square_feet: number
+          style?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bathrooms?: number
+          bedrooms?: number
+          created_at?: string
+          description?: string | null
+          foundation_type?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number
+          square_feet?: number
+          style?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       land_listings: {
         Row: {
           acres: number | null
