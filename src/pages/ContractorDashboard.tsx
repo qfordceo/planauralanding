@@ -7,19 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import type { ContractorType } from "@/types/contractor";
 
 export default function ContractorDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
-  const [contractor, setContractor] = useState(null);
+  const [contractor, setContractor] = useState<any>(null);
   const [formData, setFormData] = useState({
     business_name: "",
     contact_name: "",
     phone: "",
     address: "",
-    contractor_types: ["general"],
+    contractor_types: ["general" as ContractorType],
   });
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function ContractorDashboard() {
     setLoading(false);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -57,12 +58,10 @@ export default function ContractorDashboard() {
 
     const { data, error } = await supabase
       .from("contractors")
-      .insert([
-        {
-          ...formData,
-          user_id: session.user.id,
-        },
-      ])
+      .insert({
+        ...formData,
+        user_id: session.user.id,
+      })
       .select()
       .single();
 
