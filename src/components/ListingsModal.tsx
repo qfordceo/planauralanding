@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +8,7 @@ import {
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ListingsModalProps {
   open: boolean;
@@ -15,17 +16,52 @@ interface ListingsModalProps {
 }
 
 export default function ListingsModal({ open, onOpenChange }: ListingsModalProps) {
+  const { toast } = useToast();
+
+  // Trigger the scraping function when the modal opens
+  useEffect(() => {
+    if (open) {
+      console.log("Triggering scrape function");
+      supabase.functions
+        .invoke("scrape-listings")
+        .then((response) => {
+          console.log("Scrape response:", response);
+          if (!response.data.success) {
+            toast({
+              title: "Error",
+              description: "Failed to fetch latest listings",
+              variant: "destructive",
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error invoking scrape function:", error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch latest listings",
+            variant: "destructive",
+          });
+        });
+    }
+  }, [open, toast]);
+
   const { data: listings, isLoading } = useQuery({
     queryKey: ["land-listings"],
     queryFn: async () => {
+      console.log("Fetching listings from database");
       const { data, error } = await supabase
         .from("land_listings")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching listings:", error);
+        throw error;
+      }
+      console.log("Fetched listings:", data);
       return data;
     },
+    enabled: open, // Only fetch when modal is open
   });
 
   return (
@@ -38,9 +74,9 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        ) : (
+        ) : listings && listings.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-            {listings?.map((listing) => (
+            {listings.map((listing) => (
               <Card key={listing.id} className="overflow-hidden">
                 {listing.image_url && (
                   <img
@@ -75,6 +111,13 @@ export default function ListingsModal({ open, onOpenChange }: ListingsModalProps
                 </CardFooter>
               </Card>
             ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <p className="text-muted-foreground mb-2">No listings available</p>
+            <p className="text-sm text-muted-foreground">
+              Check back later for new listings
+            </p>
           </div>
         )}
       </DialogContent>
