@@ -56,15 +56,23 @@ export default function FloorPlans() {
       return data;
     },
     meta: {
-      onError: () => {
-        toast({
-          title: "Error",
-          description: "Failed to load floor plans",
-          variant: "destructive",
-        });
-      }
-    }
+      errorMessage: "Failed to load floor plans"
+    },
+    gcTime: 0,
+    staleTime: 30000
   });
+
+  // Handle query errors
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load floor plans",
+        variant: "destructive",
+      });
+      console.error('Error fetching floor plans:', error);
+    }
+  }, [error, toast]);
 
   return (
     <div className="container mx-auto px-4 py-8">
