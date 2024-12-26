@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import ListingsModal from "@/components/ListingsModal";
 import { features } from "@/config/features";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [showListings, setShowListings] = useState(false);
@@ -18,7 +19,31 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/7399aaa3-93f1-4a02-9a99-18671fa4da27.png" 
+              alt="Plan Aura Logo" 
+              className="w-8 h-8"
+            />
+            <span className="font-semibold">Plan Aura</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/auth?mode=signin&type=contractor"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Contractor Login
+            </Link>
+            <Button asChild>
+              <Link to="/auth?mode=signup">Join Waitlist</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div

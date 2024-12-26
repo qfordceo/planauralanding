@@ -9,6 +9,216 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      contractor_appointments: {
+        Row: {
+          appointment_date: string
+          client_id: string | null
+          contractor_id: string | null
+          created_at: string
+          end_time: string
+          id: string
+          notes: string | null
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          client_id?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          client_id?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_appointments_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_availability: {
+        Row: {
+          contractor_id: string | null
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          start_time: string
+        }
+        Insert: {
+          contractor_id?: string | null
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          start_time: string
+        }
+        Update: {
+          contractor_id?: string | null
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_availability_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_portfolio: {
+        Row: {
+          completed_date: string | null
+          contractor_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string
+          title: string
+        }
+        Insert: {
+          completed_date?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url: string
+          title: string
+        }
+        Update: {
+          completed_date?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_portfolio_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_references: {
+        Row: {
+          client_name: string
+          completion_date: string | null
+          contact_info: string
+          contractor_id: string | null
+          created_at: string
+          id: string
+          project_description: string | null
+        }
+        Insert: {
+          client_name: string
+          completion_date?: string | null
+          contact_info: string
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          project_description?: string | null
+        }
+        Update: {
+          client_name?: string
+          completion_date?: string | null
+          contact_info?: string
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          project_description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_references_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractors: {
+        Row: {
+          address: string | null
+          bbb_certified: boolean | null
+          business_name: string
+          contact_name: string
+          contractor_types: Database["public"]["Enums"]["contractor_type"][]
+          created_at: string
+          id: string
+          insurance_expiry: string | null
+          insurance_verified: boolean | null
+          phone: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          bbb_certified?: boolean | null
+          business_name: string
+          contact_name: string
+          contractor_types: Database["public"]["Enums"]["contractor_type"][]
+          created_at?: string
+          id?: string
+          insurance_expiry?: string | null
+          insurance_verified?: boolean | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          bbb_certified?: boolean | null
+          business_name?: string
+          contact_name?: string
+          contractor_types?: Database["public"]["Enums"]["contractor_type"][]
+          created_at?: string
+          id?: string
+          insurance_expiry?: string | null
+          insurance_verified?: boolean | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       floor_plans: {
         Row: {
           bathrooms: number
@@ -134,7 +344,17 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      contractor_type:
+        | "electrical"
+        | "plumbing"
+        | "hvac"
+        | "roofing"
+        | "foundation"
+        | "framing"
+        | "drywall"
+        | "painting"
+        | "landscaping"
+        | "general"
     }
     CompositeTypes: {
       [_ in never]: never
