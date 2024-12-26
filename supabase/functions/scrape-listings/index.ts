@@ -14,78 +14,57 @@ Deno.serve(async (req) => {
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const rentcastApiKey = Deno.env.get('RENTCAST_API_KEY')
+    
+    if (!rentcastApiKey) {
+      throw new Error('RENTCAST_API_KEY is not set')
+    }
+    
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
-    console.log('Starting real estate data generation...')
+    console.log('Starting Rentcast API data fetch...')
 
-    // Generate realistic sample data
-    const generateListings = () => {
-      const locations = [
-        "North Dallas",
-        "Richardson",
-        "Plano",
-        "Frisco",
-        "McKinney",
-        "Allen",
-        "Prosper",
-        "Celina"
-      ];
+    // Fetch properties from Rentcast API
+    const response = await fetch('https://api.rentcast.io/v1/properties/search', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'authorization': rentcastApiKey
+      },
+      body: JSON.stringify({
+        "latitude": 32.7767,  // Dallas latitude
+        "longitude": -96.7970, // Dallas longitude
+        "propertyType": ["LAND"],
+        "status": ["FOR_SALE"],
+        "radius": 50, // 50 mile radius
+        "limit": 20
+      })
+    });
 
-      const streetTypes = ["Road", "Lane", "Drive", "Street", "Avenue", "Boulevard"];
-      const descriptions = [
-        "Prime Development Land",
-        "Beautiful Wooded Lot",
-        "Commercial Land Opportunity",
-        "Residential Building Plot",
-        "Investment Property",
-        "Mixed-Use Development Site",
-        "Agricultural Land",
-        "Ranch Property"
-      ];
+    if (!response.ok) {
+      throw new Error(`Rentcast API error: ${response.status} ${response.statusText}`);
+    }
 
-      const imageIds = [
-        "1500382017468",
-        "1449844425380",
-        "1449844496123",
-        "1449844562487",
-        "1449844654789",
-        "1449844721456",
-        "1449844823789",
-        "1449844912345"
-      ];
+    const data = await response.json();
+    console.log(`Fetched ${data.properties?.length || 0} properties from Rentcast`);
 
-      return Array.from({ length: 8 }, (_, i) => {
-        const location = locations[Math.floor(Math.random() * locations.length)];
-        const streetNum = Math.floor(Math.random() * 9000) + 1000;
-        const streetType = streetTypes[Math.floor(Math.random() * streetTypes.length)];
-        const description = descriptions[Math.floor(Math.random() * descriptions.length)];
-        const acres = (Math.random() * 5 + 0.5).toFixed(2);
-        const pricePerAcre = Math.floor(Math.random() * 100000) + 100000;
-        const price = Math.floor(Number(acres) * pricePerAcre);
-
-        // Create a URL-friendly version of the location
-        const locationSlug = location.toLowerCase().replace(/\s+/g, '-');
-        
-        return {
-          title: `${description} in ${location}`,
-          price: price,
-          acres: Number(acres),
-          address: `${streetNum} ${location} ${streetType}, Dallas, TX`,
-          realtor_url: `https://www.realtor.com/realestateandhomes-detail/Land-${streetNum}-${locationSlug}-${streetType}_Dallas_TX_75001`,
-          image_url: `https://images.unsplash.com/photo-${imageIds[i]}-9049fed747ef`,
-          updated_at: new Date().toISOString()
-        };
-      });
-    };
-
-    const listings = generateListings();
-    console.log(`Generated ${listings.length} listings`);
+    // Transform Rentcast data to match our schema
+    const listings = (data.properties || []).map((property: any) => ({
+      title: `${property.squareFootage ? Math.round(property.squareFootage / 43560) : 'Unknown'} Acre Land in ${property.city}`,
+      price: property.price,
+      acres: property.squareFootage ? Math.round(property.squareFootage / 43560 * 100) / 100 : null,
+      address: `${property.streetAddress}, ${property.city}, ${property.state} ${property.zipCode}`,
+      realtor_url: property.listingUrl || null,
+      image_url: property.photoUrls?.[0] || null,
+      updated_at: new Date().toISOString()
+    }));
 
     // Clear existing listings and insert new ones
     const { error: deleteError } = await supabase
       .from('land_listings')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+      .neq('id', '00000000-0000-0000-0000-000000000000');
 
     if (deleteError) {
       console.error('Error deleting existing listings:', deleteError);
