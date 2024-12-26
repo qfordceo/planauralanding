@@ -11,18 +11,29 @@ serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json()
+    const { filters } = await req.json()
+    
+    // Construct the URL with filters
+    const baseUrl = 'https://www.floorplans.com/house-plans/';
+    const queryParams = new URLSearchParams({
+      foundation: 'slab',
+      region: 'dallas-fort-worth',
+      ...(filters.bedrooms && { bedrooms: filters.bedrooms }),
+      ...(filters.priceRange && { price: filters.priceRange }),
+      ...(filters.squareFootage && { sqft: filters.squareFootage }),
+      ...(filters.style && { style: filters.style })
+    });
+    
+    const url = `${baseUrl}?${queryParams.toString()}`;
     
     // Fetch the webpage content
-    const response = await fetch(url)
+    const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${response.statusText}`)
+      throw new Error(`Failed to fetch floor plans: ${response.statusText}`);
     }
     
-    const html = await response.text()
+    const html = await response.text();
     
-    // Return the HTML content for client-side parsing
-    // This allows us to adjust the parsing logic without redeploying the function
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -34,9 +45,9 @@ serve(async (req) => {
           'Content-Type': 'application/json'
         } 
       }
-    )
+    );
   } catch (error) {
-    console.error('Error scraping floor plans:', error)
+    console.error('Error scraping floor plans:', error);
     return new Response(
       JSON.stringify({
         success: false,
@@ -49,6 +60,6 @@ serve(async (req) => {
         },
         status: 500
       }
-    )
+    );
   }
-})
+});

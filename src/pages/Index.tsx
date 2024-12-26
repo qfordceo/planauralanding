@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ListingsModal from "@/components/ListingsModal";
-import { FloorPlanScraper } from "@/components/FloorPlanScraper";
 
 const Index = () => {
   const [showListings, setShowListings] = useState(false);
-  const [showFloorPlans, setShowFloorPlans] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen">
@@ -63,10 +62,10 @@ const Index = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="glass-card p-6 rounded-2xl cursor-pointer"
                 onClick={() => {
-                  if (feature.title === "Premium Land Plots") {
+                  if (feature.link) {
+                    navigate(feature.link);
+                  } else if (feature.title === "Premium Land Plots") {
                     setShowListings(true);
-                  } else if (feature.title === "Floor Plans") {
-                    setShowFloorPlans(true);
                   }
                 }}
               >
@@ -82,36 +81,6 @@ const Index = () => {
       </section>
 
       <ListingsModal open={showListings} onOpenChange={setShowListings} />
-      
-      {showFloorPlans && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-semibold">Floor Plans</h2>
-              <button 
-                onClick={() => setShowFloorPlans(false)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-            <FloorPlanScraper />
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -156,6 +125,7 @@ const features = [
         />
       </svg>
     ),
+    link: "/floor-plans"
   },
   {
     title: "Seamless Experience",
