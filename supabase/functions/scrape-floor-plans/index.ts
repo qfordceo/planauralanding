@@ -6,6 +6,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -14,13 +15,10 @@ serve(async (req) => {
     const { filters } = await req.json()
     console.log('Received filters:', filters)
     
-    // Use a reliable floor plans website - adjust as needed
-    const baseUrl = 'https://www.americanhomestore.net/floor-plans';
-    
-    // Log the URL we're trying to fetch
+    // Use a more reliable floor plans website
+    const baseUrl = 'https://www.americanhomestore.net/floor-plans/dallas-fort-worth'
     console.log('Attempting to fetch URL:', baseUrl)
     
-    // Fetch the webpage content with proper headers
     const response = await fetch(baseUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -33,7 +31,7 @@ serve(async (req) => {
     }
     
     const html = await response.text()
-    console.log('Successfully fetched HTML content')
+    console.log('Successfully fetched HTML content, length:', html.length)
     
     return new Response(
       JSON.stringify({ 
@@ -52,7 +50,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: `Failed to fetch floor plans: ${error.message}`
       }),
       { 
         headers: { 
