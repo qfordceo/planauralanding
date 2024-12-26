@@ -30,14 +30,21 @@ Deno.serve(async (req) => {
     
     // Create URL with encoded parameters
     const url = new URL(baseUrl)
-    url.searchParams.set('latitude', '32.7767')
-    url.searchParams.set('longitude', '-96.7970')
-    url.searchParams.set('propertyType', 'LAND')
-    url.searchParams.set('status', 'FOR_SALE')
-    url.searchParams.set('radius', '50')
-    url.searchParams.set('limit', '50')
-    url.searchParams.set('sortBy', 'created')
-    url.searchParams.set('sortOrder', 'desc')
+    const params = {
+      latitude: '32.7767',
+      longitude: '-96.7970',
+      propertyType: 'LAND',
+      status: 'FOR_SALE',
+      radius: '50',
+      limit: '50',
+      sortBy: 'created',
+      sortOrder: 'desc'
+    }
+    
+    // Add parameters to URL
+    Object.entries(params).forEach(([key, value]) => {
+      url.searchParams.append(key, value)
+    })
 
     console.log('Making request to Rentcast API:', {
       url: url.toString(),
@@ -51,6 +58,8 @@ Deno.serve(async (req) => {
       method: 'GET',
       headers: {
         'apikey': rentcastApiKey,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
       }
     })
 
@@ -60,37 +69,38 @@ Deno.serve(async (req) => {
         status: response.status,
         statusText: response.statusText,
         headers: Object.fromEntries(response.headers.entries()),
-        body: errorText
+        body: errorText,
+        url: url.toString()
       })
       throw new Error(`Rentcast API error: ${response.status} ${errorText}`)
     }
 
     const data = await response.json()
-    console.log(`Fetched ${data.listings?.length || 0} listings from Rentcast`)
+    console.log(`Fetched ${data.properties?.length || 0} properties from Rentcast`)
 
-    if (!data.listings || data.listings.length === 0) {
-      console.log('No listings returned from Rentcast API')
+    if (!data.properties || data.properties.length === 0) {
+      console.log('No properties returned from Rentcast API')
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'No listings found' 
+          error: 'No properties found' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     // Transform properties data to match our schema
-    const listings = data.listings.map((listing: any) => {
-      const acres = listing.lotSize ? listing.lotSize / 43560 : null // Convert sq ft to acres
-      const pricePerAcre = acres && listing.price ? listing.price / acres : null
+    const listings = data.properties.map((property: any) => {
+      const acres = property.lotSize ? property.lotSize / 43560 : null // Convert sq ft to acres
+      const pricePerAcre = acres && property.price ? property.price / acres : null
 
       return {
-        title: listing.description || `${acres ? Math.round(acres * 100) / 100 : 'Unknown'} Acre Land in ${listing.city}`,
-        price: listing.price,
+        title: property.description || `${acres ? Math.round(acres * 100) / 100 : 'Unknown'} Acre Land in ${property.city}`,
+        price: property.price,
         acres: acres ? Math.round(acres * 100) / 100 : null,
-        address: `${listing.address || ''}, ${listing.city}, ${listing.state} ${listing.zipcode}`.trim(),
-        realtor_url: listing.listingUrl || null,
-        image_url: listing.photos?.[0] || null,
+        address: `${property.address || ''}, ${property.city}, ${property.state} ${property.zipcode}`.trim(),
+        realtor_url: property.listingUrl || null,
+        image_url: property.photos?.[0] || null,
         price_per_acre: pricePerAcre ? Math.round(pricePerAcre) : null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
