@@ -14,6 +14,11 @@ const Index = () => {
             transition={{ duration: 0.6 }}
             className="max-w-3xl mx-auto text-center"
           >
+            <img 
+              src="/lovable-uploads/7399aaa3-93f1-4a02-9a99-18671fa4da27.png" 
+              alt="Plan Aura Logo" 
+              className="w-48 mx-auto mb-8"
+            />
             <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               Coming Soon
             </span>
