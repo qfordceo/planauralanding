@@ -18,7 +18,7 @@ const Index = () => {
               Coming Soon
             </span>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-              PlanAura <span className="text-primary">is under construction</span>
+              Plan Aura <span className="text-primary">is under construction</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
               We're building something amazing. Join our waitlist to be the first to
