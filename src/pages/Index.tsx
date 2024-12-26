@@ -15,29 +15,28 @@ const Index = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              Revolutionizing Home Building
+              Coming Soon
             </span>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-              Your Dream Home,{" "}
-              <span className="text-primary">Simplified</span>
+              PlanAura <span className="text-primary">is under construction</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Connect with premium land plots, expert contractors, and seamless
-              financing solutions — all in one platform.
+              We're building something amazing. Join our waitlist to be the first to
+              know when we launch and get exclusive early access.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 to="/auth?mode=signup"
                 className="w-full sm:w-auto px-8 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
               >
-                Start Your Journey
+                Join Waitlist
               </Link>
-              <Link
-                to="/about"
+              <a
+                href="mailto:contact@planaura.com"
                 className="w-full sm:w-auto px-8 py-3 rounded-full border border-border text-foreground font-medium hover:bg-muted transition-colors"
               >
-                Learn More
-              </Link>
+                Contact Us
+              </a>
             </div>
           </motion.div>
         </div>
@@ -72,7 +71,7 @@ const features = [
   {
     title: "Premium Land Plots",
     description:
-      "Access exclusive land listings and secure your ideal location with our advanced reservation system.",
+      "Get early access to exclusive land listings and secure your ideal location.",
     icon: (
       <svg
         className="w-6 h-6 text-primary"
@@ -92,7 +91,7 @@ const features = [
   {
     title: "Expert Contractors",
     description:
-      "Connect with verified contractors and get competitive bids for your dream home project.",
+      "Connect with our network of pre-vetted contractors for your dream home project.",
     icon: (
       <svg
         className="w-6 h-6 text-primary"
@@ -110,9 +109,9 @@ const features = [
     ),
   },
   {
-    title: "Seamless Financing",
+    title: "Seamless Experience",
     description:
-      "Find the perfect financing solution with our curated network of trusted lenders.",
+      "From land selection to final build, enjoy a streamlined journey to your new home.",
     icon: (
       <svg
         className="w-6 h-6 text-primary"
