@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import ListingsModal from "@/components/ListingsModal";
 
 const Index = () => {
+  const [showListings, setShowListings] = useState(false);
+
   return (
     <div className="min-h-screen">
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
@@ -56,7 +59,8 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="glass-card p-6 rounded-2xl"
+                className="glass-card p-6 rounded-2xl cursor-pointer"
+                onClick={() => feature.title === "Premium Land Plots" && setShowListings(true)}
               >
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   {feature.icon}
@@ -68,6 +72,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <ListingsModal open={showListings} onOpenChange={setShowListings} />
     </div>
   );
 };

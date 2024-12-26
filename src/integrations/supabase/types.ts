@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      land_listings: {
+        Row: {
+          acres: number | null
+          address: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          price: number | null
+          realtor_url: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          acres?: number | null
+          address?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          price?: number | null
+          realtor_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acres?: number | null
+          address?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          price?: number | null
+          realtor_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

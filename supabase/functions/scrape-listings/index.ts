@@ -20,14 +20,13 @@ Deno.serve(async (req) => {
     // URLs to scrape - add more as needed
     const urls = [
       'https://www.realtor.com/realestateandhomes-search/Dallas_TX/type-land',
-      // Add more URLs as needed
     ];
 
     console.log('Starting scrape job...');
 
     for (const url of urls) {
       const result = await firecrawl.crawlUrl(url, {
-        limit: 10, // Adjust as needed
+        limit: 10,
         scrapeOptions: {
           selectors: {
             title: '.card-title',
