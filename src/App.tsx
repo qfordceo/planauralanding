@@ -1,22 +1,15 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Layout from "./components/Layout"
-import Index from "./pages/Index"
-import Auth from "./pages/Auth"
-import Waitlist from "./pages/Waitlist"
-import { Toaster } from "./components/ui/toaster"
+import { BrowserRouter } from "react-router-dom"
+import { Toaster } from "@/components/ui/toaster"
+import Layout from "@/components/Layout"
+import "./App.css"
 
 function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Layout>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/waitlist" element={<Waitlist />} />
-        </Routes>
+        <Toaster />
       </Layout>
-      <Toaster />
-    </Router>
+    </BrowserRouter>
   )
 }
 
