@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
@@ -55,15 +55,12 @@ export default function FloorPlans() {
 
       return data;
     },
-    meta: {
-      errorMessage: "Failed to load floor plans"
-    },
     gcTime: 0,
     staleTime: 30000
   });
 
   // Handle query errors
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       toast({
         title: "Error",
