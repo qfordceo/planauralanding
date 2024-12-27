@@ -53,6 +53,19 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // First check if user is a contractor
+        const { data: contractor } = await supabase
+          .from('contractors')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (contractor) {
+          navigate('/contractor-dashboard');
+          return;
+        }
+
+        // If not a contractor, check if admin or regular client
         const { data: profile } = await supabase
           .from('profiles')
           .select('is_admin')
@@ -62,7 +75,7 @@ export default function Auth() {
         if (profile?.is_admin) {
           navigate('/admin');
         } else {
-          navigate('/client-dashboard');
+          navigate('/dashboard');
         }
       }
     };
@@ -73,6 +86,19 @@ export default function Auth() {
         localStorage.removeItem('loginAttempts');
         localStorage.removeItem('lockoutUntil');
 
+        // First check if user is a contractor
+        const { data: contractor } = await supabase
+          .from('contractors')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (contractor) {
+          navigate('/contractor-dashboard');
+          return;
+        }
+
+        // If not a contractor, check if admin or regular client
         const { data: profile } = await supabase
           .from('profiles')
           .select('is_admin')
@@ -82,7 +108,7 @@ export default function Auth() {
         if (profile?.is_admin) {
           navigate('/admin');
         } else {
-          navigate('/client-dashboard');
+          navigate('/dashboard');
         }
       }
     };
