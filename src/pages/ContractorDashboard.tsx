@@ -2,51 +2,57 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Briefcase, Calendar, Star, LogOut } from "lucide-react";
 import type { ContractorType } from "@/types/contractor";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ContractorDashboard() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
-  const [contractor, setContractor] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    business_name: "",
-    contact_name: "",
-    phone: "",
-    address: "",
-    contractor_types: ["general" as ContractorType],
-  });
+  const [contractor, setContractor] = useState<ContractorType | null>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    checkAuth();
+    checkUser();
   }, []);
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate('/auth?mode=signin&type=contractor');
-      return;
-    }
+  const checkUser = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate('/auth?type=contractor');
+        return;
+      }
 
-    // Check if contractor profile exists
-    const { data: contractor } = await supabase
-      .from("contractors")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .single();
+      const { data: contractorData, error } = await supabase
+        .from('contractors')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-    if (contractor) {
-      setContractor(contractor);
-    } else {
-      setRegistering(true);
+      if (error) {
+        console.error('Error fetching contractor:', error);
+        setRegistering(true);
+      } else if (contractorData) {
+        setContractor(contractorData);
+      } else {
+        setRegistering(true);
+      }
+    } catch (error) {
+      console.error('Error checking user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load contractor profile",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSignOut = async () => {
@@ -54,42 +60,52 @@ export default function ContractorDashboard() {
     navigate('/auth?type=contractor');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegistration = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setLoading(true);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
 
-    const { data, error } = await supabase
-      .from("contractors")
-      .insert({
-        ...formData,
-        user_id: session.user.id,
-      })
-      .select()
-      .single();
+      const formData = new FormData(event.currentTarget);
+      const contractorData = {
+        user_id: user.id,
+        business_name: formData.get('businessName') as string,
+        contact_email: formData.get('email') as string,
+        phone: formData.get('phone') as string,
+        license_number: formData.get('license') as string,
+      };
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create contractor profile. Please try again.",
-        variant: "destructive",
-      });
-    } else {
+      const { data, error } = await supabase
+        .from('contractors')
+        .insert([contractorData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
       setContractor(data);
       setRegistering(false);
       toast({
-        title: "Success!",
-        description: "Your contractor profile has been created.",
+        title: "Success",
+        description: "Contractor profile created successfully",
       });
+    } catch (error) {
+      console.error('Error registering contractor:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create contractor profile",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -97,55 +113,28 @@ export default function ContractorDashboard() {
 
   if (registering) {
     return (
-      <div className="container max-w-2xl mx-auto px-4 py-8">
+      <div className="container max-w-lg mx-auto px-4 py-8">
         <Card>
           <CardHeader>
             <CardTitle>Complete Your Contractor Profile</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleRegistration} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="business_name">Business Name</Label>
-                <Input
-                  id="business_name"
-                  required
-                  value={formData.business_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, business_name: e.target.value })
-                  }
-                />
+                <Label htmlFor="businessName">Business Name</Label>
+                <Input id="businessName" name="businessName" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact_name">Contact Name</Label>
-                <Input
-                  id="contact_name"
-                  required
-                  value={formData.contact_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, contact_name: e.target.value })
-                  }
-                />
+                <Label htmlFor="email">Contact Email</Label>
+                <Input id="email" name="email" type="email" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                />
+                <Input id="phone" name="phone" type="tel" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="address">Business Address</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                />
+                <Label htmlFor="license">License Number</Label>
+                <Input id="license" name="license" required />
               </div>
               <Button type="submit" className="w-full">
                 Complete Registration
@@ -176,9 +165,9 @@ export default function ContractorDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Showcase your work by adding photos and descriptions of completed projects.
+              Showcase your best work and completed projects.
             </p>
-            <Button className="w-full">Manage Portfolio</Button>
+            <Button>Manage Portfolio</Button>
           </CardContent>
         </Card>
         <Card>
@@ -190,9 +179,9 @@ export default function ContractorDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Set your working hours and manage your schedule.
+              Set your working hours and manage appointments.
             </p>
-            <Button className="w-full">Manage Schedule</Button>
+            <Button>Set Availability</Button>
           </CardContent>
         </Card>
         <Card>
@@ -204,9 +193,9 @@ export default function ContractorDashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Add references from past clients to build trust.
+              Add client references and testimonials.
             </p>
-            <Button className="w-full">Manage References</Button>
+            <Button>Add References</Button>
           </CardContent>
         </Card>
       </div>
