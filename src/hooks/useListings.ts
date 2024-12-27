@@ -2,27 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
-
-interface Listing {
-  id: string;
-  title: string;
-  price: number;
-  acres: number;
-  address: string;
-  realtor_url: string;
-  image_url: string;
-  price_per_acre: number;
-  avg_area_price_per_acre: number;
-  created_at: string;
-  updated_at: string;
-  last_fetched_at: string;
-}
+import { LandListing } from "@/integrations/supabase/types/land-listings";
 
 interface ScrapeResponse {
   success: boolean;
   message?: string;
   error?: string;
-  listings?: Listing[];
+  listings?: LandListing[];
 }
 
 export function useListings(open: boolean) {
@@ -43,7 +29,7 @@ export function useListings(open: boolean) {
       }
       
       console.log("Fetched listings:", data);
-      return data as Listing[];
+      return data as LandListing[];
     },
     enabled: open,
     retry: 2,
@@ -72,7 +58,6 @@ export function useListings(open: boolean) {
               
               if (error) {
                 console.error("Edge function error:", error);
-                // Don't show toast for network errors
                 return;
               }
 
@@ -84,7 +69,6 @@ export function useListings(open: boolean) {
                 });
               } else if (data?.error) {
                 console.error("Scrape function error:", data.error);
-                // Only show toast for actual data errors
                 if (!data.error.includes("No properties found")) {
                   toast({
                     title: "Error",
@@ -96,7 +80,6 @@ export function useListings(open: boolean) {
             })
             .catch((error) => {
               console.error("Error invoking scrape function:", error);
-              // Don't show toast for network errors
             });
         } else {
           console.log("Using cached listings (less than 24 hours old)");
