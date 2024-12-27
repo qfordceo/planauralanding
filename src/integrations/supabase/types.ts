@@ -505,6 +505,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          created_at: string
+          data: Json
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       saved_builds: {
         Row: {
           configuration: Json | null
@@ -555,6 +576,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_rate_limits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       should_fetch_listings: {
         Args: Record<PropertyKey, never>
         Returns: boolean
