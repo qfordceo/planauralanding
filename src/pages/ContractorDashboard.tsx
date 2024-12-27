@@ -44,15 +44,20 @@ export default function ContractorDashboard() {
         return;
       }
 
+      // Use a direct query to ensure we get fresh data
       const { data: contractorData, error } = await supabase
         .from('contractors')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching contractor:', error);
+        throw error;
+      }
       
       if (contractorData) {
+        console.log('Fetched contractor data:', contractorData); // Debug log
         setContractor(contractorData);
       } else {
         setRegistering(true);
