@@ -18,6 +18,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
         </Routes>
       </main>
       {children}
+      <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     </div>
   )
 }
