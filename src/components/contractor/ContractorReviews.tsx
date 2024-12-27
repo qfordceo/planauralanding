@@ -6,21 +6,50 @@ interface ContractorReviewsProps {
   contractorId: string;
 }
 
+interface Review {
+  id: string;
+  contractor_id: string;
+  client_id: string;
+  rating: number;
+  review_text: string | null;
+  created_at: string;
+  client?: {
+    email: string | null;
+  };
+}
+
 export function ContractorReviews({ contractorId }: ContractorReviewsProps) {
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['contractor-reviews', contractorId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch the reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
         .from('contractor_reviews')
-        .select(`
-          *,
-          client:client_id(email)
-        `)
+        .select('*')
         .eq('contractor_id', contractorId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (reviewsError) throw reviewsError;
+
+      // Then fetch the client emails in a separate query
+      const reviews = await Promise.all(
+        (reviewsData || []).map(async (review) => {
+          if (!review.client_id) return { ...review, client: { email: 'Anonymous' } };
+
+          const { data: clientData } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', review.client_id)
+            .single();
+
+          return {
+            ...review,
+            client: { email: clientData?.email || 'Anonymous' }
+          };
+        })
+      );
+
+      return reviews as Review[];
     },
   });
 
