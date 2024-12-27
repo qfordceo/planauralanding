@@ -2,17 +2,16 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Briefcase, Calendar, Star, LogOut } from "lucide-react";
-import type { ContractorType } from "@/types/contractor";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Contractor, ContractorFormData } from "@/types/contractor";
+import { RegistrationForm } from "@/components/contractor/RegistrationForm";
+import { DashboardCard } from "@/components/contractor/DashboardCard";
 
 export default function ContractorDashboard() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
-  const [contractor, setContractor] = useState<ContractorType | null>(null);
+  const [contractor, setContractor] = useState<Contractor | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -33,12 +32,11 @@ export default function ContractorDashboard() {
         .from('contractors')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching contractor:', error);
-        setRegistering(true);
-      } else if (contractorData) {
+      if (error) throw error;
+      
+      if (contractorData) {
         setContractor(contractorData);
       } else {
         setRegistering(true);
@@ -60,26 +58,19 @@ export default function ContractorDashboard() {
     navigate('/auth?type=contractor');
   };
 
-  const handleRegistration = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleRegistration = async (formData: ContractorFormData) => {
     setLoading(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      const formData = new FormData(event.currentTarget);
-      const contractorData = {
-        user_id: user.id,
-        business_name: formData.get('businessName') as string,
-        contact_email: formData.get('email') as string,
-        phone: formData.get('phone') as string,
-        license_number: formData.get('license') as string,
-      };
-
       const { data, error } = await supabase
         .from('contractors')
-        .insert([contractorData])
+        .insert({
+          user_id: user.id,
+          ...formData
+        })
         .select()
         .single();
 
@@ -112,39 +103,10 @@ export default function ContractorDashboard() {
   }
 
   if (registering) {
-    return (
-      <div className="container max-w-lg mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Complete Your Contractor Profile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleRegistration} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="businessName">Business Name</Label>
-                <Input id="businessName" name="businessName" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Contact Email</Label>
-                <Input id="email" name="email" type="email" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" name="phone" type="tel" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="license">License Number</Label>
-                <Input id="license" name="license" required />
-              </div>
-              <Button type="submit" className="w-full">
-                Complete Registration
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <RegistrationForm onSubmit={handleRegistration} loading={loading} />;
   }
+
+  if (!contractor) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -156,48 +118,27 @@ export default function ContractorDashboard() {
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5" />
-              Portfolio
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Showcase your best work and completed projects.
-            </p>
-            <Button>Manage Portfolio</Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Availability
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Set your working hours and manage appointments.
-            </p>
-            <Button>Set Availability</Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5" />
-              References
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Add client references and testimonials.
-            </p>
-            <Button>Add References</Button>
-          </CardContent>
-        </Card>
+        <DashboardCard
+          title="Portfolio"
+          description="Showcase your best work and completed projects."
+          icon={Briefcase}
+          buttonText="Manage Portfolio"
+          onClick={() => {}} // TODO: Implement portfolio management
+        />
+        <DashboardCard
+          title="Availability"
+          description="Set your working hours and manage appointments."
+          icon={Calendar}
+          buttonText="Set Availability"
+          onClick={() => {}} // TODO: Implement availability management
+        />
+        <DashboardCard
+          title="References"
+          description="Add client references and testimonials."
+          icon={Star}
+          buttonText="Add References"
+          onClick={() => {}} // TODO: Implement references management
+        />
       </div>
     </div>
   );
