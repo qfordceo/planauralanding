@@ -19,40 +19,43 @@ export default function Auth() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth state changed - Event:", event);
-        console.log("Auth state changed - Session:", session);
-        
         if (event === "SIGNED_IN" && session) {
-          console.log("User signed in with ID:", session.user.id);
+          // Check if user is admin
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single()
+
+          if (profile?.is_admin) {
+            toast({
+              title: "Welcome Admin!",
+              description: "Successfully signed in.",
+            })
+            navigate("/admin")
+            return
+          }
           
           if (isContractor) {
-            // Check if contractor profile exists
             const { data: contractor, error: contractorError } = await supabase
               .from("contractors")
               .select("id")
               .eq("user_id", session.user.id)
               .single()
 
-            console.log("Contractor check - Data:", contractor);
-            console.log("Contractor check - Error:", contractorError);
-
             if (contractor) {
-              console.log("Existing contractor found:", contractor);
               toast({
                 title: "Welcome back!",
                 description: "Successfully signed in as contractor.",
               })
               navigate("/contractor-dashboard")
             } else if (mode === "signup") {
-              // New contractor registration
-              console.log("New contractor signup - redirecting to complete profile");
               toast({
                 title: "Welcome!",
                 description: "Please complete your contractor profile.",
               })
               navigate("/contractor-dashboard")
             } else {
-              console.log("No contractor profile found for user:", session.user.id);
               toast({
                 title: "Error",
                 description: "No contractor profile found. Please sign up as a contractor.",
@@ -61,7 +64,6 @@ export default function Auth() {
               await supabase.auth.signOut()
             }
           } else {
-            console.log("Regular client signin - redirecting to home");
             toast({
               title: "Welcome!",
               description: "Successfully signed in.",
@@ -69,7 +71,6 @@ export default function Auth() {
             navigate("/")
           }
         } else if (event === "SIGNED_OUT") {
-          console.log("User signed out");
           navigate("/auth")
         }
       }

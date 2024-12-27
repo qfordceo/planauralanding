@@ -5,6 +5,7 @@ import Waitlist from "@/pages/Waitlist"
 import FloorPlans from "@/pages/FloorPlans"
 import ContractorDashboard from "@/pages/ContractorDashboard"
 import LandingPage from "@/pages/LandingPage"
+import AdminDashboard from "@/pages/AdminDashboard"
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           <Route path="/waitlist" element={<Waitlist />} />
           <Route path="/floor-plans" element={<FloorPlans />} />
           <Route path="/contractor-dashboard" element={<ContractorDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </main>
       {children}
