@@ -19,14 +19,18 @@ export default function Auth() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session);
+        
         if (event === "SIGNED_IN" && session) {
           if (isContractor) {
             // Check if contractor profile exists
-            const { data: contractor } = await supabase
+            const { data: contractor, error: contractorError } = await supabase
               .from("contractors")
               .select("id")
               .eq("user_id", session.user.id)
               .single()
+
+            console.log("Contractor check:", { contractor, contractorError });
 
             if (contractor) {
               toast({
@@ -42,6 +46,7 @@ export default function Auth() {
               })
               navigate("/contractor-dashboard")
             } else {
+              console.log("No contractor profile found for user:", session.user.id);
               toast({
                 title: "Error",
                 description: "No contractor profile found. Please sign up as a contractor.",
@@ -57,6 +62,7 @@ export default function Auth() {
             navigate("/")
           }
         } else if (event === "SIGNED_OUT") {
+          console.log("User signed out");
           navigate("/auth")
         }
       }
