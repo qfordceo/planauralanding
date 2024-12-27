@@ -19,10 +19,12 @@ export function BidNotifications({ contractorId }: BidNotificationsProps) {
   const { data: outbidBids, isLoading, error } = useQuery({
     queryKey: ['outbid-bids', contractorId],
     queryFn: async () => {
-      // First fetch the bids with a simpler query
-      const { data: bidsData, error: bidsError } = await supabase
+      console.log('Fetching outbid bids for contractor:', contractorId);
+      
+      // First fetch just the bids
+      const { data: bids, error: bidsError } = await supabase
         .from('contractor_bids')
-        .select('id, project_id, bid_amount, outbid')
+        .select('id, project_id, bid_amount')
         .eq('contractor_id', contractorId)
         .eq('outbid', true);
 
@@ -31,13 +33,14 @@ export function BidNotifications({ contractorId }: BidNotificationsProps) {
         throw bidsError;
       }
 
-      if (!bidsData?.length) {
+      if (!bids?.length) {
+        console.log('No outbid bids found');
         return [];
       }
 
-      // Then fetch project titles in a separate query
-      const projectIds = bidsData.map(bid => bid.project_id);
-      const { data: projectsData, error: projectsError } = await supabase
+      // Then fetch project titles
+      const projectIds = bids.map(bid => bid.project_id);
+      const { data: projects, error: projectsError } = await supabase
         .from('projects')
         .select('id, title')
         .in('id', projectIds);
@@ -49,14 +52,15 @@ export function BidNotifications({ contractorId }: BidNotificationsProps) {
 
       // Map project titles to bids
       const projectTitleMap = new Map(
-        projectsData?.map(project => [project.id, project.title]) || []
+        projects?.map(project => [project.id, project.title]) || []
       );
 
-      return bidsData.map(bid => ({
+      return bids.map(bid => ({
         ...bid,
         project_title: projectTitleMap.get(bid.project_id) || 'Unknown Project'
       }));
     },
+    retry: 1,
   });
 
   if (isLoading) {
@@ -64,6 +68,7 @@ export function BidNotifications({ contractorId }: BidNotificationsProps) {
   }
 
   if (error) {
+    console.error('Query error:', error);
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
