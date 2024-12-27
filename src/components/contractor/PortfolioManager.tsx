@@ -33,6 +33,8 @@ const portfolioItemSchema = z.object({
   image: z.instanceof(File).optional(),
 });
 
+type FormData = z.infer<typeof portfolioItemSchema>;
+
 type PortfolioItem = {
   id: string;
   title: string;
@@ -46,7 +48,7 @@ export function PortfolioManager({ contractorId }: { contractorId: string }) {
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
 
-  const form = useForm({
+  const form = useForm<FormData>({
     resolver: zodResolver(portfolioItemSchema),
     defaultValues: {
       title: "",
@@ -69,7 +71,7 @@ export function PortfolioManager({ contractorId }: { contractorId: string }) {
   });
 
   const addPortfolioItem = useMutation({
-    mutationFn: async (values: z.infer<typeof portfolioItemSchema>) => {
+    mutationFn: async (values: FormData) => {
       let imageUrl = "";
       
       if (values.image) {
@@ -217,7 +219,7 @@ export function PortfolioManager({ contractorId }: { contractorId: string }) {
               <FormField
                 control={form.control}
                 name="image"
-                render={({ field: { onChange, ...field } }) => (
+                render={({ field: { onChange, value, ...field } }) => (
                   <FormItem>
                     <FormLabel>Project Image</FormLabel>
                     <FormControl>
