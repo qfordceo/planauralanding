@@ -10,7 +10,8 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       <main>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<div id="landing-page" />} />
+          <Route path="/listings" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/waitlist" element={<Waitlist />} />
           <Route path="/floor-plans" element={<FloorPlans />} />
