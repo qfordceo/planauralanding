@@ -1,4 +1,4 @@
-import { MapPin, Phone, LogOut } from "lucide-react";
+import { MapPin, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Contractor } from "@/types/contractor";
 
@@ -17,12 +17,6 @@ export function DashboardHeader({ contractor, onSignOut }: DashboardHeaderProps)
             <div className="flex items-center text-muted-foreground mb-1">
               <MapPin className="h-4 w-4 mr-2" />
               <span>{contractor.address}</span>
-            </div>
-          )}
-          {contractor?.phone && (
-            <div className="flex items-center text-muted-foreground">
-              <Phone className="h-4 w-4 mr-2" />
-              <span>{contractor.phone}</span>
             </div>
           )}
         </div>

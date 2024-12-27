@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
-import { Construction } from "lucide-react"
+import { Construction, Phone, MapPin } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function LandingPage() {
@@ -66,6 +66,18 @@ export default function LandingPage() {
           </Button>
         </div>
       </section>
+
+      {/* Contact Information */}
+      <div className="mt-8 flex flex-col items-center gap-2 text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Phone className="h-4 w-4" />
+          <span>949-820-4035</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4" />
+          <span>13355 Noel Road, Suite 1100 - Dallas, TX 75240</span>
+        </div>
+      </div>
 
       {/* Features Section */}
       <section className="py-24 px-6">
