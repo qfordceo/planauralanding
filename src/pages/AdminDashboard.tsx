@@ -6,6 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { WaitlistTable } from "@/components/admin/WaitlistTable"
 import { CommissionsTable } from "@/components/admin/CommissionsTable"
 import { ContractorAvailability } from "@/components/admin/ContractorAvailability"
+import { ClientBuildsTable } from "@/components/admin/ClientBuildsTable"
+import { PurchasesTable } from "@/components/admin/PurchasesTable"
+import { PreApprovalTable } from "@/components/admin/PreApprovalTable"
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
@@ -55,6 +58,9 @@ export default function AdminDashboard() {
           <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="availability">Contractor Availability</TabsTrigger>
+          <TabsTrigger value="builds">Saved Builds</TabsTrigger>
+          <TabsTrigger value="purchases">Floor Plan Purchases</TabsTrigger>
+          <TabsTrigger value="preapproval">Pre-approvals</TabsTrigger>
         </TabsList>
         <TabsContent value="waitlist">
           <WaitlistTable />
@@ -64,6 +70,15 @@ export default function AdminDashboard() {
         </TabsContent>
         <TabsContent value="availability">
           <ContractorAvailability />
+        </TabsContent>
+        <TabsContent value="builds">
+          <ClientBuildsTable />
+        </TabsContent>
+        <TabsContent value="purchases">
+          <PurchasesTable />
+        </TabsContent>
+        <TabsContent value="preapproval">
+          <PreApprovalTable />
         </TabsContent>
       </Tabs>
     </div>
