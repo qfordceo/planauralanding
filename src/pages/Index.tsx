@@ -1,116 +1,126 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
-import ListingsModal from "@/components/ListingsModal";
-import { features } from "@/config/features";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
+import ListingsModal from "@/components/ListingsModal"
+import { ListingCard } from "@/components/listings/ListingCard"
+import { useListings } from "@/hooks/useListings"
 
-const Index = () => {
-  const [showListings, setShowListings] = useState(false);
-  const navigate = useNavigate();
+export default function Index() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { listings, isLoading } = useListings(true)
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const [session, setSession] = useState(null)
 
-  const handleFeatureClick = (feature: typeof features[0]) => {
-    if (feature.link) {
-      navigate(feature.link);
-    } else if (feature.title === "Premium Land Plots") {
-      setShowListings(true);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleVetListing = async (listingId: string) => {
+    const { error } = await supabase
+      .from('land_listings')
+      .update({ is_vetted: true })
+      .eq('id', listingId)
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to vet listing",
+        variant: "destructive",
+      })
+      return
     }
-  };
+
+    toast({
+      title: "Success",
+      description: "Listing has been vetted",
+    })
+  }
+
+  const handleGenerateQR = async (listingId: string) => {
+    const { data, error } = await supabase.functions.invoke('generate-qr-code', {
+      body: { listingId }
+    })
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate QR code",
+        variant: "destructive",
+      })
+      return
+    }
+
+    toast({
+      title: "Success",
+      description: "QR code has been generated",
+    })
+  }
 
   return (
-    <div className="min-h-screen">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/7399aaa3-93f1-4a02-9a99-18671fa4da27.png" 
-              alt="Plan Aura Logo" 
-              className="w-8 h-8"
-            />
-            <span className="font-semibold">Plan Aura</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/auth?mode=signin&type=contractor"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Contractor Login
-            </Link>
-            <Button asChild>
-              <Link to="/auth?mode=signup">Join Waitlist</Link>
+    <div className="container mx-auto py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">Available Land Listings</h1>
+        <div className="space-x-4">
+          {session?.user && (
+            <Button onClick={() => navigate("/floor-plans")}>
+              Browse Floor Plans
             </Button>
-          </div>
+          )}
+          <Button onClick={() => setIsModalOpen(true)}>
+            Update Listings
+          </Button>
         </div>
-      </header>
+      </div>
 
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden pt-16">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
-          >
-            <img 
-              src="/lovable-uploads/7399aaa3-93f1-4a02-9a99-18671fa4da27.png" 
-              alt="Plan Aura Logo" 
-              className="w-48 mx-auto mb-8"
-            />
-            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              Coming Soon
-            </span>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-              Plan Aura <span className="text-primary">is under construction</span>
-            </h1>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              We're building something amazing. Join our waitlist to be the first to
-              know when we launch and get exclusive early access.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                to="/auth?mode=signup"
-                className="w-full sm:w-auto px-8 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
-              >
-                Join Waitlist
-              </Link>
-              <a
-                href="mailto:sales@planaura.com"
-                className="w-full sm:w-auto px-8 py-3 rounded-full border border-border text-foreground font-medium hover:bg-muted transition-colors"
-              >
-                Contact Us
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="py-24 bg-muted">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="glass-card p-6 rounded-2xl cursor-pointer"
-                onClick={() => handleFeatureClick(feature)}
-              >
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  {feature.icon}
+      {isLoading ? (
+        <div className="text-center">Loading listings...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {listings?.map((listing) => (
+            <div key={listing.id} className="relative">
+              <ListingCard listing={listing} />
+              {session?.user && (
+                <div className="absolute top-2 right-2 space-x-2">
+                  {!listing.is_vetted && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleVetListing(listing.id)}
+                    >
+                      Vet Listing
+                    </Button>
+                  )}
+                  {listing.is_vetted && !listing.qr_code_generated && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleGenerateQR(listing.id)}
+                    >
+                      Generate QR
+                    </Button>
+                  )}
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
+              )}
+            </div>
+          ))}
         </div>
-      </section>
+      )}
 
-      <ListingsModal open={showListings} onOpenChange={setShowListings} />
+      <ListingsModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
-  );
-};
-
-export default Index;
+  )
+}

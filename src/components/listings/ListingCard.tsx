@@ -1,74 +1,73 @@
-import React from "react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { InfoIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { formatPrice } from "@/lib/utils"
 
-interface ListingCardProps {
-  listing: {
-    id: string;
-    title: string;
-    price: number;
-    acres: number;
-    address: string;
-    realtor_url: string;
-    image_url: string;
-  };
+interface Listing {
+  id: string
+  title: string
+  price: number
+  acres: number
+  address: string
+  realtor_url: string
+  image_url: string
+  price_per_acre: number
+  avg_area_price_per_acre: number
+  is_vetted: boolean
+  qr_code_url: string
 }
 
-export default function ListingCard({ listing }: ListingCardProps) {
+export function ListingCard({ listing }: { listing: Listing }) {
   return (
-    <Card key={listing.id} className="overflow-hidden">
-      {listing.image_url && (
-        <img
-          src={listing.image_url}
-          alt={listing.title}
-          className="w-full h-48 object-cover"
-        />
-      )}
-      <CardContent className="p-4">
-        <h3 className="font-semibold mb-2">{listing.title}</h3>
-        <p className="text-sm text-muted-foreground mb-2">
-          {listing.address}
-        </p>
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-lg font-bold">
-            ${listing.price?.toLocaleString()}
-          </span>
-          <span className="text-sm text-muted-foreground">
-            {listing.acres} acres
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1 text-sm text-primary">
-                  <InfoIcon className="h-4 w-4" />
-                  ${Math.round(listing.price / listing.acres).toLocaleString()}/acre
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Price per acre in this area</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <Card className="overflow-hidden">
+      <div className="relative">
+        {listing.image_url && (
+          <img
+            src={listing.image_url}
+            alt={listing.title}
+            className="w-full h-48 object-cover"
+          />
+        )}
+        {listing.is_vetted && (
+          <Badge 
+            className="absolute top-2 left-2"
+            variant="secondary"
+          >
+            Vetted
+          </Badge>
+        )}
+      </div>
+      <CardHeader>
+        <CardTitle className="text-lg">{listing.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span>Price:</span>
+            <span>{formatPrice(listing.price)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Acres:</span>
+            <span>{listing.acres}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Price per acre:</span>
+            <span>{formatPrice(listing.price_per_acre)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Area avg price/acre:</span>
+            <span>{formatPrice(listing.avg_area_price_per_acre)}</span>
+          </div>
+          {listing.qr_code_url && (
+            <div className="mt-4">
+              <img
+                src={listing.qr_code_url}
+                alt="Property QR Code"
+                className="w-24 h-24 mx-auto"
+              />
+            </div>
+          )}
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <a
-          href={listing.realtor_url || "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:underline text-sm"
-        >
-          View Details →
-        </a>
-      </CardFooter>
     </Card>
-  );
+  )
 }

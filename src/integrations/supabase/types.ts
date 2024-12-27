@@ -9,6 +9,56 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author_id: string | null
+          content: string
+          created_at: string
+          excerpt: string | null
+          id: string
+          published: boolean | null
+          published_at: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean | null
+          published_at?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean | null
+          published_at?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_appointments: {
         Row: {
           appointment_date: string
@@ -91,6 +141,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contractor_availability_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_bids: {
+        Row: {
+          bid_amount: number
+          bid_details: Json | null
+          contractor_id: string | null
+          created_at: string
+          id: string
+          project_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          bid_amount: number
+          bid_details?: Json | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          project_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bid_amount?: number
+          bid_details?: Json | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          project_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_bids_contractor_id_fkey"
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "contractors"
@@ -223,6 +314,8 @@ export type Database = {
         Row: {
           bathrooms: number
           bedrooms: number
+          build_price_per_sqft: number | null
+          commission_rate: number | null
           created_at: string
           description: string | null
           foundation_type: string | null
@@ -230,6 +323,8 @@ export type Database = {
           image_url: string | null
           name: string
           plan_price: number
+          provider_name: string | null
+          provider_url: string | null
           square_feet: number
           style: string | null
           updated_at: string
@@ -237,6 +332,8 @@ export type Database = {
         Insert: {
           bathrooms: number
           bedrooms: number
+          build_price_per_sqft?: number | null
+          commission_rate?: number | null
           created_at?: string
           description?: string | null
           foundation_type?: string | null
@@ -244,6 +341,8 @@ export type Database = {
           image_url?: string | null
           name: string
           plan_price: number
+          provider_name?: string | null
+          provider_url?: string | null
           square_feet: number
           style?: string | null
           updated_at?: string
@@ -251,6 +350,8 @@ export type Database = {
         Update: {
           bathrooms?: number
           bedrooms?: number
+          build_price_per_sqft?: number | null
+          commission_rate?: number | null
           created_at?: string
           description?: string | null
           foundation_type?: string | null
@@ -258,6 +359,8 @@ export type Database = {
           image_url?: string | null
           name?: string
           plan_price?: number
+          provider_name?: string | null
+          provider_url?: string | null
           square_feet?: number
           style?: string | null
           updated_at?: string
@@ -272,9 +375,12 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          is_vetted: boolean | null
           last_fetched_at: string | null
           price: number | null
           price_per_acre: number | null
+          qr_code_generated: boolean | null
+          qr_code_url: string | null
           realtor_url: string | null
           title: string | null
           updated_at: string
@@ -286,9 +392,12 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_vetted?: boolean | null
           last_fetched_at?: string | null
           price?: number | null
           price_per_acre?: number | null
+          qr_code_generated?: boolean | null
+          qr_code_url?: string | null
           realtor_url?: string | null
           title?: string | null
           updated_at?: string
@@ -300,9 +409,12 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_vetted?: boolean | null
           last_fetched_at?: string | null
           price?: number | null
           price_per_acre?: number | null
+          qr_code_generated?: boolean | null
+          qr_code_url?: string | null
           realtor_url?: string | null
           title?: string | null
           updated_at?: string
@@ -315,6 +427,7 @@ export type Database = {
           email: string | null
           id: string
           is_admin: boolean | null
+          sustainability_preferences: Json | null
           updated_at: string
         }
         Insert: {
@@ -322,6 +435,7 @@ export type Database = {
           email?: string | null
           id: string
           is_admin?: boolean | null
+          sustainability_preferences?: Json | null
           updated_at?: string
         }
         Update: {
@@ -329,6 +443,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          sustainability_preferences?: Json | null
           updated_at?: string
         }
         Relationships: []
