@@ -26,7 +26,12 @@ export function useFormValidation<T>(schema: z.ZodSchema<T>) {
   const validate = useCallback((data: unknown): data is T => {
     const result = schema.safeParse(data);
     if (!result.success) {
-      setErrors(result.error.errors);
+      // Convert Zod errors to our ValidationError format
+      const formattedErrors: ValidationError[] = result.error.errors.map(error => ({
+        path: error.path.map(p => String(p)), // Convert all path segments to strings
+        message: error.message
+      }));
+      setErrors(formattedErrors);
       return false;
     }
     setErrors([]);
