@@ -74,14 +74,22 @@ export default function Index() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">Available Land Listings</h1>
         <div className="space-x-4">
-          {session?.user && (
-            <Button onClick={() => navigate("/floor-plans")}>
-              Browse Floor Plans
+          {!session ? (
+            <Button onClick={() => navigate("/auth")} variant="outline">
+              Sign In
             </Button>
+          ) : (
+            <>
+              {session?.user && (
+                <Button onClick={() => navigate("/floor-plans")}>
+                  Browse Floor Plans
+                </Button>
+              )}
+              <Button onClick={() => setIsModalOpen(true)}>
+                Update Listings
+              </Button>
+            </>
           )}
-          <Button onClick={() => setIsModalOpen(true)}>
-            Update Listings
-          </Button>
         </div>
       </div>
 
