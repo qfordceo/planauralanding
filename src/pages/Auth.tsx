@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { UserCircle2, HardHat } from "lucide-react"
 
 export default function Auth() {
   const [searchParams] = useSearchParams()
@@ -85,13 +86,17 @@ export default function Auth() {
               <TabsTrigger 
                 value="client" 
                 onClick={() => setIsContractor(false)}
+                className="flex items-center gap-2"
               >
+                <UserCircle2 className="h-4 w-4" />
                 Client
               </TabsTrigger>
               <TabsTrigger 
                 value="contractor" 
                 onClick={() => setIsContractor(true)}
+                className="flex items-center gap-2"
               >
+                <HardHat className="h-4 w-4" />
                 Contractor
               </TabsTrigger>
             </TabsList>
@@ -113,14 +118,17 @@ export default function Auth() {
               variables: {
                 default: {
                   colors: {
-                    brand: 'rgb(var(--primary))',
-                    brandAccent: 'rgb(var(--primary))',
+                    brand: 'rgb(45, 24, 16)',
+                    brandAccent: 'rgb(45, 24, 16)',
                   },
                 },
               },
+              className: {
+                button: 'bg-primary hover:bg-primary/90',
+              },
             }}
             providers={[]}
-            redirectTo="https://fe79dc55-f4c1-41b2-a931-3b7bb0609fd3.lovableproject.com/auth/callback"
+            redirectTo={window.location.origin + "/auth/callback"}
             onlyThirdPartyProviders={false}
           />
         </CardContent>

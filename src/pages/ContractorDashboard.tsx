@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Briefcase, Calendar, Star, LogOut } from "lucide-react";
 import type { ContractorType } from "@/types/contractor";
 
 export default function ContractorDashboard() {
@@ -47,6 +47,11 @@ export default function ContractorDashboard() {
       setRegistering(true);
     }
     setLoading(false);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth?type=contractor');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -154,11 +159,20 @@ export default function ContractorDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Welcome, {contractor.business_name}!</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Welcome, {contractor.business_name}!</h1>
+        <Button variant="ghost" onClick={handleSignOut} className="flex items-center gap-2">
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Portfolio</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Briefcase className="h-5 w-5" />
+              Portfolio
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
@@ -169,7 +183,10 @@ export default function ContractorDashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Availability</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Availability
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
@@ -180,7 +197,10 @@ export default function ContractorDashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>References</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              References
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
