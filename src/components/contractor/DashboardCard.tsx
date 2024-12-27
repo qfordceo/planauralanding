@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 interface DashboardCardProps {
   title: string;
@@ -8,6 +9,8 @@ interface DashboardCardProps {
   icon: LucideIcon;
   buttonText: string;
   onClick: () => void;
+  children?: ReactNode;
+  expanded?: boolean;
 }
 
 export function DashboardCard({ 
@@ -15,10 +18,12 @@ export function DashboardCard({
   description, 
   icon: Icon, 
   buttonText, 
-  onClick 
+  onClick,
+  children,
+  expanded = false
 }: DashboardCardProps) {
   return (
-    <Card>
+    <Card className={expanded ? "col-span-full" : ""}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Icon className="h-5 w-5" />
@@ -26,10 +31,15 @@ export function DashboardCard({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground mb-4">
-          {description}
-        </p>
-        <Button onClick={onClick}>{buttonText}</Button>
+        {!expanded && (
+          <>
+            <p className="text-muted-foreground mb-4">
+              {description}
+            </p>
+            <Button onClick={onClick}>{buttonText}</Button>
+          </>
+        )}
+        {expanded && children}
       </CardContent>
     </Card>
   );

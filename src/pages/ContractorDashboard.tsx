@@ -7,11 +7,13 @@ import { Loader2, Briefcase, Calendar, Star, LogOut } from "lucide-react";
 import type { Contractor, ContractorFormData } from "@/types/contractor";
 import { RegistrationForm } from "@/components/contractor/RegistrationForm";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
+import { PortfolioManager } from "@/components/contractor/PortfolioManager";
 
 export default function ContractorDashboard() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
   const [contractor, setContractor] = useState<Contractor | null>(null);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -122,9 +124,13 @@ export default function ContractorDashboard() {
           title="Portfolio"
           description="Showcase your best work and completed projects."
           icon={Briefcase}
-          buttonText="Manage Portfolio"
-          onClick={() => {}} // TODO: Implement portfolio management
-        />
+          buttonText={activeSection === 'portfolio' ? 'Close Portfolio' : 'Manage Portfolio'}
+          onClick={() => setActiveSection(activeSection === 'portfolio' ? null : 'portfolio')}
+          expanded={activeSection === 'portfolio'}
+        >
+          {activeSection === 'portfolio' && <PortfolioManager contractorId={contractor.id} />}
+        </DashboardCard>
+
         <DashboardCard
           title="Availability"
           description="Set your working hours and manage appointments."
@@ -132,6 +138,7 @@ export default function ContractorDashboard() {
           buttonText="Set Availability"
           onClick={() => {}} // TODO: Implement availability management
         />
+
         <DashboardCard
           title="References"
           description="Add client references and testimonials."
