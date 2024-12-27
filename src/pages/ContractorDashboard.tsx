@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Briefcase, Calendar, Star, LogOut, Bell, Bug, ArrowUpDown, MapPin, Phone } from "lucide-react";
+import { Loader2, Briefcase, Calendar, Star, Bell, Bug, ArrowUpDown } from "lucide-react";
 import type { Contractor, ContractorFormData } from "@/types/contractor";
 import { RegistrationForm } from "@/components/contractor/RegistrationForm";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
@@ -12,6 +11,7 @@ import { ContractorReviews } from "@/components/contractor/ContractorReviews";
 import { BidNotifications } from "@/components/contractor/BidNotifications";
 import { DefectTracker } from "@/components/contractor/DefectTracker";
 import { RebidManager } from "@/components/contractor/RebidManager";
+import { DashboardHeader } from "@/components/contractor/DashboardHeader";
 
 export default function ContractorDashboard() {
   const [loading, setLoading] = useState(true);
@@ -180,29 +180,7 @@ export default function ContractorDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Welcome, {contractor?.business_name}!</h1>
-            {contractor?.address && (
-              <div className="flex items-center text-muted-foreground mb-1">
-                <MapPin className="h-4 w-4 mr-2" />
-                <span>{contractor.address}</span>
-              </div>
-            )}
-            {contractor?.phone && (
-              <div className="flex items-center text-muted-foreground">
-                <Phone className="h-4 w-4 mr-2" />
-                <span>{contractor.phone}</span>
-              </div>
-            )}
-          </div>
-          <Button variant="ghost" onClick={handleSignOut} className="flex items-center gap-2">
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
-        </div>
-      </div>
+      <DashboardHeader contractor={contractor} onSignOut={handleSignOut} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <DashboardCard
