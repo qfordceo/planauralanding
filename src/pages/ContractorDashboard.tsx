@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Briefcase, Calendar, Star, LogOut, Bell, Bug, ArrowUpDown } from "lucide-react";
+import { Loader2, Briefcase, Calendar, Star, LogOut, Bell, Bug, ArrowUpDown, MapPin, Phone } from "lucide-react";
 import type { Contractor, ContractorFormData } from "@/types/contractor";
 import { RegistrationForm } from "@/components/contractor/RegistrationForm";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
@@ -180,13 +180,30 @@ export default function ContractorDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Welcome, {contractor.business_name}!</h1>
-        <Button variant="ghost" onClick={handleSignOut} className="flex items-center gap-2">
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </Button>
+      <div className="mb-8">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">Welcome, {contractor?.business_name}!</h1>
+            {contractor?.address && (
+              <div className="flex items-center text-muted-foreground mb-1">
+                <MapPin className="h-4 w-4 mr-2" />
+                <span>{contractor.address}</span>
+              </div>
+            )}
+            {contractor?.phone && (
+              <div className="flex items-center text-muted-foreground">
+                <Phone className="h-4 w-4 mr-2" />
+                <span>{contractor.phone}</span>
+              </div>
+            )}
+          </div>
+          <Button variant="ghost" onClick={handleSignOut} className="flex items-center gap-2">
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <DashboardCard
           title="Portfolio"
