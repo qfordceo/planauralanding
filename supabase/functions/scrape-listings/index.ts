@@ -11,7 +11,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const rentcastApiKey = Deno.env.get('RENTCAST_API_KEY')
@@ -25,35 +24,32 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
-    // Updated Rentcast API endpoint for property search
+    // Updated Rentcast API endpoint with better parameters
     const baseUrl = 'https://api.rentcast.io/v1/properties'
     
-    // Create URL with encoded parameters
-    const url = new URL(baseUrl)
+    // Focused on DFW area with better filtering
     const params = {
       latitude: '32.7767',
       longitude: '-96.7970',
       propertyType: 'LAND',
       status: 'ACTIVE',
-      daysOld: '180',  // Increased from 90 to 180 days
-      limit: '100',    // Increased from 50 to 100
+      daysOld: '90',
+      limit: '50',
       offset: '0',
-      radius: '50',    // Increased from 20 to 50 miles
-      sortBy: 'DISTANCE',
+      radius: '20',
+      minLotSize: '5000', // Minimum lot size in sq ft
+      sortBy: 'PRICE',
       sortOrder: 'ASC'
     }
     
-    // Add parameters to URL
+    const url = new URL(baseUrl)
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, value)
     })
 
     console.log('Making request to Rentcast API:', {
       url: url.toString(),
-      method: 'GET',
-      headers: {
-        'X-Api-Key': rentcastApiKey,
-      }
+      method: 'GET'
     })
 
     const response = await fetch(url, {
@@ -68,9 +64,7 @@ Deno.serve(async (req) => {
       console.error('Rentcast API error details:', {
         status: response.status,
         statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        body: errorText,
-        url: url.toString()
+        body: errorText
       })
       throw new Error(`Rentcast API error: ${response.status} ${errorText}`)
     }
@@ -83,13 +77,13 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'No properties found' 
+          error: 'No properties found in this area' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Transform properties data to match our schema
+    // Transform properties data with improved calculations
     const listings = data.properties.map((property: any) => {
       const acres = property.lotSize ? property.lotSize / 43560 : null // Convert sq ft to acres
       const pricePerAcre = acres && property.price ? property.price / acres : null
@@ -102,6 +96,7 @@ Deno.serve(async (req) => {
         realtor_url: property.listingUrl || null,
         image_url: property.photos?.[0] || null,
         price_per_acre: pricePerAcre ? Math.round(pricePerAcre) : null,
+        avg_area_price_per_acre: null, // We'll calculate this in a separate query
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         last_fetched_at: new Date().toISOString()
@@ -110,35 +105,38 @@ Deno.serve(async (req) => {
 
     console.log('Transformed listings:', listings)
 
-    // Clear existing listings and insert new ones
-    const { error: deleteError } = await supabase
-      .from('land_listings')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000')
+    // Instead of clearing all listings, we'll update existing ones and add new ones
+    for (const listing of listings) {
+      const { data: existingListing } = await supabase
+        .from('land_listings')
+        .select('id')
+        .eq('address', listing.address)
+        .single()
 
-    if (deleteError) {
-      console.error('Error deleting existing listings:', deleteError)
-      throw deleteError
+      if (existingListing) {
+        const { error: updateError } = await supabase
+          .from('land_listings')
+          .update(listing)
+          .eq('id', existingListing.id)
+
+        if (updateError) {
+          console.error('Error updating listing:', updateError)
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from('land_listings')
+          .insert(listing)
+
+        if (insertError) {
+          console.error('Error inserting listing:', insertError)
+        }
+      }
     }
-
-    // Insert new listings
-    const { data: insertedListings, error: insertError } = await supabase
-      .from('land_listings')
-      .insert(listings)
-      .select()
-
-    if (insertError) {
-      console.error('Error inserting listings:', insertError)
-      throw insertError
-    }
-
-    console.log(`Successfully inserted ${insertedListings.length} listings`)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `${listings.length} listings processed successfully`, 
-        listings: insertedListings 
+        message: `${listings.length} listings processed successfully`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
