@@ -6,6 +6,7 @@ import FloorPlans from "@/pages/FloorPlans"
 import ContractorDashboard from "@/pages/ContractorDashboard"
 import LandingPage from "@/pages/LandingPage"
 import AdminDashboard from "@/pages/AdminDashboard"
+import ClientDashboard from "@/pages/ClientDashboard"
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
   return (
@@ -19,6 +20,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           <Route path="/floor-plans" element={<FloorPlans />} />
           <Route path="/contractor-dashboard" element={<ContractorDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard" element={<ClientDashboard />} />
         </Routes>
       </main>
       {children}
