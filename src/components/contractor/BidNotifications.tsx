@@ -7,22 +7,45 @@ interface BidNotificationsProps {
   contractorId: string;
 }
 
+interface Bid {
+  id: string;
+  project_id: string;
+  bid_amount: number;
+  outbid: boolean;
+  project_title?: string;
+}
+
 export function BidNotifications({ contractorId }: BidNotificationsProps) {
   const { data: outbidBids, isLoading } = useQuery({
     queryKey: ['outbid-bids', contractorId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch the bids
+      const { data: bidsData, error: bidsError } = await supabase
         .from('contractor_bids')
-        .select(`
-          *,
-          project:project_id(title)
-        `)
+        .select('*')
         .eq('contractor_id', contractorId)
         .eq('outbid', true)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (bidsError) throw bidsError;
+
+      // Then fetch the project titles separately
+      const bids = await Promise.all(
+        (bidsData || []).map(async (bid) => {
+          const { data: projectData } = await supabase
+            .from('projects')
+            .select('title')
+            .eq('id', bid.project_id)
+            .single();
+
+          return {
+            ...bid,
+            project_title: projectData?.title || 'Unknown Project'
+          };
+        })
+      );
+
+      return bids as Bid[];
     },
   });
 
@@ -33,7 +56,7 @@ export function BidNotifications({ contractorId }: BidNotificationsProps) {
       {outbidBids?.map((bid) => (
         <Alert key={bid.id} variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Outbid on Project: {bid.project?.title}</AlertTitle>
+          <AlertTitle>Outbid on Project: {bid.project_title}</AlertTitle>
           <AlertDescription>
             Your bid of ${bid.bid_amount} has been outbid. Consider submitting a new bid to stay competitive.
           </AlertDescription>
