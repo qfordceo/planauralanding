@@ -10,6 +10,9 @@ export interface LandListing {
   realtor_url: string | null;
   title: string | null;
   updated_at: string;
+  is_vetted: boolean;
+  qr_code_url: string | null;
+  qr_code_generated: boolean;
 }
 
 export interface LandListingInsert extends Partial<Omit<LandListing, 'id' | 'created_at' | 'updated_at'>> {}

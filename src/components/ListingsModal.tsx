@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import ListingCard from "./listings/ListingCard";
+import { ListingCard } from "./listings/ListingCard";
 import { useListings } from "@/hooks/useListings";
 
 interface ListingsModalProps {

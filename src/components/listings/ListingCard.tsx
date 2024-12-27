@@ -1,29 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/lib/utils"
+import { LandListing } from "@/integrations/supabase/types/land-listings"
 
-interface Listing {
-  id: string
-  title: string
-  price: number
-  acres: number
-  address: string
-  realtor_url: string
-  image_url: string
-  price_per_acre: number
-  avg_area_price_per_acre: number
-  is_vetted: boolean
-  qr_code_url: string
+interface ListingCardProps {
+  listing: LandListing;
 }
 
-export function ListingCard({ listing }: { listing: Listing }) {
+export function ListingCard({ listing }: ListingCardProps) {
   return (
     <Card className="overflow-hidden">
       <div className="relative">
         {listing.image_url && (
           <img
             src={listing.image_url}
-            alt={listing.title}
+            alt={listing.title || 'Land listing'}
             className="w-full h-48 object-cover"
           />
         )}
@@ -43,19 +34,19 @@ export function ListingCard({ listing }: { listing: Listing }) {
         <div className="space-y-2">
           <div className="flex justify-between">
             <span>Price:</span>
-            <span>{formatPrice(listing.price)}</span>
+            <span>{listing.price ? formatPrice(listing.price) : 'Contact for price'}</span>
           </div>
           <div className="flex justify-between">
             <span>Acres:</span>
-            <span>{listing.acres}</span>
+            <span>{listing.acres || 'N/A'}</span>
           </div>
           <div className="flex justify-between">
             <span>Price per acre:</span>
-            <span>{formatPrice(listing.price_per_acre)}</span>
+            <span>{listing.price_per_acre ? formatPrice(listing.price_per_acre) : 'N/A'}</span>
           </div>
           <div className="flex justify-between">
             <span>Area avg price/acre:</span>
-            <span>{formatPrice(listing.avg_area_price_per_acre)}</span>
+            <span>{listing.avg_area_price_per_acre ? formatPrice(listing.avg_area_price_per_acre) : 'N/A'}</span>
           </div>
           {listing.qr_code_url && (
             <div className="mt-4">
