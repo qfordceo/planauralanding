@@ -1,123 +1,70 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react"
+import { Auth as SupabaseAuth } from "@supabase/auth-ui-react"
+import { ThemeSupa } from "@supabase/auth-ui-shared"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
+import { useAuthRedirect } from "@/hooks/useAuthRedirect"
 
 // Constants for security settings
-const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+const SESSION_TIMEOUT = 30 * 60 * 1000 // 30 minutes
+const MAX_LOGIN_ATTEMPTS = 5
+const LOCKOUT_DURATION = 15 * 60 * 1000 // 15 minutes
 
 export default function Auth() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast } = useToast()
+  const handleRedirect = useAuthRedirect()
 
   // Session timeout handler
   useEffect(() => {
-    let sessionTimer: NodeJS.Timeout;
+    let sessionTimer: NodeJS.Timeout
 
     const resetSessionTimer = () => {
-      if (sessionTimer) clearTimeout(sessionTimer);
+      if (sessionTimer) clearTimeout(sessionTimer)
       sessionTimer = setTimeout(() => {
-        supabase.auth.signOut();
+        supabase.auth.signOut()
         toast({
           title: "Session Expired",
           description: "Your session has expired. Please log in again.",
           variant: "destructive",
-        });
-      }, SESSION_TIMEOUT);
-    };
+        })
+      }, SESSION_TIMEOUT)
+    }
 
-    // Reset timer on user activity
     const handleUserActivity = () => {
-      resetSessionTimer();
-    };
+      resetSessionTimer()
+    }
 
-    window.addEventListener("mousemove", handleUserActivity);
-    window.addEventListener("keydown", handleUserActivity);
+    window.addEventListener("mousemove", handleUserActivity)
+    window.addEventListener("keydown", handleUserActivity)
 
-    // Initialize session timer
-    resetSessionTimer();
+    resetSessionTimer()
 
     return () => {
-      if (sessionTimer) clearTimeout(sessionTimer);
-      window.removeEventListener("mousemove", handleUserActivity);
-      window.removeEventListener("keydown", handleUserActivity);
-    };
-  }, [toast]);
+      if (sessionTimer) clearTimeout(sessionTimer)
+      window.removeEventListener("mousemove", handleUserActivity)
+      window.removeEventListener("keydown", handleUserActivity)
+    }
+  }, [toast])
 
-  // Rate limiting and authentication state management
+  // Check initial session and handle auth state changes
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // First check if user is a contractor
-        const { data: contractor } = await supabase
-          .from('contractors')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .single();
+      const { data: { session } } = await supabase.auth.getSession()
+      handleRedirect(session)
+    }
 
-        if (contractor) {
-          navigate('/contractor-dashboard');
-          return;
-        }
-
-        // If not a contractor, check if admin or regular client
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile?.is_admin) {
-          navigate('/admin');
-        } else {
-          navigate('/dashboard');
-        }
-      }
-    };
-
-    const handleAuthChange = async (event: string, session: any) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
         // Reset login attempts on successful sign-in
-        localStorage.removeItem('loginAttempts');
-        localStorage.removeItem('lockoutUntil');
-
-        // First check if user is a contractor
-        const { data: contractor } = await supabase
-          .from('contractors')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (contractor) {
-          navigate('/contractor-dashboard');
-          return;
-        }
-
-        // If not a contractor, check if admin or regular client
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile?.is_admin) {
-          navigate('/admin');
-        } else {
-          navigate('/dashboard');
-        }
+        localStorage.removeItem('loginAttempts')
+        localStorage.removeItem('lockoutUntil')
+        handleRedirect(session)
       }
-    };
+    })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
-
-    checkUser();
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    checkUser()
+    return () => subscription.unsubscribe()
+  }, [handleRedirect])
 
   // Enhanced auth UI configuration with security features
   const authConfig = {
@@ -134,40 +81,40 @@ export default function Auth() {
     callbacks: {
       onAuthError: (error: Error) => {
         // Implement rate limiting
-        const loginAttempts = Number(localStorage.getItem('loginAttempts') || 0);
-        const lockoutUntil = localStorage.getItem('lockoutUntil');
+        const loginAttempts = Number(localStorage.getItem('loginAttempts') || 0)
+        const lockoutUntil = localStorage.getItem('lockoutUntil')
 
         if (lockoutUntil && Date.now() < Number(lockoutUntil)) {
-          const remainingTime = Math.ceil((Number(lockoutUntil) - Date.now()) / 1000 / 60);
+          const remainingTime = Math.ceil((Number(lockoutUntil) - Date.now()) / 1000 / 60)
           toast({
             title: "Account Locked",
             description: `Too many login attempts. Please try again in ${remainingTime} minutes.`,
             variant: "destructive",
-          });
-          return;
+          })
+          return
         }
 
         if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-          const lockoutTime = Date.now() + LOCKOUT_DURATION;
-          localStorage.setItem('lockoutUntil', lockoutTime.toString());
-          localStorage.setItem('loginAttempts', '0');
+          const lockoutTime = Date.now() + LOCKOUT_DURATION
+          localStorage.setItem('lockoutUntil', lockoutTime.toString())
+          localStorage.setItem('loginAttempts', '0')
           toast({
             title: "Account Locked",
             description: "Too many login attempts. Please try again in 15 minutes.",
             variant: "destructive",
-          });
-          return;
+          })
+          return
         }
 
-        localStorage.setItem('loginAttempts', (loginAttempts + 1).toString());
+        localStorage.setItem('loginAttempts', (loginAttempts + 1).toString())
         toast({
           title: "Authentication Error",
           description: error.message,
           variant: "destructive",
-        });
+        })
       },
     },
-  };
+  }
 
   return (
     <div className="container max-w-lg mx-auto py-8">
@@ -179,5 +126,5 @@ export default function Auth() {
         This site is protected by enhanced security measures including rate limiting and session management.
       </p>
     </div>
-  );
+  )
 }
