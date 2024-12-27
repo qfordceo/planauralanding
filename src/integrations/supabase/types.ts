@@ -310,6 +310,51 @@ export type Database = {
         }
         Relationships: []
       }
+      floor_plan_purchases: {
+        Row: {
+          commission_amount: number
+          commission_paid: boolean | null
+          floor_plan_id: string | null
+          id: string
+          purchase_amount: number
+          purchase_date: string | null
+          user_id: string | null
+        }
+        Insert: {
+          commission_amount: number
+          commission_paid?: boolean | null
+          floor_plan_id?: string | null
+          id?: string
+          purchase_amount: number
+          purchase_date?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          commission_amount?: number
+          commission_paid?: boolean | null
+          floor_plan_id?: string | null
+          id?: string
+          purchase_amount?: number
+          purchase_date?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "floor_plan_purchases_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "floor_plan_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       floor_plans: {
         Row: {
           bathrooms: number
@@ -423,30 +468,87 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           created_at: string
           email: string | null
           id: string
           is_admin: boolean | null
+          phone: string | null
+          preapproval_amount: number | null
+          preapproval_status: string | null
           sustainability_preferences: Json | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
           created_at?: string
           email?: string | null
           id: string
           is_admin?: boolean | null
+          phone?: string | null
+          preapproval_amount?: number | null
+          preapproval_status?: string | null
           sustainability_preferences?: Json | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
           created_at?: string
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          phone?: string | null
+          preapproval_amount?: number | null
+          preapproval_status?: string | null
           sustainability_preferences?: Json | null
           updated_at?: string
         }
         Relationships: []
+      }
+      saved_builds: {
+        Row: {
+          configuration: Json | null
+          created_at: string | null
+          floor_plan_id: string | null
+          id: string
+          total_cost: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          configuration?: Json | null
+          created_at?: string | null
+          floor_plan_id?: string | null
+          id?: string
+          total_cost?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          configuration?: Json | null
+          created_at?: string | null
+          floor_plan_id?: string | null
+          id?: string
+          total_cost?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_builds_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_builds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

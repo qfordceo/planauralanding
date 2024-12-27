@@ -1,27 +1,19 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
-import { Profile } from "@/integrations/supabase/types/profiles"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { WaitlistTable } from "@/components/admin/WaitlistTable"
+import { CommissionsTable } from "@/components/admin/CommissionsTable"
+import { ContractorAvailability } from "@/components/admin/ContractorAvailability"
 
 export default function AdminDashboard() {
-  const [users, setUsers] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
   const navigate = useNavigate()
 
   useEffect(() => {
     checkAdminAccess()
-    fetchUsers()
   }, [])
 
   const checkAdminAccess = async () => {
@@ -45,47 +37,7 @@ export default function AdminDashboard() {
         variant: "destructive",
       })
     }
-  }
-
-  const fetchUsers = async () => {
-    const { data: users, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch users",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setUsers(users || [])
     setLoading(false)
-  }
-
-  const handleDeleteUser = async (userId: string) => {
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', userId)
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user",
-        variant: "destructive",
-      })
-      return
-    }
-
-    toast({
-      title: "Success",
-      description: "User deleted successfully",
-    })
-    fetchUsers()
   }
 
   if (loading) {
@@ -93,46 +45,27 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="container py-8 space-y-8">
+      <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-        <Button onClick={() => navigate("/")}>Back to Home</Button>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead>Admin Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  {new Date(user.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  {user.is_admin ? "Admin" : "User"}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteUser(user.id)}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <Tabs defaultValue="waitlist" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
+          <TabsTrigger value="commissions">Commissions</TabsTrigger>
+          <TabsTrigger value="availability">Contractor Availability</TabsTrigger>
+        </TabsList>
+        <TabsContent value="waitlist">
+          <WaitlistTable />
+        </TabsContent>
+        <TabsContent value="commissions">
+          <CommissionsTable />
+        </TabsContent>
+        <TabsContent value="availability">
+          <ContractorAvailability />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
