@@ -10,4 +10,13 @@ export interface Profile {
   created_at: string;
   updated_at: string;
   is_admin: boolean;
+  sustainability_preferences?: Json;
 }
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]

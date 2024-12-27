@@ -3,18 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
 import { SavedFloorPlans } from "@/components/client/SavedFloorPlans";
 import { SavedLandPlots } from "@/components/client/SavedLandPlots";
 import { PreApprovalStatus } from "@/components/client/PreApprovalStatus";
 import { BuildConsulting } from "@/components/client/BuildConsulting";
+import { Profile, PreApprovalStatus as PreApprovalStatusType } from "@/types/profile";
 
 export default function ClientDashboard() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -32,7 +29,16 @@ export default function ClientDashboard() {
         .single();
       
       if (error) throw error;
-      return data;
+
+      // Ensure the preapproval_status is of the correct type
+      if (data) {
+        const status = data.preapproval_status as PreApprovalStatusType;
+        return {
+          ...data,
+          preapproval_status: status,
+        } as Profile;
+      }
+      return null;
     }
   });
 
@@ -59,11 +65,11 @@ export default function ClientDashboard() {
         </TabsContent>
 
         <TabsContent value="approval">
-          <PreApprovalStatus profile={profile} />
+          {profile && <PreApprovalStatus profile={profile} />}
         </TabsContent>
 
         <TabsContent value="consulting">
-          <BuildConsulting profile={profile} />
+          {profile && <BuildConsulting profile={profile} />}
         </TabsContent>
       </Tabs>
     </div>
