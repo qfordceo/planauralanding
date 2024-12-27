@@ -16,40 +16,64 @@ interface Bid {
 }
 
 export function BidNotifications({ contractorId }: BidNotificationsProps) {
-  const { data: outbidBids, isLoading } = useQuery({
+  const { data: outbidBids, isLoading, error } = useQuery({
     queryKey: ['outbid-bids', contractorId],
     queryFn: async () => {
-      // First fetch the bids
+      // First fetch the bids with a simpler query
       const { data: bidsData, error: bidsError } = await supabase
         .from('contractor_bids')
-        .select('*')
+        .select('id, project_id, bid_amount, outbid')
         .eq('contractor_id', contractorId)
-        .eq('outbid', true)
-        .order('updated_at', { ascending: false });
+        .eq('outbid', true);
 
-      if (bidsError) throw bidsError;
+      if (bidsError) {
+        console.error('Error fetching bids:', bidsError);
+        throw bidsError;
+      }
 
-      // Then fetch the project titles separately
-      const bids = await Promise.all(
-        (bidsData || []).map(async (bid) => {
-          const { data: projectData } = await supabase
-            .from('projects')
-            .select('title')
-            .eq('id', bid.project_id)
-            .single();
+      if (!bidsData?.length) {
+        return [];
+      }
 
-          return {
-            ...bid,
-            project_title: projectData?.title || 'Unknown Project'
-          };
-        })
+      // Then fetch project titles in a separate query
+      const projectIds = bidsData.map(bid => bid.project_id);
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('id, title')
+        .in('id', projectIds);
+
+      if (projectsError) {
+        console.error('Error fetching projects:', projectsError);
+        throw projectsError;
+      }
+
+      // Map project titles to bids
+      const projectTitleMap = new Map(
+        projectsData?.map(project => [project.id, project.title]) || []
       );
 
-      return bids as Bid[];
+      return bidsData.map(bid => ({
+        ...bid,
+        project_title: projectTitleMap.get(bid.project_id) || 'Unknown Project'
+      }));
     },
   });
 
-  if (isLoading) return <div>Loading notifications...</div>;
+  if (isLoading) {
+    return <div className="p-4 text-center text-muted-foreground">Loading notifications...</div>;
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          Failed to load bid notifications. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -58,7 +82,7 @@ export function BidNotifications({ contractorId }: BidNotificationsProps) {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Outbid on Project: {bid.project_title}</AlertTitle>
           <AlertDescription>
-            Your bid of ${bid.bid_amount} has been outbid. Consider submitting a new bid to stay competitive.
+            Your bid of ${bid.bid_amount.toLocaleString()} has been outbid. Consider submitting a new bid to stay competitive.
           </AlertDescription>
         </Alert>
       ))}
