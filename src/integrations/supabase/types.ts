@@ -155,6 +155,7 @@ export type Database = {
           contractor_id: string | null
           created_at: string
           id: string
+          outbid: boolean | null
           project_id: string
           status: string | null
           updated_at: string
@@ -165,6 +166,7 @@ export type Database = {
           contractor_id?: string | null
           created_at?: string
           id?: string
+          outbid?: boolean | null
           project_id: string
           status?: string | null
           updated_at?: string
@@ -175,6 +177,7 @@ export type Database = {
           contractor_id?: string | null
           created_at?: string
           id?: string
+          outbid?: boolean | null
           project_id?: string
           status?: string | null
           updated_at?: string
@@ -185,6 +188,64 @@ export type Database = {
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_bids_project_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_inspection_defects: {
+        Row: {
+          contractor_id: string | null
+          created_at: string
+          defect_description: string
+          id: string
+          inspection_date: string
+          project_id: string | null
+          resolution_notes: string | null
+          resolved: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          contractor_id?: string | null
+          created_at?: string
+          defect_description: string
+          id?: string
+          inspection_date: string
+          project_id?: string | null
+          resolution_notes?: string | null
+          resolved?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          contractor_id?: string | null
+          created_at?: string
+          defect_description?: string
+          id?: string
+          inspection_date?: string
+          project_id?: string | null
+          resolution_notes?: string | null
+          resolved?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_inspection_defects_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_inspection_defects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -265,10 +326,57 @@ export type Database = {
           },
         ]
       }
+      contractor_reviews: {
+        Row: {
+          client_id: string | null
+          contractor_id: string | null
+          created_at: string
+          id: string
+          rating: number | null
+          review_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          review_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          review_text?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_reviews_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractors: {
         Row: {
           address: string | null
+          average_rating: number | null
           bbb_certified: boolean | null
+          bid_notifications: boolean | null
           business_name: string
           contact_name: string
           contractor_types: Database["public"]["Enums"]["contractor_type"][]
@@ -282,7 +390,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          average_rating?: number | null
           bbb_certified?: boolean | null
+          bid_notifications?: boolean | null
           business_name: string
           contact_name: string
           contractor_types: Database["public"]["Enums"]["contractor_type"][]
@@ -296,7 +406,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          average_rating?: number | null
           bbb_certified?: boolean | null
+          bid_notifications?: boolean | null
           business_name?: string
           contact_name?: string
           contractor_types?: Database["public"]["Enums"]["contractor_type"][]
@@ -501,6 +613,33 @@ export type Database = {
           preapproval_amount?: number | null
           preapproval_status?: string | null
           sustainability_preferences?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string | null
+          title?: string
           updated_at?: string
         }
         Relationships: []

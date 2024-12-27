@@ -3,23 +3,37 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Briefcase, Calendar, Star, LogOut } from "lucide-react";
+import { Loader2, Briefcase, Calendar, Star, LogOut, Bell, Bug, ArrowUpDown } from "lucide-react";
 import type { Contractor, ContractorFormData } from "@/types/contractor";
 import { RegistrationForm } from "@/components/contractor/RegistrationForm";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
 import { PortfolioManager } from "@/components/contractor/PortfolioManager";
+import { ContractorReviews } from "@/components/contractor/ContractorReviews";
+import { BidNotifications } from "@/components/contractor/BidNotifications";
+import { DefectTracker } from "@/components/contractor/DefectTracker";
+import { RebidManager } from "@/components/contractor/RebidManager";
 
 export default function ContractorDashboard() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
   const [contractor, setContractor] = useState<Contractor | null>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [outbidCount, setOutbidCount] = useState(0);
+  const [defectCount, setDefectCount] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     checkUser();
   }, []);
+
+  useEffect(() => {
+    if (contractor) {
+      subscribeToOutbids();
+      fetchOutbidCount();
+      fetchDefectCount();
+    }
+  }, [contractor]);
 
   const checkUser = async () => {
     try {
@@ -52,6 +66,60 @@ export default function ContractorDashboard() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const subscribeToOutbids = () => {
+    const channel = supabase
+      .channel('contractor-outbids')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contractor_bids',
+          filter: `contractor_id=eq.${contractor?.id}`,
+        },
+        () => {
+          fetchOutbidCount();
+          toast({
+            title: "Bid Status Updated",
+            description: "One of your bids has been affected by a new bid.",
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const fetchOutbidCount = async () => {
+    if (!contractor) return;
+    
+    const { count, error } = await supabase
+      .from('contractor_bids')
+      .select('*', { count: 'exact', head: true })
+      .eq('contractor_id', contractor.id)
+      .eq('outbid', true);
+
+    if (!error && count !== null) {
+      setOutbidCount(count);
+    }
+  };
+
+  const fetchDefectCount = async () => {
+    if (!contractor) return;
+    
+    const { count, error } = await supabase
+      .from('contractor_inspection_defects')
+      .select('*', { count: 'exact', head: true })
+      .eq('contractor_id', contractor.id)
+      .eq('resolved', false);
+
+    if (!error && count !== null) {
+      setDefectCount(count);
     }
   };
 
@@ -132,19 +200,57 @@ export default function ContractorDashboard() {
         </DashboardCard>
 
         <DashboardCard
+          title="Reviews & Ratings"
+          description="View your client reviews and overall rating."
+          icon={Star}
+          buttonText={activeSection === 'reviews' ? 'Close Reviews' : 'View Reviews'}
+          onClick={() => setActiveSection(activeSection === 'reviews' ? null : 'reviews')}
+          expanded={activeSection === 'reviews'}
+        >
+          {activeSection === 'reviews' && <ContractorReviews contractorId={contractor.id} />}
+        </DashboardCard>
+
+        <DashboardCard
+          title="Bid Notifications"
+          description="Check your bid status and notifications."
+          icon={Bell}
+          buttonText={activeSection === 'notifications' ? 'Close Notifications' : 'View Notifications'}
+          onClick={() => setActiveSection(activeSection === 'notifications' ? null : 'notifications')}
+          expanded={activeSection === 'notifications'}
+          badge={outbidCount > 0 ? { count: outbidCount, variant: "destructive" } : undefined}
+        >
+          {activeSection === 'notifications' && <BidNotifications contractorId={contractor.id} />}
+        </DashboardCard>
+
+        <DashboardCard
+          title="Inspection Defects"
+          description="Track and manage inspection defects."
+          icon={Bug}
+          buttonText={activeSection === 'defects' ? 'Close Defects' : 'View Defects'}
+          onClick={() => setActiveSection(activeSection === 'defects' ? null : 'defects')}
+          expanded={activeSection === 'defects'}
+          badge={defectCount > 0 ? { count: defectCount, variant: "warning" } : undefined}
+        >
+          {activeSection === 'defects' && <DefectTracker contractorId={contractor.id} />}
+        </DashboardCard>
+
+        <DashboardCard
+          title="Re-bid Projects"
+          description="Review and update bids for projects where you've been outbid."
+          icon={ArrowUpDown}
+          buttonText={activeSection === 'rebid' ? 'Close Re-bid' : 'Manage Re-bids'}
+          onClick={() => setActiveSection(activeSection === 'rebid' ? null : 'rebid')}
+          expanded={activeSection === 'rebid'}
+        >
+          {activeSection === 'rebid' && <RebidManager contractorId={contractor.id} />}
+        </DashboardCard>
+
+        <DashboardCard
           title="Availability"
           description="Set your working hours and manage appointments."
           icon={Calendar}
           buttonText="Set Availability"
           onClick={() => {}} // TODO: Implement availability management
-        />
-
-        <DashboardCard
-          title="References"
-          description="Add client references and testimonials."
-          icon={Star}
-          buttonText="Add References"
-          onClick={() => {}} // TODO: Implement references management
         />
       </div>
     </div>
