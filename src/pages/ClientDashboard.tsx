@@ -10,6 +10,7 @@ import { SavedFloorPlans } from "@/components/client/SavedFloorPlans";
 import { SavedLandPlots } from "@/components/client/SavedLandPlots";
 import { PreApprovalStatus } from "@/components/client/PreApprovalStatus";
 import { BuildConsulting } from "@/components/client/BuildConsulting";
+import { BuildCostCard } from "@/components/client/BuildCostCard";
 import { Profile } from "@/types/profile";
 
 export default function ClientDashboard() {
@@ -45,6 +46,23 @@ export default function ClientDashboard() {
     }
   });
 
+  const { data: activeBuild } = useQuery({
+    queryKey: ['active-build'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('build_cost_estimates')
+        .select('floor_plan_id, land_listing_id')
+        .eq('user_id', profile?.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error) return null;
+      return data;
+    },
+    enabled: !!profile?.id
+  });
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
@@ -54,7 +72,6 @@ export default function ClientDashboard() {
   }
 
   if (error) {
-    console.error('Dashboard error:', error);
     return (
       <div className="container mx-auto py-8">
         <Alert variant="destructive">
@@ -85,6 +102,15 @@ export default function ClientDashboard() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-4xl font-bold mb-8">Client Dashboard</h1>
+      
+      {activeBuild && (
+        <div className="mb-8">
+          <BuildCostCard 
+            floorPlanId={activeBuild.floor_plan_id} 
+            landListingId={activeBuild.land_listing_id} 
+          />
+        </div>
+      )}
       
       <Tabs defaultValue="saved" className="space-y-8">
         <TabsList className="grid grid-cols-4 gap-4">

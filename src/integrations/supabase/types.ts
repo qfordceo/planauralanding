@@ -66,6 +66,164 @@ export type Database = {
           },
         ]
       }
+      build_cost_estimates: {
+        Row: {
+          comp_average_price: number | null
+          created_at: string
+          floor_plan_id: string | null
+          id: string
+          land_listing_id: string | null
+          target_build_cost: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          comp_average_price?: number | null
+          created_at?: string
+          floor_plan_id?: string | null
+          id?: string
+          land_listing_id?: string | null
+          target_build_cost?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          comp_average_price?: number | null
+          created_at?: string
+          floor_plan_id?: string | null
+          id?: string
+          land_listing_id?: string | null
+          target_build_cost?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "build_cost_estimates_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "build_cost_estimates_land_listing_id_fkey"
+            columns: ["land_listing_id"]
+            isOneToOne: false
+            referencedRelation: "land_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "build_cost_estimates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "build_cost_estimates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      build_line_items: {
+        Row: {
+          actual_cost: number | null
+          build_estimate_id: string | null
+          category: string
+          contractor_id: string | null
+          created_at: string
+          description: string
+          estimated_cost: number | null
+          id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number | null
+          build_estimate_id?: string | null
+          category: string
+          contractor_id?: string | null
+          created_at?: string
+          description: string
+          estimated_cost?: number | null
+          id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number | null
+          build_estimate_id?: string | null
+          category?: string
+          contractor_id?: string | null
+          created_at?: string
+          description?: string
+          estimated_cost?: number | null
+          id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "build_line_items_build_estimate_id_fkey"
+            columns: ["build_estimate_id"]
+            isOneToOne: false
+            referencedRelation: "build_cost_estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "build_line_items_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_purchase_opportunities: {
+        Row: {
+          bulk_price_per_unit: number
+          closing_date: string | null
+          created_at: string
+          current_participants: number | null
+          description: string
+          id: string
+          material_category: string
+          price_per_unit: number
+          status: string | null
+          target_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          bulk_price_per_unit: number
+          closing_date?: string | null
+          created_at?: string
+          current_participants?: number | null
+          description: string
+          id?: string
+          material_category: string
+          price_per_unit: number
+          status?: string | null
+          target_quantity: number
+          updated_at?: string
+        }
+        Update: {
+          bulk_price_per_unit?: number
+          closing_date?: string | null
+          created_at?: string
+          current_participants?: number | null
+          description?: string
+          id?: string
+          material_category?: string
+          price_per_unit?: number
+          status?: string | null
+          target_quantity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contractor_appointments: {
         Row: {
           appointment_date: string
@@ -676,6 +834,57 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      project_milestones: {
+        Row: {
+          assigned_contractor_id: string | null
+          build_estimate_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_contractor_id?: string | null
+          build_estimate_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_contractor_id?: string | null
+          build_estimate_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_milestones_assigned_contractor_id_fkey"
+            columns: ["assigned_contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_milestones_build_estimate_id_fkey"
+            columns: ["build_estimate_id"]
+            isOneToOne: false
+            referencedRelation: "build_cost_estimates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {
