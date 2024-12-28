@@ -49,9 +49,12 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="pt-32 px-6 flex flex-col items-center text-center">
-        <h1 className="text-4xl md:text-6xl font-heading font-medium text-primary mb-6 tracking-tight">
+        <h1 className="text-4xl md:text-6xl font-heading font-medium text-primary mb-4 tracking-tight">
           Your Dream Home Awaits
         </h1>
+        <p className="text-xl md:text-2xl font-heading text-accent mb-6">
+          From Plot to Perfection
+        </p>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-12 px-4">
           From finding the perfect plot of land to designing your custom home, 
           we're here to make your journey seamless and inspiring.
