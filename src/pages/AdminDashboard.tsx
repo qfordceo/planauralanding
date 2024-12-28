@@ -9,6 +9,7 @@ import { ContractorAvailability } from "@/components/admin/ContractorAvailabilit
 import { ClientBuildsTable } from "@/components/admin/ClientBuildsTable"
 import { PurchasesTable } from "@/components/admin/PurchasesTable"
 import { PreApprovalTable } from "@/components/admin/PreApprovalTable"
+import { FinancialOverview } from "@/components/admin/FinancialOverview"
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
@@ -74,6 +75,8 @@ export default function AdminDashboard() {
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold">Admin Dashboard</h1>
       </div>
+
+      <FinancialOverview />
 
       <Tabs defaultValue="waitlist" className="space-y-4">
         <TabsList>
