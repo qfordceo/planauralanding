@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Home, FileText, Wallet, HardHat } from "lucide-react";
+import { AlertCircle, Home, FileText, Wallet, HardHat, Construction } from "lucide-react";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
 import { SavedFloorPlans } from "@/components/client/SavedFloorPlans";
 import { SavedLandPlots } from "@/components/client/SavedLandPlots";
