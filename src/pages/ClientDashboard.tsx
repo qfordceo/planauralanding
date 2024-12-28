@@ -46,14 +46,20 @@ export default function ClientDashboard() {
     }
   });
 
-  const { data: activeBuild } = useQuery({
+  const { data: activeBuild, isLoading: buildLoading } = useQuery({
     queryKey: ['active-build', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return null;
       
       const { data, error } = await supabase
         .from('build_cost_estimates')
-        .select('floor_plan_id, land_listing_id')
+        .select(`
+          id,
+          floor_plan_id,
+          land_listing_id,
+          target_build_cost,
+          comp_average_price
+        `)
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -110,14 +116,18 @@ export default function ClientDashboard() {
     <div className="container mx-auto py-8">
       <h1 className="text-4xl font-bold mb-8">Client Dashboard</h1>
       
-      {activeBuild && (
+      {buildLoading ? (
+        <div className="mb-8">
+          <Progress value={30} className="w-full" />
+        </div>
+      ) : activeBuild ? (
         <div className="mb-8">
           <BuildCostCard 
             floorPlanId={activeBuild.floor_plan_id} 
             landListingId={activeBuild.land_listing_id} 
           />
         </div>
-      )}
+      ) : null}
       
       <Tabs defaultValue="saved" className="space-y-8">
         <TabsList className="grid grid-cols-4 gap-4">
