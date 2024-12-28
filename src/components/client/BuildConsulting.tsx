@@ -2,20 +2,39 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BuildConsultingProps {
   profile: any;
+  floorPlanId?: string;
 }
 
-export function BuildConsulting({ profile }: BuildConsultingProps) {
+export function BuildConsulting({ profile, floorPlanId }: BuildConsultingProps) {
+  const { data: floorPlan } = useQuery({
+    queryKey: ['floor-plan', floorPlanId],
+    queryFn: async () => {
+      if (!floorPlanId) return null;
+      
+      const { data, error } = await supabase
+        .from('floor_plans')
+        .select('*')
+        .eq('id', floorPlanId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!floorPlanId
+  });
+
   const calculateConsultingFee = (squareFeet: number) => {
     const feePerSqFt = 5; // $5 per square foot
     return squareFeet * feePerSqFt;
   };
 
-  // Example square footage - this should come from the selected floor plan
-  const exampleSquareFeet = 1875;
-  const consultingFee = calculateConsultingFee(exampleSquareFeet);
+  const squareFeet = floorPlan?.square_feet || 1875; // Use example if no floor plan selected
+  const consultingFee = calculateConsultingFee(squareFeet);
 
   const handlePayment = () => {
     // Will be implemented when payment API is ready
@@ -42,7 +61,7 @@ export function BuildConsulting({ profile }: BuildConsultingProps) {
           <div className="bg-muted p-4 rounded-lg space-y-2">
             <p className="font-semibold">Consulting Fee Calculation:</p>
             <div className="text-sm space-y-1">
-              <p>Square Footage: {exampleSquareFeet.toLocaleString()} sq ft</p>
+              <p>Square Footage: {squareFeet.toLocaleString()} sq ft</p>
               <p>Rate: $5 per square foot</p>
               <p className="font-medium text-base mt-2">
                 Total Consulting Fee: {formatPrice(consultingFee)}
