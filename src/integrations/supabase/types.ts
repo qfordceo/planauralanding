@@ -72,6 +72,7 @@ export type Database = {
           created_at: string
           floor_plan_id: string | null
           id: string
+          land_cost: number | null
           land_listing_id: string | null
           target_build_cost: number | null
           updated_at: string
@@ -82,6 +83,7 @@ export type Database = {
           created_at?: string
           floor_plan_id?: string | null
           id?: string
+          land_cost?: number | null
           land_listing_id?: string | null
           target_build_cost?: number | null
           updated_at?: string
@@ -92,6 +94,7 @@ export type Database = {
           created_at?: string
           floor_plan_id?: string | null
           id?: string
+          land_cost?: number | null
           land_listing_id?: string | null
           target_build_cost?: number | null
           updated_at?: string
@@ -131,6 +134,8 @@ export type Database = {
       build_line_items: {
         Row: {
           actual_cost: number | null
+          awarded_contractor_id: string | null
+          awarded_cost: number | null
           build_estimate_id: string | null
           category: string
           contractor_id: string | null
@@ -143,6 +148,8 @@ export type Database = {
         }
         Insert: {
           actual_cost?: number | null
+          awarded_contractor_id?: string | null
+          awarded_cost?: number | null
           build_estimate_id?: string | null
           category: string
           contractor_id?: string | null
@@ -155,6 +162,8 @@ export type Database = {
         }
         Update: {
           actual_cost?: number | null
+          awarded_contractor_id?: string | null
+          awarded_cost?: number | null
           build_estimate_id?: string | null
           category?: string
           contractor_id?: string | null
@@ -167,6 +176,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "build_line_items_awarded_contractor_id_fkey"
+            columns: ["awarded_contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "build_line_items_build_estimate_id_fkey"
             columns: ["build_estimate_id"]
             isOneToOne: false
@@ -178,6 +194,59 @@ export type Database = {
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      build_materials: {
+        Row: {
+          actual_cost: number | null
+          build_line_item_id: string | null
+          created_at: string
+          description: string | null
+          estimated_cost: number | null
+          id: string
+          material_type: string
+          name: string
+          product_url: string | null
+          quantity: number
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number | null
+          build_line_item_id?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_cost?: number | null
+          id?: string
+          material_type: string
+          name: string
+          product_url?: string | null
+          quantity: number
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number | null
+          build_line_item_id?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_cost?: number | null
+          id?: string
+          material_type?: string
+          name?: string
+          product_url?: string | null
+          quantity?: number
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "build_materials_build_line_item_id_fkey"
+            columns: ["build_line_item_id"]
+            isOneToOne: false
+            referencedRelation: "build_line_items"
             referencedColumns: ["id"]
           },
         ]

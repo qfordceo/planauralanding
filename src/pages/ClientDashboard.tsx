@@ -11,6 +11,7 @@ import { SavedLandPlots } from "@/components/client/SavedLandPlots";
 import { PreApprovalStatus } from "@/components/client/PreApprovalStatus";
 import { BuildConsulting } from "@/components/client/BuildConsulting";
 import { BuildCostCard } from "@/components/client/BuildCostCard";
+import { ProjectTimeline } from "@/components/client/build-cost/ProjectTimeline";
 import type { Profile } from "@/types/profile";
 
 export default function ClientDashboard() {
@@ -59,7 +60,8 @@ export default function ClientDashboard() {
           floor_plan_id,
           land_listing_id,
           target_build_cost,
-          comp_average_price
+          comp_average_price,
+          land_cost
         `)
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false })
@@ -98,40 +100,39 @@ export default function ClientDashboard() {
     );
   }
 
-  if (!profile) {
-    return (
-      <div className="container mx-auto py-8">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>No Profile Found</AlertTitle>
-          <AlertDescription>
-            Unable to load your profile. Please try logging in again.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 space-y-6">
       <h1 className="text-4xl font-bold mb-8">Client Dashboard</h1>
       
-      {buildLoading ? (
-        <div className="mb-8">
-          <Progress value={30} className="w-full" />
-        </div>
-      ) : activeBuild ? (
-        <div className="mb-8">
-          <BuildCostCard 
-            floorPlanId={activeBuild.floor_plan_id} 
-            landListingId={activeBuild.land_listing_id}
-            expanded={activeSection === 'costs'}
-            onToggle={() => setActiveSection(activeSection === 'costs' ? null : 'costs')}
-          />
-        </div>
-      ) : null}
-      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <DashboardCard
+          title="Build Cost Analysis"
+          description="View and manage your build costs"
+          icon={Wallet}
+          buttonText={activeSection === 'costs' ? 'Close Analysis' : 'View Analysis'}
+          onClick={() => setActiveSection(activeSection === 'costs' ? null : 'costs')}
+          expanded={activeSection === 'costs'}
+        >
+          {activeSection === 'costs' && activeBuild && (
+            <BuildCostCard 
+              floorPlanId={activeBuild.floor_plan_id} 
+              landListingId={activeBuild.land_listing_id}
+              landCost={activeBuild.land_cost}
+            />
+          )}
+        </DashboardCard>
+
+        <DashboardCard
+          title="Project Timeline"
+          description="Track your home building progress"
+          icon={Construction}
+          buttonText={activeSection === 'timeline' ? 'Close Timeline' : 'View Timeline'}
+          onClick={() => setActiveSection(activeSection === 'timeline' ? null : 'timeline')}
+          expanded={activeSection === 'timeline'}
+        >
+          {activeSection === 'timeline' && <ProjectTimeline />}
+        </DashboardCard>
+
         <DashboardCard
           title="Saved Floor Plans"
           description="View and manage your saved floor plans"
