@@ -36,13 +36,6 @@ export function DashboardContent({
         setActiveSection={setActiveSection}
       />
 
-      <DefectsSection
-        contractorId={contractor.id}
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        defectCount={defectCount}
-      />
-
       <NotificationsSection
         contractorId={contractor.id}
         activeSection={activeSection}
@@ -54,6 +47,13 @@ export function DashboardContent({
         contractorId={contractor.id}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
+      />
+
+      <DefectsSection
+        contractorId={contractor.id}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        defectCount={defectCount}
       />
 
       <PortfolioSection
