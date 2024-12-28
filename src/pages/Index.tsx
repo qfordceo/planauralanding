@@ -10,7 +10,7 @@ import { Session } from "@supabase/supabase-js"
 
 export default function Index() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { listings, isLoading } = useListings(true)
+  const { listings, isLoading } = useListings(isModalOpen)
   const { toast } = useToast()
   const navigate = useNavigate()
   const [session, setSession] = useState<Session | null>(null)
@@ -32,6 +32,15 @@ export default function Index() {
   }, [])
 
   const handleVetListing = async (listingId: string) => {
+    if (!session?.user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to vet listings",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       const { error } = await supabase
         .from('land_listings')
@@ -48,15 +57,24 @@ export default function Index() {
       console.error('Error vetting listing:', error)
       toast({
         title: "Error",
-        description: "Failed to vet listing",
+        description: "Failed to vet listing. Please try again.",
         variant: "destructive",
       })
     }
   }
 
   const handleGenerateQR = async (listingId: string) => {
+    if (!session?.user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to generate QR codes",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
-      const { data, error } = await supabase.functions.invoke('generate-qr-code', {
+      const { error } = await supabase.functions.invoke('generate-qr-code', {
         body: { listingId }
       })
 
@@ -70,7 +88,7 @@ export default function Index() {
       console.error('Error generating QR code:', error)
       toast({
         title: "Error",
-        description: "Failed to generate QR code",
+        description: "Failed to generate QR code. Please try again.",
         variant: "destructive",
       })
     }
