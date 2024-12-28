@@ -12,8 +12,9 @@ export default function Auth() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [sessionChecked, setSessionChecked] = useState(false)
 
-  // Check initial session
+  // Check initial session only once
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -21,18 +22,20 @@ export default function Auth() {
         if (session && !isProcessing) {
           setIsProcessing(true)
           await handleRedirect(session)
-          setIsProcessing(false)
         }
       } catch (error) {
         console.error('Session check error:', error)
         setError('Failed to check session status')
       } finally {
         setIsLoading(false)
+        setSessionChecked(true)
       }
     }
 
-    checkSession()
-  }, [handleRedirect])
+    if (!sessionChecked) {
+      checkSession()
+    }
+  }, [handleRedirect, isProcessing, sessionChecked])
 
   // Handle auth state changes
   useEffect(() => {
@@ -44,8 +47,6 @@ export default function Auth() {
         } catch (error) {
           console.error('Auth state change error:', error)
           setError('An error occurred during login. Please try again.')
-        } finally {
-          setIsProcessing(false)
         }
       }
     })
@@ -53,12 +54,12 @@ export default function Auth() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [handleRedirect])
+  }, [handleRedirect, isProcessing])
 
-  if (isLoading || isProcessing) {
+  if (isLoading) {
     return (
       <div className="container max-w-lg mx-auto py-8">
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-lg">Loading...</div>
         </div>
       </div>
@@ -69,7 +70,7 @@ export default function Auth() {
     <div className="container max-w-lg mx-auto py-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Welcome Back</h1>
       {error && (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="destructive" className="mb-4 animate-none">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -79,8 +80,8 @@ export default function Auth() {
           appearance={{ 
             theme: ThemeSupa,
             style: {
-              button: { background: 'primary', color: 'white' },
-              anchor: { color: 'primary' },
+              button: { background: 'var(--primary)', color: 'white' },
+              anchor: { color: 'var(--primary)' },
             },
           }}
           providers={[]}
