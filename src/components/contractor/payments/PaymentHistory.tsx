@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import type { ContractorPayment } from "@/types/payments";
+import type { ContractorPayment } from "@/integrations/supabase/types/payments";
 
 interface PaymentHistoryProps {
   contractorId: string;
@@ -20,7 +20,7 @@ export function PaymentHistory({ contractorId }: PaymentHistoryProps) {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        setPayments(data);
+        setPayments(data as ContractorPayment[]);
       }
       setLoading(false);
     };

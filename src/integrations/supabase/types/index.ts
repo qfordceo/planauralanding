@@ -1,6 +1,7 @@
 import type { FloorPlan, FloorPlanInsert, FloorPlanUpdate } from './floor-plans';
 import type { LandListing, LandListingInsert, LandListingUpdate } from './land-listings';
 import type { Profile, ProfileInsert, ProfileUpdate } from './profiles';
+import type { ContractorPayment, ContractorPaymentSettings } from './payments';
 
 export type Json =
   | string
@@ -31,6 +32,38 @@ export type Database = {
         Update: ProfileUpdate;
         Relationships: [];
       };
+      contractor_payments: {
+        Row: ContractorPayment;
+        Insert: Omit<ContractorPayment, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<ContractorPayment, 'id' | 'created_at' | 'updated_at'>>;
+        Relationships: [
+          {
+            foreignKeyName: "contractor_payments_contractor_id_fkey"
+            columns: ["contractor_id"]
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_payments_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          }
+        ];
+      };
+      contractor_payment_settings: {
+        Row: ContractorPaymentSettings;
+        Insert: Omit<ContractorPaymentSettings, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<ContractorPaymentSettings, 'id' | 'created_at' | 'updated_at'>>;
+        Relationships: [
+          {
+            foreignKeyName: "contractor_payment_settings_contractor_id_fkey"
+            columns: ["contractor_id"]
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -50,30 +83,4 @@ export type Database = {
 export type { FloorPlan, FloorPlanInsert, FloorPlanUpdate } from './floor-plans';
 export type { LandListing, LandListingInsert, LandListingUpdate } from './land-listings';
 export type { Profile, ProfileInsert, ProfileUpdate } from './profiles';
-
-export type PublicSchema = Database[Extract<keyof Database, "public">];
-
-export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-      PublicSchema["Views"])
-  ? (PublicSchema["Tables"] &
-      PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : never;
+export type { ContractorPayment, ContractorPaymentSettings } from './payments';
