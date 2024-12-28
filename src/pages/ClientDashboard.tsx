@@ -47,12 +47,14 @@ export default function ClientDashboard() {
   });
 
   const { data: activeBuild } = useQuery({
-    queryKey: ['active-build'],
+    queryKey: ['active-build', profile?.id],
     queryFn: async () => {
+      if (!profile?.id) return null;
+      
       const { data, error } = await supabase
         .from('build_cost_estimates')
         .select('floor_plan_id, land_listing_id')
-        .eq('user_id', profile?.id)
+        .eq('user_id', profile.id)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -61,6 +63,8 @@ export default function ClientDashboard() {
         console.error('Active build error:', error);
         return null;
       }
+      
+      console.log('Active build data:', data);
       return data;
     },
     enabled: !!profile?.id
