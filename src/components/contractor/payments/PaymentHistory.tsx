@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import type { ContractorPayment } from "@/integrations/supabase/types/payments";
+import type { Database } from "@/integrations/supabase/types";
+
+type ContractorPayment = Database['public']['Tables']['contractor_payments']['Row'];
 
 interface PaymentHistoryProps {
   contractorId: string;
@@ -19,8 +21,10 @@ export function PaymentHistory({ contractorId }: PaymentHistoryProps) {
         .eq('contractor_id', contractorId)
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        setPayments(data as ContractorPayment[]);
+      if (error) {
+        console.error('Error fetching payments:', error);
+      } else if (data) {
+        setPayments(data);
       }
       setLoading(false);
     };
