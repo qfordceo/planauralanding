@@ -6,51 +6,29 @@ export function useBidNotifications(contractorId: string) {
   return useQuery({
     queryKey: ['outbid-bids', contractorId],
     queryFn: async () => {
-      console.log('Starting bid fetch for contractor:', contractorId);
-      
       try {
-        // First try a simple query to test access
-        const { data: testBid, error: testError } = await supabase
-          .from('contractor_bids')
-          .select('id')
-          .eq('contractor_id', contractorId)
-          .limit(1)
-          .single();
-
-        console.log('Test bid query result:', { testBid, testError });
-
-        if (testError) {
-          console.error('Test bid query failed:', testError);
-          throw testError;
-        }
-
-        // If test succeeds, try the full query
+        // Fetch outbid bids
         const { data: bids, error: bidsError } = await supabase
           .from('contractor_bids')
           .select('id, project_id, bid_amount, outbid')
           .eq('contractor_id', contractorId)
           .eq('outbid', true);
 
-        console.log('Full bids query result:', { bids, bidsError });
-
         if (bidsError) {
-          console.error('Full bids query failed:', bidsError);
+          console.error('Bids query failed:', bidsError);
           throw bidsError;
         }
 
         if (!bids?.length) {
-          console.log('No outbid bids found');
           return [];
         }
 
-        // Then fetch project titles
+        // Fetch project titles in a separate query
         const projectIds = bids.map(bid => bid.project_id);
         const { data: projects, error: projectsError } = await supabase
           .from('projects')
           .select('id, title')
           .in('id', projectIds);
-
-        console.log('Projects query result:', { projects, projectsError });
 
         if (projectsError) {
           console.error('Projects query failed:', projectsError);
@@ -71,6 +49,7 @@ export function useBidNotifications(contractorId: string) {
         throw error;
       }
     },
-    retry: false,
+    retry: 1,
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 }
