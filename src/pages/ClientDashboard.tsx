@@ -165,6 +165,19 @@ export default function ClientDashboard() {
         >
           {activeSection === 'approval' && <PreApprovalStatus profile={profile} />}
         </DashboardCard>
+        
+        <DashboardCard
+          title="Materials Selection"
+          description="Choose materials and colors for your home"
+          icon={Palette}
+          buttonText={activeSection === 'materials' ? 'Close Materials' : 'View Materials'}
+          onClick={() => setActiveSection(activeSection === 'materials' ? null : 'materials')}
+          expanded={activeSection === 'materials'}
+        >
+          {activeSection === 'materials' && activeBuild && (
+            <MaterialsCard floorPlanId={activeBuild.floor_plan_id} />
+          )}
+        </DashboardCard>
 
         <DashboardCard
           title="Build Consulting"
