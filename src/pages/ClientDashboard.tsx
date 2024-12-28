@@ -124,7 +124,9 @@ export default function ClientDashboard() {
         <div className="mb-8">
           <BuildCostCard 
             floorPlanId={activeBuild.floor_plan_id} 
-            landListingId={activeBuild.land_listing_id} 
+            landListingId={activeBuild.land_listing_id}
+            expanded={activeSection === 'costs'}
+            onToggle={() => setActiveSection(activeSection === 'costs' ? null : 'costs')}
           />
         </div>
       ) : null}

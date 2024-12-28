@@ -6,6 +6,7 @@ interface BuildCostSummaryProps {
   lineItemsTotal: number;
   targetCost: number;
   compAveragePrice: number;
+  landCost: number;
 }
 
 export function BuildCostSummary({
@@ -13,9 +14,10 @@ export function BuildCostSummary({
   consultingFee,
   lineItemsTotal,
   targetCost,
-  compAveragePrice
+  compAveragePrice,
+  landCost
 }: BuildCostSummaryProps) {
-  const totalCost = floorPlanCost + consultingFee + lineItemsTotal;
+  const totalCost = floorPlanCost + consultingFee + lineItemsTotal + landCost;
   const equity = compAveragePrice ? compAveragePrice - totalCost : 0;
   const equityPercentage = compAveragePrice 
     ? (equity / compAveragePrice) * 100 
@@ -25,12 +27,20 @@ export function BuildCostSummary({
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex justify-between">
+          <span>Land Cost</span>
+          <span>{formatPrice(landCost)}</span>
+        </div>
+        <div className="flex justify-between">
           <span>Floor Plan Cost</span>
           <span>{formatPrice(floorPlanCost)}</span>
         </div>
         <div className="flex justify-between">
           <span>Plan Aura Consulting Fee</span>
           <span>{formatPrice(consultingFee)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Construction Costs</span>
+          <span>{formatPrice(lineItemsTotal)}</span>
         </div>
         <div className="border-t pt-2 font-bold flex justify-between">
           <span>Total Cost</span>
