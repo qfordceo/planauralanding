@@ -4,16 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { SavedFloorPlans } from "@/components/client/SavedFloorPlans";
 import { SavedLandPlots } from "@/components/client/SavedLandPlots";
 import { PreApprovalStatus } from "@/components/client/PreApprovalStatus";
 import { BuildConsulting } from "@/components/client/BuildConsulting";
-import { Profile, PreApprovalStatus as PreApprovalStatusType } from "@/types/profile";
+import { Profile } from "@/types/profile";
 
 export default function ClientDashboard() {
   const navigate = useNavigate();
   
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, error } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -26,23 +28,48 @@ export default function ClientDashboard() {
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
-
-      // Ensure the preapproval_status is of the correct type
-      if (data) {
-        const status = data.preapproval_status as PreApprovalStatusType;
-        return {
-          ...data,
-          preapproval_status: status,
-        } as Profile;
-      }
-      return null;
+      return data as Profile;
     }
   });
 
-  if (isLoading) return <Progress value={30} className="w-full" />;
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-8">
+        <Progress value={30} className="w-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Failed to load dashboard. Please try refreshing the page.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="container mx-auto py-8">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>No Profile Found</AlertTitle>
+          <AlertDescription>
+            Unable to load your profile. Please try logging in again.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -65,11 +92,11 @@ export default function ClientDashboard() {
         </TabsContent>
 
         <TabsContent value="approval">
-          {profile && <PreApprovalStatus profile={profile} />}
+          <PreApprovalStatus profile={profile} />
         </TabsContent>
 
         <TabsContent value="consulting">
-          {profile && <BuildConsulting profile={profile} />}
+          <BuildConsulting profile={profile} />
         </TabsContent>
       </Tabs>
     </div>
