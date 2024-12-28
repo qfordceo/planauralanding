@@ -18,19 +18,21 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkAdminAccess = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError) throw sessionError
+        
         if (!session) {
           navigate('/auth')
           return
         }
 
-        const { data: profile, error } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', session.user.id)
           .maybeSingle()
 
-        if (error) throw error
+        if (profileError) throw profileError
 
         if (!profile?.is_admin) {
           navigate('/')
