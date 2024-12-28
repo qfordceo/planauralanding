@@ -43,6 +43,7 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
             selectedDate={selectedDate}
             weeklyAvailability={weeklyAvailability}
             dayExceptions={dayExceptions}
+            contractorId={contractorId}
           />
         )
       case "week":
@@ -51,6 +52,7 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
             selectedDate={selectedDate}
             weeklyAvailability={weeklyAvailability}
             dayExceptions={dayExceptions}
+            contractorId={contractorId}
           />
         )
       default:
