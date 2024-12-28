@@ -6,19 +6,25 @@ export const useAuthRedirect = () => {
   const navigate = useNavigate()
 
   const handleRedirect = async (session: Session | null) => {
-    if (!session) return
+    if (!session) {
+      navigate('/auth')
+      return
+    }
 
     try {
-      // First check if user is an admin - this should take precedence
-      const { data: profile, error: profileError } = await supabase
+      // First check if user is an admin
+      const { data: adminProfile, error: adminError } = await supabase
         .from('profiles')
         .select('is_admin')
         .eq('id', session.user.id)
-        .single()
+        .maybeSingle()
 
-      if (profileError) throw profileError
+      if (adminError) {
+        console.error('Error checking admin status:', adminError)
+        throw adminError
+      }
 
-      if (profile?.is_admin) {
+      if (adminProfile?.is_admin) {
         navigate('/admin')
         return
       }
@@ -30,7 +36,10 @@ export const useAuthRedirect = () => {
         .eq('user_id', session.user.id)
         .maybeSingle()
 
-      if (contractorError) throw contractorError
+      if (contractorError) {
+        console.error('Error checking contractor status:', contractorError)
+        throw contractorError
+      }
 
       if (contractor) {
         navigate('/contractor-dashboard')

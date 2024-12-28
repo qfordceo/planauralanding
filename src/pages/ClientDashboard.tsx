@@ -18,19 +18,29 @@ export default function ClientDashboard() {
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw sessionError;
+      }
+      
       if (!session) {
         navigate('/auth');
         return null;
       }
       
-      const { data, error } = await supabase
+      const { data, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .maybeSingle();
       
-      if (error) throw error;
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw profileError;
+      }
+
       return data as Profile;
     }
   });
@@ -44,6 +54,7 @@ export default function ClientDashboard() {
   }
 
   if (error) {
+    console.error('Dashboard error:', error);
     return (
       <div className="container mx-auto py-8">
         <Alert variant="destructive">
