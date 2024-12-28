@@ -54,6 +54,13 @@ export type Database = {
             foreignKeyName: "blog_posts_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -97,6 +104,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "contractor_appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "contractor_appointments_client_id_fkey"
             columns: ["client_id"]
@@ -391,6 +405,13 @@ export type Database = {
             foreignKeyName: "contractor_reviews_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -488,6 +509,13 @@ export type Database = {
             columns: ["floor_plan_id"]
             isOneToOne: false
             referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "floor_plan_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
             referencedColumns: ["id"]
           },
           {
@@ -737,6 +765,13 @@ export type Database = {
             foreignKeyName: "saved_builds_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_builds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -744,7 +779,12 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_users: {
+        Row: {
+          id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_rate_limits: {
