@@ -1,4 +1,4 @@
-import { Briefcase, Calendar, Star, Bell, Bug, ArrowUpDown, CreditCard } from "lucide-react";
+import { Briefcase, Calendar, Star, Bell, Bug, ArrowUpDown, CreditCard, Search } from "lucide-react";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
 import { PortfolioManager } from "@/components/contractor/PortfolioManager";
 import { ContractorReviews } from "@/components/contractor/ContractorReviews";
@@ -8,6 +8,7 @@ import { RebidManager } from "@/components/contractor/RebidManager";
 import { AvailabilityManager } from "@/components/contractor/availability/AvailabilityManager";
 import { PaymentSettings } from "@/components/contractor/payments/PaymentSettings";
 import { PaymentHistory } from "@/components/contractor/payments/PaymentHistory";
+import { AvailableJobs } from "@/components/contractor/jobs/AvailableJobs";
 import type { Contractor } from "@/types/contractor";
 
 interface DashboardContentProps {
@@ -41,6 +42,17 @@ export function DashboardContent({
             <PaymentHistory contractorId={contractor.id} />
           </div>
         )}
+      </DashboardCard>
+
+      <DashboardCard
+        title="Available Jobs"
+        description="Browse and bid on available projects in your area."
+        icon={Search}
+        buttonText={activeSection === 'jobs' ? 'Close Jobs' : 'View Jobs'}
+        onClick={() => setActiveSection(activeSection === 'jobs' ? null : 'jobs')}
+        expanded={activeSection === 'jobs'}
+      >
+        {activeSection === 'jobs' && <AvailableJobs contractorId={contractor.id} />}
       </DashboardCard>
 
       <DashboardCard
