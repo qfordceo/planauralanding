@@ -1,3 +1,4 @@
 project_id = "vaxxrwnfcaxvqvdhlsad"
-[functions.scrape-floor-plans]
-verify_jwt = false
+
+[functions.build-advisor]
+verify_jwt = true

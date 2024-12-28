@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, MessageSquare } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface BuildCostCardProps {
   floorPlanId?: string;
@@ -10,6 +13,10 @@ interface BuildCostCardProps {
 }
 
 export function BuildCostCard({ floorPlanId, landListingId }: BuildCostCardProps) {
+  const { toast } = useToast();
+  const [isLoadingAdvice, setIsLoadingAdvice] = useState(false);
+  const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+
   const { data: buildEstimate, isLoading } = useQuery({
     queryKey: ['build-estimate', floorPlanId, landListingId],
     queryFn: async () => {
@@ -21,6 +28,7 @@ export function BuildCostCard({ floorPlanId, landListingId }: BuildCostCardProps
         .select(`
           *,
           floor_plans (*),
+          land_listings (*),
           build_line_items (*)
         `)
         .eq('user_id', session.user.id)
@@ -37,11 +45,38 @@ export function BuildCostCard({ floorPlanId, landListingId }: BuildCostCardProps
     enabled: !!floorPlanId && !!landListingId
   });
 
+  const getAIAdvice = async () => {
+    if (!buildEstimate) return;
+    
+    setIsLoadingAdvice(true);
+    try {
+      const response = await supabase.functions.invoke('build-advisor', {
+        body: {
+          buildEstimate,
+          floorPlan: buildEstimate.floor_plans,
+          landListing: buildEstimate.land_listings
+        }
+      });
+
+      if (response.error) throw response.error;
+      setAiAdvice(response.data.analysis);
+    } catch (error) {
+      console.error('Error getting AI advice:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get AI analysis. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingAdvice(false);
+    }
+  };
+
   if (isLoading) return <div>Loading cost breakdown...</div>;
   if (!buildEstimate) return null;
 
   const floorPlanCost = buildEstimate.floor_plans?.plan_price || 0;
-  const consultingFee = 2500; // Plan Aura's flat consulting fee
+  const consultingFee = 2500;
   const lineItemsTotal = buildEstimate.build_line_items?.reduce(
     (sum, item) => sum + (item.actual_cost || item.estimated_cost || 0),
     0
@@ -96,6 +131,33 @@ export function BuildCostCard({ floorPlanId, landListingId }: BuildCostCardProps
             <span>Potential Equity</span>
             <span>{formatPrice(equity)} ({equityPercentage.toFixed(1)}%)</span>
           </div>
+        </div>
+
+        <div className="space-y-4">
+          <Button
+            onClick={getAIAdvice}
+            className="w-full"
+            disabled={isLoadingAdvice}
+          >
+            {isLoadingAdvice ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Analyzing your build...
+              </>
+            ) : (
+              <>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Get AI Build Analysis
+              </>
+            )}
+          </Button>
+
+          {aiAdvice && (
+            <div className="bg-muted p-4 rounded-lg space-y-2">
+              <h3 className="font-semibold">AI Build Analysis</h3>
+              <p className="text-sm whitespace-pre-line">{aiAdvice}</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
