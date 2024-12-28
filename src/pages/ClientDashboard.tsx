@@ -55,9 +55,12 @@ export default function ClientDashboard() {
         .eq('user_id', profile?.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       
-      if (error) return null;
+      if (error) {
+        console.error('Active build error:', error);
+        return null;
+      }
       return data;
     },
     enabled: !!profile?.id

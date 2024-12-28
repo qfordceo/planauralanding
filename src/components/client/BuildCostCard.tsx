@@ -26,9 +26,12 @@ export function BuildCostCard({ floorPlanId, landListingId }: BuildCostCardProps
         .eq('user_id', session.user.id)
         .eq('floor_plan_id', floorPlanId)
         .eq('land_listing_id', landListingId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Build estimate error:', error);
+        return null;
+      }
       return data;
     },
     enabled: !!floorPlanId && !!landListingId
