@@ -9,30 +9,59 @@ export const useAuthRedirect = () => {
 
   const handleRedirect = async (session: Session | null) => {
     if (!session) {
+      console.log('No session, redirecting to auth')
       navigate('/auth')
       return
     }
 
     try {
-      // Check if user is an admin
-      const { data: profile, error } = await supabase
+      // First check if the user exists in profiles
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('is_admin, email')
+        .select('id, is_admin')
         .eq('id', session.user.id)
-        .maybeSingle()
+        .single()
 
-      if (error) {
-        console.error('Error checking admin status:', error)
-        throw error
+      if (profileError) {
+        console.error('Error fetching profile:', profileError)
+        // If the profile doesn't exist, create it
+        if (profileError.code === 'PGRST116') {
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert([
+              { 
+                id: session.user.id,
+                email: session.user.email,
+                is_admin: false // Default to non-admin
+              }
+            ])
+
+          if (insertError) {
+            console.error('Error creating profile:', insertError)
+            toast({
+              title: "Error",
+              description: "Failed to create user profile",
+              variant: "destructive",
+            })
+            return
+          }
+
+          // New user created, redirect to dashboard
+          navigate('/dashboard')
+          return
+        }
+
+        toast({
+          title: "Error",
+          description: "Failed to load user profile",
+          variant: "destructive",
+        })
+        return
       }
 
       if (!profile) {
-        console.error('No profile found for user')
-        toast({
-          title: "Error",
-          description: "Unable to load user profile",
-          variant: "destructive",
-        })
+        console.log('No profile found, redirecting to dashboard')
+        navigate('/dashboard')
         return
       }
 
@@ -54,7 +83,6 @@ export const useAuthRedirect = () => {
         description: "An error occurred during login",
         variant: "destructive",
       })
-      navigate('/auth')
     }
   }
 
