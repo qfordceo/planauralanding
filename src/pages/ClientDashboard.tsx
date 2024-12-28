@@ -88,7 +88,7 @@ export default function ClientDashboard() {
       
       <Tabs defaultValue="saved" className="space-y-8">
         <TabsList className="grid grid-cols-4 gap-4">
-          <TabsTrigger value="saved">Saved Designs</TabsTrigger>
+          <TabsTrigger value="saved">Saved Floorplans</TabsTrigger>
           <TabsTrigger value="land">Land Plots</TabsTrigger>
           <TabsTrigger value="approval">Pre-Approval</TabsTrigger>
           <TabsTrigger value="consulting">Build Consulting</TabsTrigger>
