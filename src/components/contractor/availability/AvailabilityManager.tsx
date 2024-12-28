@@ -7,6 +7,8 @@ import { ViewSelector } from "./ViewSelector"
 import { AvailabilityCalendar } from "./AvailabilityCalendar"
 import { useAvailabilityData } from "./hooks/useAvailabilityData"
 import { useAvailabilityMutations } from "./hooks/useAvailabilityMutations"
+import { DayView } from "./DayView"
+import { WeekView } from "./WeekView"
 
 type ViewMode = "month" | "week" | "day"
 
@@ -33,6 +35,38 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
     return <div>Loading availability...</div>
   }
 
+  const renderView = () => {
+    switch (viewMode) {
+      case "day":
+        return (
+          <DayView 
+            selectedDate={selectedDate}
+            weeklyAvailability={weeklyAvailability}
+            dayExceptions={dayExceptions}
+          />
+        )
+      case "week":
+        return (
+          <WeekView 
+            selectedDate={selectedDate}
+            weeklyAvailability={weeklyAvailability}
+            dayExceptions={dayExceptions}
+          />
+        )
+      default:
+        return (
+          <AvailabilityCalendar
+            selectedDate={selectedDate}
+            onDateSelect={(date) => {
+              setSelectedDate(date)
+              handleDayClick(date)
+            }}
+            dayExceptions={dayExceptions}
+          />
+        )
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -49,14 +83,7 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
         </Button>
       </div>
 
-      <AvailabilityCalendar
-        selectedDate={selectedDate}
-        onDateSelect={(date) => {
-          setSelectedDate(date)
-          handleDayClick(date)
-        }}
-        dayExceptions={dayExceptions}
-      />
+      {renderView()}
 
       <div className="text-sm text-muted-foreground">
         Click on a date to mark it as unavailable/available
