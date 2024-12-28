@@ -1,16 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PaintBucket, Palette, ShoppingBag } from "lucide-react";
+import { Loader2, Package, Calculator } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { formatPrice } from "@/lib/utils";
 
-interface MaterialSelection {
-  category: string;
+interface MaterialCategory {
   name: string;
-  color?: string;
-  url?: string;
+  items: MaterialItem[];
+  estimatedCost: number;
+}
+
+interface MaterialItem {
+  name: string;
+  description: string;
+  estimatedCost: number;
+  unit: string;
+  quantity: number;
+  category: string;
+  selectedProduct?: {
+    name: string;
+    price: number;
+    url?: string;
+  };
 }
 
 interface MaterialsCardProps {
@@ -19,173 +33,175 @@ interface MaterialsCardProps {
 
 export function MaterialsCard({ floorPlanId }: MaterialsCardProps) {
   const { toast } = useToast();
-  const [selectedMaterials, setSelectedMaterials] = useLocalStorage<MaterialSelection[]>('selected-materials', []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [materialCategories, setMaterialCategories] = useState<MaterialCategory[]>([]);
+  const [selectedMaterials, setSelectedMaterials] = useLocalStorage<Record<string, MaterialItem>>('selected-materials', {});
+  
+  const fetchMaterialSuggestions = async () => {
+    setIsLoading(true);
+    try {
+      const { data: floorPlan } = await supabase
+        .from('floor_plans')
+        .select('*')
+        .eq('id', floorPlanId)
+        .single();
 
-  // Predefined paint color suggestions based on modern home design trends
-  const paintSuggestions = [
-    { name: "Neutral Gray", color: "#8E9196" },
-    { name: "Soft White", color: "#FFFFFF" },
-    { name: "Warm Beige", color: "#F5F5DC" },
-    { name: "Soft Green", color: "#F2FCE2" },
-    { name: "Soft Blue", color: "#D3E4FD" },
-    { name: "Light Purple", color: "#D6BCFA" },
-  ];
+      if (!floorPlan) {
+        throw new Error('Floor plan not found');
+      }
 
-  const handleMaterialSelect = (material: MaterialSelection) => {
-    setSelectedMaterials(prev => {
-      const filtered = prev.filter(m => m.category !== material.category);
-      return [...filtered, material];
-    });
+      const response = await supabase.functions.invoke('suggest-materials', {
+        body: { floorPlan }
+      });
+
+      if (response.error) throw response.error;
+      
+      setMaterialCategories(response.data.categories);
+      
+      toast({
+        title: "Materials List Generated",
+        description: "AI has generated a comprehensive list of required materials.",
+      });
+    } catch (error) {
+      console.error('Error getting material suggestions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate materials list. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleProductSelect = (category: string, item: MaterialItem, product: any) => {
+    setSelectedMaterials(prev => ({
+      ...prev,
+      [`${category}-${item.name}`]: {
+        ...item,
+        selectedProduct: product
+      }
+    }));
 
     toast({
-      title: "Material Selected",
-      description: `${material.name} has been saved to your selections.`,
+      title: "Product Selected",
+      description: `${product.name} has been saved to your selections.`,
     });
   };
+
+  const getTotalEstimatedCost = () => {
+    return materialCategories.reduce((total, category) => 
+      total + category.estimatedCost, 0
+    );
+  };
+
+  const getTotalSelectedCost = () => {
+    return Object.values(selectedMaterials).reduce((total, item) => 
+      total + (item.selectedProduct?.price || 0) * item.quantity, 0
+    );
+  };
+
+  useEffect(() => {
+    if (floorPlanId) {
+      fetchMaterialSuggestions();
+    }
+  }, [floorPlanId]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Palette className="h-5 w-5" />
-          Materials Selection
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Complete Materials List
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchMaterialSuggestions}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              "Refresh List"
+            )}
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="paint" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="paint">
-              <PaintBucket className="h-4 w-4 mr-2" />
-              Paint Colors
-            </TabsTrigger>
-            <TabsTrigger value="materials">
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              Building Materials
-            </TabsTrigger>
-          </TabsList>
+        {isLoading ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center p-4 bg-muted rounded-lg">
+              <div>
+                <p className="text-sm font-medium">Estimated Total Cost</p>
+                <p className="text-2xl font-bold">{formatPrice(getTotalEstimatedCost())}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium">Selected Materials Cost</p>
+                <p className="text-2xl font-bold text-primary">{formatPrice(getTotalSelectedCost())}</p>
+              </div>
+            </div>
 
-          <TabsContent value="paint" className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {paintSuggestions.map((paint) => (
-                <div
-                  key={paint.color}
-                  className="p-4 rounded-lg border hover:border-primary cursor-pointer"
-                  onClick={() => handleMaterialSelect({
-                    category: 'paint',
-                    name: paint.name,
-                    color: paint.color
+            {materialCategories.map((category) => (
+              <div key={category.name} className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">{category.name}</h3>
+                  <span className="text-sm text-muted-foreground">
+                    Estimated: {formatPrice(category.estimatedCost)}
+                  </span>
+                </div>
+                <div className="grid gap-4">
+                  {category.items.map((item) => {
+                    const selectedKey = `${category.name}-${item.name}`;
+                    const isSelected = selectedMaterials[selectedKey]?.selectedProduct;
+
+                    return (
+                      <div key={item.name} className="p-4 border rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-medium">{item.name}</h4>
+                            <p className="text-sm text-muted-foreground">{item.description}</p>
+                            <p className="text-sm">
+                              Quantity: {item.quantity} {item.unit}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm">Estimated: {formatPrice(item.estimatedCost)}</p>
+                            {isSelected && (
+                              <p className="text-sm text-primary">
+                                Selected: {formatPrice(isSelected.price * item.quantity)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Placeholder for product selection - will be replaced with API integration */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleProductSelect(category.name, item, {
+                            name: "Sample Product",
+                            price: item.estimatedCost,
+                            url: "https://example.com"
+                          })}
+                        >
+                          {isSelected ? "Change Selection" : "Select Product"}
+                        </Button>
+                      </div>
+                    );
                   })}
-                >
-                  <div
-                    className="w-full h-20 rounded-md mb-2"
-                    style={{ backgroundColor: paint.color }}
-                  />
-                  <p className="text-sm font-medium">{paint.name}</p>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="materials" className="space-y-4">
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg border">
-                <h3 className="font-medium mb-2">Bathroom Fixtures</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span>Modern Toilet Set</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleMaterialSelect({
-                        category: 'bathroom',
-                        name: 'Modern Toilet Set',
-                        url: 'https://example.com/toilet'
-                      })}
-                    >
-                      Select
-                    </Button>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Premium Sink Faucet</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleMaterialSelect({
-                        category: 'bathroom',
-                        name: 'Premium Sink Faucet',
-                        url: 'https://example.com/faucet'
-                      })}
-                    >
-                      Select
-                    </Button>
-                  </div>
                 </div>
               </div>
-
-              <div className="p-4 rounded-lg border">
-                <h3 className="font-medium mb-2">Flooring</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span>Hardwood Oak</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleMaterialSelect({
-                        category: 'flooring',
-                        name: 'Hardwood Oak',
-                        url: 'https://example.com/hardwood'
-                      })}
-                    >
-                      Select
-                    </Button>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Luxury Vinyl Tile</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleMaterialSelect({
-                        category: 'flooring',
-                        name: 'Luxury Vinyl Tile',
-                        url: 'https://example.com/vinyl'
-                      })}
-                    >
-                      Select
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {selectedMaterials.length > 0 && (
-          <div className="mt-6">
-            <h3 className="font-medium mb-2">Your Selections</h3>
-            <div className="space-y-2">
-              {selectedMaterials.map((material, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2">
-                    {material.color && (
-                      <div
-                        className="w-6 h-6 rounded-full"
-                        style={{ backgroundColor: material.color }}
-                      />
-                    )}
-                    <span>{material.name}</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedMaterials(prev => 
-                      prev.filter(m => m.name !== material.name)
-                    )}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         )}
       </CardContent>
