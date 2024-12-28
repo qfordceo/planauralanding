@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, Briefcase, Calendar, Star, Bell, Bug, ArrowUpDown } from "lucide-react";
-import type { Contractor, ContractorFormData } from "@/types/contractor";
-import { RegistrationForm } from "@/components/contractor/RegistrationForm";
-import { DashboardCard } from "@/components/contractor/DashboardCard";
-import { PortfolioManager } from "@/components/contractor/PortfolioManager";
-import { ContractorReviews } from "@/components/contractor/ContractorReviews";
-import { BidNotifications } from "@/components/contractor/BidNotifications";
-import { DefectTracker } from "@/components/contractor/DefectTracker";
-import { RebidManager } from "@/components/contractor/RebidManager";
-import { DashboardHeader } from "@/components/contractor/DashboardHeader";
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
+import { Loader2, Briefcase, Calendar, Star, Bell, Bug, ArrowUpDown } from "lucide-react"
+import type { Contractor } from "@/types/contractor"
+import { RegistrationForm } from "@/components/contractor/RegistrationForm"
+import { DashboardCard } from "@/components/contractor/DashboardCard"
+import { PortfolioManager } from "@/components/contractor/PortfolioManager"
+import { ContractorReviews } from "@/components/contractor/ContractorReviews"
+import { BidNotifications } from "@/components/contractor/BidNotifications"
+import { DefectTracker } from "@/components/contractor/DefectTracker"
+import { RebidManager } from "@/components/contractor/RebidManager"
+import { DashboardHeader } from "@/components/contractor/DashboardHeader"
+import { AvailabilityManager } from "@/components/contractor/availability/AvailabilityManager"
 
 export default function ContractorDashboard() {
   const [loading, setLoading] = useState(true);
@@ -249,10 +250,15 @@ export default function ContractorDashboard() {
           title="Availability"
           description="Set your working hours and manage appointments."
           icon={Calendar}
-          buttonText="Set Availability"
-          onClick={() => {}} // TODO: Implement availability management
-        />
+          buttonText={activeSection === 'availability' ? 'Close Availability' : 'Set Availability'}
+          onClick={() => setActiveSection(activeSection === 'availability' ? null : 'availability')}
+          expanded={activeSection === 'availability'}
+        >
+          {activeSection === 'availability' && contractor && (
+            <AvailabilityManager contractorId={contractor.id} />
+          )}
+        </DashboardCard>
       </div>
     </div>
-  );
+  )
 }
