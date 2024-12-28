@@ -6,19 +6,22 @@ import { supabase } from "@/integrations/supabase/client"
 import ListingsModal from "@/components/ListingsModal"
 import { ListingCard } from "@/components/listings/ListingCard"
 import { useListings } from "@/hooks/useListings"
+import { Session } from "@supabase/supabase-js"
 
 export default function Index() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { listings, isLoading } = useListings(true)
   const { toast } = useToast()
   const navigate = useNavigate()
-  const [session, setSession] = useState(null)
+  const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
     })
 
+    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -29,44 +32,48 @@ export default function Index() {
   }, [])
 
   const handleVetListing = async (listingId: string) => {
-    const { error } = await supabase
-      .from('land_listings')
-      .update({ is_vetted: true })
-      .eq('id', listingId)
+    try {
+      const { error } = await supabase
+        .from('land_listings')
+        .update({ is_vetted: true })
+        .eq('id', listingId)
 
-    if (error) {
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Listing has been vetted",
+      })
+    } catch (error) {
+      console.error('Error vetting listing:', error)
       toast({
         title: "Error",
         description: "Failed to vet listing",
         variant: "destructive",
       })
-      return
     }
-
-    toast({
-      title: "Success",
-      description: "Listing has been vetted",
-    })
   }
 
   const handleGenerateQR = async (listingId: string) => {
-    const { data, error } = await supabase.functions.invoke('generate-qr-code', {
-      body: { listingId }
-    })
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-qr-code', {
+        body: { listingId }
+      })
 
-    if (error) {
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "QR code has been generated",
+      })
+    } catch (error) {
+      console.error('Error generating QR code:', error)
       toast({
         title: "Error",
         description: "Failed to generate QR code",
         variant: "destructive",
       })
-      return
     }
-
-    toast({
-      title: "Success",
-      description: "QR code has been generated",
-    })
   }
 
   return (
@@ -80,11 +87,9 @@ export default function Index() {
             </Button>
           ) : (
             <>
-              {session?.user && (
-                <Button onClick={() => navigate("/floor-plans")}>
-                  Browse Floor Plans
-                </Button>
-              )}
+              <Button onClick={() => navigate("/floor-plans")}>
+                Browse Floor Plans
+              </Button>
               <Button onClick={() => setIsModalOpen(true)}>
                 Update Listings
               </Button>
