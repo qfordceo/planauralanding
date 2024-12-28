@@ -31,3 +31,11 @@ export interface ContractorFormData {
   phone: string;
   contractor_types: ContractorType[];
 }
+
+export interface ContractorDayException {
+  id: string;
+  contractor_id: string | null;
+  exception_date: string;
+  is_available: boolean | null;
+  created_at: string;
+}

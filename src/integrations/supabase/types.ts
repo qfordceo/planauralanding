@@ -199,6 +199,38 @@ export type Database = {
           },
         ]
       }
+      contractor_day_exceptions: {
+        Row: {
+          contractor_id: string | null
+          created_at: string
+          exception_date: string
+          id: string
+          is_available: boolean | null
+        }
+        Insert: {
+          contractor_id?: string | null
+          created_at?: string
+          exception_date: string
+          id?: string
+          is_available?: boolean | null
+        }
+        Update: {
+          contractor_id?: string | null
+          created_at?: string
+          exception_date?: string
+          id?: string
+          is_available?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_day_exceptions_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_inspection_defects: {
         Row: {
           contractor_id: string | null

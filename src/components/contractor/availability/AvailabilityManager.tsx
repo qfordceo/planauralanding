@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { WeeklyScheduleEditor } from "./WeeklyScheduleEditor"
 import { ViewSelector } from "./ViewSelector"
 import { toast } from "sonner"
-import { Checkbox } from "@/components/ui/checkbox"
+import type { ContractorDayException } from "@/types/contractor"
 
 type ViewMode = "month" | "week" | "day"
 
@@ -37,7 +37,7 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
     },
   })
 
-  const { data: dayExceptions, isLoading: isLoadingExceptions } = useQuery({
+  const { data: dayExceptions, isLoading: isLoadingExceptions } = useQuery<ContractorDayException[]>({
     queryKey: ["contractor-day-exceptions", contractorId],
     queryFn: async () => {
       const { data, error } = await supabase
