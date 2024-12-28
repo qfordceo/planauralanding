@@ -16,35 +16,55 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    const checkAdminAccess = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          navigate('/auth')
+          return
+        }
+
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .maybeSingle()
+
+        if (error) throw error
+
+        if (!profile?.is_admin) {
+          navigate('/')
+          toast({
+            title: "Access Denied",
+            description: "You don't have permission to access this page",
+            variant: "destructive",
+          })
+          return
+        }
+
+        setLoading(false)
+      } catch (error) {
+        console.error('Error checking admin access:', error)
+        navigate('/')
+        toast({
+          title: "Error",
+          description: "Failed to verify admin access",
+          variant: "destructive",
+        })
+      }
+    }
+
     checkAdminAccess()
-  }, [])
-
-  const checkAdminAccess = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      navigate('/auth')
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', session.user.id)
-      .single()
-
-    if (!profile?.is_admin) {
-      navigate('/')
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this page",
-        variant: "destructive",
-      })
-    }
-    setLoading(false)
-  }
+  }, [navigate, toast])
 
   if (loading) {
-    return <div className="container py-8">Loading...</div>
+    return (
+      <div className="container py-8">
+        <div className="flex items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
