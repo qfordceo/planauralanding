@@ -9,9 +9,13 @@ interface BuildConsultingProps {
 
 export function BuildConsulting({ profile }: BuildConsultingProps) {
   const calculateConsultingFee = (squareFeet: number) => {
-    const feePerSqFt = 6; // $6 per square foot
+    const feePerSqFt = 5; // $5 per square foot
     return squareFeet * feePerSqFt;
   };
+
+  // Example square footage - this should come from the selected floor plan
+  const exampleSquareFeet = 1875;
+  const consultingFee = calculateConsultingFee(exampleSquareFeet);
 
   const handlePayment = () => {
     // Will be implemented when payment API is ready
@@ -35,11 +39,15 @@ export function BuildConsulting({ profile }: BuildConsultingProps) {
             <li>Budget optimization</li>
             <li>Contractor coordination</li>
           </ul>
-          <div className="bg-muted p-4 rounded-lg">
-            <p className="font-semibold">Consulting Fee: $5-7 per square foot</p>
-            <p className="text-sm text-muted-foreground">
-              Final fee will be calculated based on your floor plan selection
-            </p>
+          <div className="bg-muted p-4 rounded-lg space-y-2">
+            <p className="font-semibold">Consulting Fee Calculation:</p>
+            <div className="text-sm space-y-1">
+              <p>Square Footage: {exampleSquareFeet.toLocaleString()} sq ft</p>
+              <p>Rate: $5 per square foot</p>
+              <p className="font-medium text-base mt-2">
+                Total Consulting Fee: {formatPrice(consultingFee)}
+              </p>
+            </div>
           </div>
           <Button onClick={handlePayment} className="w-full">
             Get Started with Build Consulting
