@@ -20,47 +20,41 @@ export const useAuthRedirect = () => {
         .from('profiles')
         .select('id, is_admin')
         .eq('id', session.user.id)
-        .single()
+        .maybeSingle()
 
       if (profileError) {
         console.error('Error fetching profile:', profileError)
-        // If the profile doesn't exist, create it
-        if (profileError.code === 'PGRST116') {
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert([
-              { 
-                id: session.user.id,
-                email: session.user.email,
-                is_admin: false // Default to non-admin
-              }
-            ])
-
-          if (insertError) {
-            console.error('Error creating profile:', insertError)
-            toast({
-              title: "Error",
-              description: "Failed to create user profile",
-              variant: "destructive",
-            })
-            return
-          }
-
-          // New user created, redirect to dashboard
-          navigate('/dashboard')
-          return
-        }
-
         toast({
           title: "Error",
-          description: "Failed to load user profile",
+          description: "Failed to load user profile. Please try again.",
           variant: "destructive",
         })
         return
       }
 
+      // If profile doesn't exist, create it
       if (!profile) {
-        console.log('No profile found, redirecting to dashboard')
+        console.log('Creating new profile for user:', session.user.id)
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert([
+            { 
+              id: session.user.id,
+              email: session.user.email,
+              is_admin: false
+            }
+          ])
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError)
+          toast({
+            title: "Error",
+            description: "Failed to create user profile",
+            variant: "destructive",
+          })
+          return
+        }
+
         navigate('/dashboard')
         return
       }
@@ -70,12 +64,10 @@ export const useAuthRedirect = () => {
       if (profile.is_admin) {
         console.log('User is admin, redirecting to admin dashboard')
         navigate('/admin')
-        return
+      } else {
+        console.log('User is not admin, redirecting to client dashboard')
+        navigate('/dashboard')
       }
-
-      // If not admin, redirect to client dashboard
-      console.log('User is not admin, redirecting to client dashboard')
-      navigate('/dashboard')
     } catch (error) {
       console.error('Error in auth redirect:', error)
       toast({

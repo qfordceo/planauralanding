@@ -11,17 +11,21 @@ export default function Auth() {
   const handleRedirect = useAuthRedirect()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Check initial session
   useEffect(() => {
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
+        if (session && !isProcessing) {
+          setIsProcessing(true)
           await handleRedirect(session)
+          setIsProcessing(false)
         }
       } catch (error) {
         console.error('Session check error:', error)
+        setError('Failed to check session status')
       } finally {
         setIsLoading(false)
       }
@@ -33,12 +37,15 @@ export default function Auth() {
   // Handle auth state changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
+      if (event === 'SIGNED_IN' && session && !isProcessing) {
+        setIsProcessing(true)
         try {
           await handleRedirect(session)
         } catch (error) {
           console.error('Auth state change error:', error)
           setError('An error occurred during login. Please try again.')
+        } finally {
+          setIsProcessing(false)
         }
       }
     })
@@ -48,7 +55,7 @@ export default function Auth() {
     }
   }, [handleRedirect])
 
-  if (isLoading) {
+  if (isLoading || isProcessing) {
     return (
       <div className="container max-w-lg mx-auto py-8">
         <div className="flex items-center justify-center">
