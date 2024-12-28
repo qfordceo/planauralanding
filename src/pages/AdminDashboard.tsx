@@ -79,7 +79,7 @@ export default function AdminDashboard() {
       <FinancialOverview />
 
       <Tabs defaultValue="waitlist" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full">
           <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="availability">Contractor Availability</TabsTrigger>
@@ -87,22 +87,28 @@ export default function AdminDashboard() {
           <TabsTrigger value="purchases">Floor Plan Purchases</TabsTrigger>
           <TabsTrigger value="preapproval">Pre-approvals</TabsTrigger>
         </TabsList>
-        <TabsContent value="waitlist">
+
+        <TabsContent value="waitlist" className="space-y-4">
           <WaitlistTable />
         </TabsContent>
-        <TabsContent value="commissions">
+        
+        <TabsContent value="commissions" className="space-y-4">
           <CommissionsTable />
         </TabsContent>
-        <TabsContent value="availability">
+        
+        <TabsContent value="availability" className="space-y-4">
           <ContractorAvailability />
         </TabsContent>
-        <TabsContent value="builds">
+        
+        <TabsContent value="builds" className="space-y-4">
           <ClientBuildsTable />
         </TabsContent>
-        <TabsContent value="purchases">
+        
+        <TabsContent value="purchases" className="space-y-4">
           <PurchasesTable />
         </TabsContent>
-        <TabsContent value="preapproval">
+        
+        <TabsContent value="preapproval" className="space-y-4">
           <PreApprovalTable />
         </TabsContent>
       </Tabs>
