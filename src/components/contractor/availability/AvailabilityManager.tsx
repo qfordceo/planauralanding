@@ -8,8 +8,14 @@ import { Button } from "@/components/ui/button"
 import { WeeklyScheduleEditor } from "./WeeklyScheduleEditor"
 import { ViewSelector } from "./ViewSelector"
 import { toast } from "sonner"
+import { Checkbox } from "@/components/ui/checkbox"
 
 type ViewMode = "month" | "week" | "day"
+
+interface DayAvailability {
+  date: string
+  isAvailable: boolean
+}
 
 export function AvailabilityManager({ contractorId }: { contractorId: string }) {
   const [viewMode, setViewMode] = useState<ViewMode>("month")
@@ -18,8 +24,8 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
   
   const queryClient = useQueryClient()
 
-  const { data: availability, isLoading } = useQuery({
-    queryKey: ["contractor-availability", contractorId],
+  const { data: weeklyAvailability, isLoading: isLoadingWeekly } = useQuery({
+    queryKey: ["contractor-weekly-availability", contractorId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contractor_availability")
@@ -28,6 +34,19 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
       
       if (error) throw error
       return data
+    },
+  })
+
+  const { data: dayExceptions, isLoading: isLoadingExceptions } = useQuery({
+    queryKey: ["contractor-day-exceptions", contractorId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contractor_day_exceptions")
+        .select("*")
+        .eq("contractor_id", contractorId)
+      
+      if (error) throw error
+      return data || []
     },
   })
 
@@ -61,7 +80,7 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contractor-availability"] })
+      queryClient.invalidateQueries({ queryKey: ["contractor-weekly-availability"] })
       toast.success("Availability schedule updated successfully")
       setIsEditingSchedule(false)
     },
@@ -71,7 +90,48 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
     },
   })
 
-  if (isLoading) {
+  const updateDayExceptionMutation = useMutation({
+    mutationFn: async ({ date, isAvailable }: DayAvailability) => {
+      if (!isAvailable) {
+        const { error } = await supabase
+          .from("contractor_day_exceptions")
+          .upsert({
+            contractor_id: contractorId,
+            exception_date: date,
+            is_available: false,
+          })
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from("contractor_day_exceptions")
+          .delete()
+          .eq("contractor_id", contractorId)
+          .eq("exception_date", date)
+        if (error) throw error
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contractor-day-exceptions"] })
+      toast.success("Day availability updated successfully")
+    },
+    onError: (error) => {
+      console.error("Error updating day exception:", error)
+      toast.error("Failed to update day availability")
+    },
+  })
+
+  const handleDayClick = (date: Date) => {
+    const formattedDate = format(date, "yyyy-MM-dd")
+    const existingException = dayExceptions?.find(
+      ex => ex.exception_date === formattedDate
+    )
+    updateDayExceptionMutation.mutate({
+      date: formattedDate,
+      isAvailable: !!existingException,
+    })
+  }
+
+  if (isLoadingWeekly || isLoadingExceptions) {
     return <div>Loading availability...</div>
   }
 
@@ -93,16 +153,39 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
 
       <div className="rounded-lg border">
         <Calendar
-          mode={viewMode}
+          mode="single"
           selected={selectedDate}
-          onSelect={setSelectedDate}
+          onSelect={(date) => {
+            if (date) {
+              setSelectedDate(date)
+              handleDayClick(date)
+            }
+          }}
+          modifiers={{
+            unavailable: (date) => {
+              const formattedDate = format(date, "yyyy-MM-dd")
+              return dayExceptions?.some(
+                ex => ex.exception_date === formattedDate
+              ) || false
+            }
+          }}
+          modifiersStyles={{
+            unavailable: { 
+              textDecoration: "line-through",
+              color: "red" 
+            }
+          }}
           className="rounded-md border"
         />
       </div>
 
+      <div className="text-sm text-muted-foreground">
+        Click on a date to mark it as unavailable/available
+      </div>
+
       {isEditingSchedule && (
         <WeeklyScheduleEditor
-          availability={availability}
+          availability={weeklyAvailability}
           onSave={async (scheduleData) => {
             await updateAvailabilityMutation.mutateAsync(scheduleData)
           }}
