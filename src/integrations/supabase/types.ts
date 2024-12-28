@@ -440,6 +440,56 @@ export type Database = {
           },
         ]
       }
+      contractor_clients: {
+        Row: {
+          address: string | null
+          contractor_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          opt_in_marketing: boolean | null
+          phone: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          opt_in_marketing?: boolean | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          opt_in_marketing?: boolean | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_clients_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_day_exceptions: {
         Row: {
           contractor_id: string | null
@@ -465,6 +515,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contractor_day_exceptions_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_expenses: {
+        Row: {
+          amount: number
+          category: string
+          contractor_id: string | null
+          created_at: string
+          date: string
+          description: string
+          id: string
+          receipt_url: string | null
+          tax_category: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          contractor_id?: string | null
+          created_at?: string
+          date: string
+          description: string
+          id?: string
+          receipt_url?: string | null
+          tax_category?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          contractor_id?: string | null
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          receipt_url?: string | null
+          tax_category?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_expenses_contractor_id_fkey"
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "contractors"
@@ -523,6 +620,56 @@ export type Database = {
           },
         ]
       }
+      contractor_marketing: {
+        Row: {
+          content: string | null
+          contractor_id: string | null
+          created_at: string
+          id: string
+          metrics: Json | null
+          platform: string | null
+          scheduled_date: string | null
+          status: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          metrics?: Json | null
+          platform?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          metrics?: Json | null
+          platform?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_marketing_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_portfolio: {
         Row: {
           completed_date: string | null
@@ -554,6 +701,66 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contractor_portfolio_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_projects: {
+        Row: {
+          actual_cost: number | null
+          budget: number | null
+          client_id: string | null
+          contractor_id: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          start_date: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number | null
+          budget?: number | null
+          client_id?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number | null
+          budget?: number | null
+          client_id?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_projects_contractor_id_fkey"
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "contractors"
