@@ -9,6 +9,7 @@ import { ContractorAvailability } from "@/components/admin/ContractorAvailabilit
 import { ClientBuildsTable } from "@/components/admin/ClientBuildsTable"
 import { PurchasesTable } from "@/components/admin/PurchasesTable"
 import { PreApprovalTable } from "@/components/admin/PreApprovalTable"
+import { StripeDashboard } from "@/components/admin/StripeDashboard"
 import { FinancialOverview } from "@/components/admin/FinancialOverview"
 
 export default function AdminDashboard() {
@@ -79,13 +80,14 @@ export default function AdminDashboard() {
       <FinancialOverview />
 
       <Tabs defaultValue="waitlist" className="space-y-4">
-        <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 w-full">
           <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="availability">Contractor Availability</TabsTrigger>
           <TabsTrigger value="builds">Saved Builds</TabsTrigger>
           <TabsTrigger value="purchases">Floor Plan Purchases</TabsTrigger>
           <TabsTrigger value="preapproval">Pre-approvals</TabsTrigger>
+          <TabsTrigger value="stripe">Stripe Dashboard</TabsTrigger>
         </TabsList>
 
         <TabsContent value="waitlist" className="space-y-4">
@@ -110,6 +112,10 @@ export default function AdminDashboard() {
         
         <TabsContent value="preapproval" className="space-y-4">
           <PreApprovalTable />
+        </TabsContent>
+
+        <TabsContent value="stripe" className="space-y-4">
+          <StripeDashboard />
         </TabsContent>
       </Tabs>
     </div>
