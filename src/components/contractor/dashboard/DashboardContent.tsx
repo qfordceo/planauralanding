@@ -1,4 +1,4 @@
-import { Briefcase, Calendar, Star, Bell, Bug, ArrowUpDown } from "lucide-react";
+import { Briefcase, Calendar, Star, Bell, Bug, ArrowUpDown, CreditCard } from "lucide-react";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
 import { PortfolioManager } from "@/components/contractor/PortfolioManager";
 import { ContractorReviews } from "@/components/contractor/ContractorReviews";
@@ -6,6 +6,8 @@ import { BidNotifications } from "@/components/contractor/BidNotifications";
 import { DefectTracker } from "@/components/contractor/DefectTracker";
 import { RebidManager } from "@/components/contractor/RebidManager";
 import { AvailabilityManager } from "@/components/contractor/availability/AvailabilityManager";
+import { PaymentSettings } from "@/components/contractor/payments/PaymentSettings";
+import { PaymentHistory } from "@/components/contractor/payments/PaymentHistory";
 import type { Contractor } from "@/types/contractor";
 
 interface DashboardContentProps {
@@ -92,6 +94,22 @@ export function DashboardContent({
       >
         {activeSection === 'availability' && contractor && (
           <AvailabilityManager contractorId={contractor.id} />
+        )}
+      </DashboardCard>
+
+      <DashboardCard
+        title="Payments"
+        description="Manage your payment settings and view payment history."
+        icon={CreditCard}
+        buttonText={activeSection === 'payments' ? 'Close Payments' : 'View Payments'}
+        onClick={() => setActiveSection(activeSection === 'payments' ? null : 'payments')}
+        expanded={activeSection === 'payments'}
+      >
+        {activeSection === 'payments' && (
+          <div className="space-y-6">
+            <PaymentSettings contractorId={contractor.id} />
+            <PaymentHistory contractorId={contractor.id} />
+          </div>
         )}
       </DashboardCard>
     </div>
