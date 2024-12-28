@@ -34,6 +34,12 @@ export function BuildCostCard({ floorPlanId, landListingId }: BuildCostCardProps
         console.error('Build estimate error:', error);
         return null;
       }
+
+      // Set target build cost to 75% of comp value if it exists
+      if (data && data.comp_average_price) {
+        data.target_build_cost = data.comp_average_price * 0.75;
+      }
+
       return data;
     },
     enabled: !!floorPlanId && !!landListingId
@@ -43,7 +49,7 @@ export function BuildCostCard({ floorPlanId, landListingId }: BuildCostCardProps
   if (!buildEstimate) return null;
 
   const floorPlanCost = buildEstimate.floor_plans?.plan_price || 0;
-  const consultingFee = 2500;
+  const consultingFee = buildEstimate.floor_plans?.square_feet ? buildEstimate.floor_plans.square_feet * 5 : 2500;
   const lineItemsTotal = buildEstimate.build_line_items?.reduce(
     (sum, item) => sum + (item.actual_cost || item.estimated_cost || 0),
     0

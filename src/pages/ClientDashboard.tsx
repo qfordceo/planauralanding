@@ -150,7 +150,10 @@ export default function ClientDashboard() {
         </TabsContent>
 
         <TabsContent value="consulting">
-          <BuildConsulting profile={profile} />
+          <BuildConsulting 
+            profile={profile} 
+            floorPlanId={activeBuild?.floor_plan_id}
+          />
         </TabsContent>
       </Tabs>
     </div>
