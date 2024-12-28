@@ -8,32 +8,42 @@ export const useAuthRedirect = () => {
   const handleRedirect = async (session: Session | null) => {
     if (!session) return
 
-    // First check if user is an admin - this should take precedence
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', session.user.id)
-      .maybeSingle()
+    try {
+      // First check if user is an admin - this should take precedence
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single()
 
-    if (profile?.is_admin) {
-      navigate('/admin')
-      return
+      if (profileError) throw profileError
+
+      if (profile?.is_admin) {
+        navigate('/admin')
+        return
+      }
+
+      // Then check if user is a contractor
+      const { data: contractor, error: contractorError } = await supabase
+        .from('contractors')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+
+      if (contractorError) throw contractorError
+
+      if (contractor) {
+        navigate('/contractor-dashboard')
+        return
+      }
+
+      // If neither admin nor contractor, redirect to client dashboard
+      navigate('/dashboard')
+    } catch (error) {
+      console.error('Error in auth redirect:', error)
+      // On error, redirect to dashboard as fallback
+      navigate('/dashboard')
     }
-
-    // Then check if user is a contractor
-    const { data: contractor } = await supabase
-      .from('contractors')
-      .select('id')
-      .eq('user_id', session.user.id)
-      .maybeSingle()
-
-    if (contractor) {
-      navigate('/contractor-dashboard')
-      return
-    }
-
-    // If neither admin nor contractor, redirect to client dashboard
-    navigate('/dashboard')
   }
 
   return handleRedirect
