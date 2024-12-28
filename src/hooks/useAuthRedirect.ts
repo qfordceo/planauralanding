@@ -8,12 +8,12 @@ export const useAuthRedirect = () => {
   const handleRedirect = async (session: Session | null) => {
     if (!session) return
 
-    // First check if user is an admin
+    // First check if user is an admin - this should take precedence
     const { data: profile } = await supabase
       .from('profiles')
       .select('is_admin')
       .eq('id', session.user.id)
-      .single()
+      .maybeSingle()
 
     if (profile?.is_admin) {
       navigate('/admin')
@@ -25,7 +25,7 @@ export const useAuthRedirect = () => {
       .from('contractors')
       .select('id')
       .eq('user_id', session.user.id)
-      .single()
+      .maybeSingle()
 
     if (contractor) {
       navigate('/contractor-dashboard')
