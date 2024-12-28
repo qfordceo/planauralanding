@@ -2,19 +2,20 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Home, FileText, Wallet, HardHat } from "lucide-react";
+import { DashboardCard } from "@/components/contractor/DashboardCard";
 import { SavedFloorPlans } from "@/components/client/SavedFloorPlans";
 import { SavedLandPlots } from "@/components/client/SavedLandPlots";
 import { PreApprovalStatus } from "@/components/client/PreApprovalStatus";
 import { BuildConsulting } from "@/components/client/BuildConsulting";
 import { BuildCostCard } from "@/components/client/BuildCostCard";
-import { Profile } from "@/types/profile";
+import type { Profile } from "@/types/profile";
 
 export default function ClientDashboard() {
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = React.useState<string | null>(null);
   
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['profile'],
@@ -70,7 +71,6 @@ export default function ClientDashboard() {
         return null;
       }
       
-      console.log('Active build data:', data);
       return data;
     },
     enabled: !!profile?.id
@@ -129,33 +129,56 @@ export default function ClientDashboard() {
         </div>
       ) : null}
       
-      <Tabs defaultValue="saved" className="space-y-8">
-        <TabsList className="grid grid-cols-4 gap-4">
-          <TabsTrigger value="saved">Saved Floorplans</TabsTrigger>
-          <TabsTrigger value="land">Land Plots</TabsTrigger>
-          <TabsTrigger value="approval">Pre-Approval</TabsTrigger>
-          <TabsTrigger value="consulting">Build Consulting</TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <DashboardCard
+          title="Saved Floor Plans"
+          description="View and manage your saved floor plans"
+          icon={Home}
+          buttonText={activeSection === 'floor-plans' ? 'Close Floor Plans' : 'View Floor Plans'}
+          onClick={() => setActiveSection(activeSection === 'floor-plans' ? null : 'floor-plans')}
+          expanded={activeSection === 'floor-plans'}
+        >
+          {activeSection === 'floor-plans' && <SavedFloorPlans />}
+        </DashboardCard>
 
-        <TabsContent value="saved">
-          <SavedFloorPlans />
-        </TabsContent>
+        <DashboardCard
+          title="Land Plots"
+          description="Browse available land plots in your area"
+          icon={FileText}
+          buttonText={activeSection === 'land' ? 'Close Land Plots' : 'View Land Plots'}
+          onClick={() => setActiveSection(activeSection === 'land' ? null : 'land')}
+          expanded={activeSection === 'land'}
+        >
+          {activeSection === 'land' && <SavedLandPlots />}
+        </DashboardCard>
 
-        <TabsContent value="land">
-          <SavedLandPlots />
-        </TabsContent>
+        <DashboardCard
+          title="Pre-Approval Status"
+          description="Check your pre-approval status and amount"
+          icon={Wallet}
+          buttonText={activeSection === 'approval' ? 'Close Status' : 'View Status'}
+          onClick={() => setActiveSection(activeSection === 'approval' ? null : 'approval')}
+          expanded={activeSection === 'approval'}
+        >
+          {activeSection === 'approval' && <PreApprovalStatus profile={profile} />}
+        </DashboardCard>
 
-        <TabsContent value="approval">
-          <PreApprovalStatus profile={profile} />
-        </TabsContent>
-
-        <TabsContent value="consulting">
-          <BuildConsulting 
-            profile={profile} 
-            floorPlanId={activeBuild?.floor_plan_id}
-          />
-        </TabsContent>
-      </Tabs>
+        <DashboardCard
+          title="Build Consulting"
+          description="Get expert guidance on your build project"
+          icon={HardHat}
+          buttonText={activeSection === 'consulting' ? 'Close Consulting' : 'View Consulting'}
+          onClick={() => setActiveSection(activeSection === 'consulting' ? null : 'consulting')}
+          expanded={activeSection === 'consulting'}
+        >
+          {activeSection === 'consulting' && (
+            <BuildConsulting 
+              profile={profile} 
+              floorPlanId={activeBuild?.floor_plan_id}
+            />
+          )}
+        </DashboardCard>
+      </div>
     </div>
   );
 }
