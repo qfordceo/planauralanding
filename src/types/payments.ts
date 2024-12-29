@@ -17,7 +17,7 @@ export interface PaymentMilestone {
   escrow_released_at: string | null;
   dispute_reason: string | null;
   dispute_resolution_notes: string | null;
-  release_conditions: any[];
+  release_conditions: string[];
   created_at: string;
   updated_at: string;
 }

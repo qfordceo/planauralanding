@@ -53,7 +53,7 @@ export function MilestoneList({ milestones, onStatusUpdate, onDelete, isValidati
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold">{milestone.title}</h3>
-              <Badge variant={milestone.status === "completed" ? "success" : "warning"}>
+              <Badge variant={milestone.status === "completed" ? "secondary" : "outline"}>
                 {milestone.status}
               </Badge>
               <Badge className={getEscrowStatusColor(milestone.escrow_status)}>
