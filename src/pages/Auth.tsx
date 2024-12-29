@@ -68,8 +68,8 @@ export default function Auth() {
             theme: ThemeSupa,
             style: {
               button: { 
-                background: 'var(--primary)',
-                color: 'white',
+                background: '#9b87f5',
+                color: '#FFFFFF',
                 borderRadius: '0.375rem',
                 fontWeight: '500',
                 padding: '0.5rem 1rem',
@@ -78,8 +78,12 @@ export default function Auth() {
                 lineHeight: '1.25rem',
                 border: 'none',
                 cursor: 'pointer',
+                transition: 'background-color 0.2s ease',
+                '&:hover': {
+                  background: '#7E69AB',
+                }
               },
-              anchor: { color: 'var(--primary)' },
+              anchor: { color: '#9b87f5' },
               input: {
                 borderRadius: '0.375rem',
               },
@@ -95,8 +99,8 @@ export default function Auth() {
             variables: {
               default: {
                 colors: {
-                  brand: 'var(--primary)',
-                  brandAccent: 'var(--primary)',
+                  brand: '#9b87f5',
+                  brandAccent: '#7E69AB',
                 }
               }
             }
