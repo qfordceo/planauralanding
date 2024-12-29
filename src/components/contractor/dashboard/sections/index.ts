@@ -11,8 +11,10 @@ import { PortfolioSection } from "./PortfolioSection";
 import { ReviewsSection } from "./ReviewsSection";
 import { ComplianceSection } from "./ComplianceSection";
 import { TrainingSection } from "./TrainingSection";
+import { MessagingSection } from "./MessagingSection";
 
 export const sections = [
+  MessagingSection,
   SchedulingSection,
   ExpenseSection,
   ClientManagementSection,
