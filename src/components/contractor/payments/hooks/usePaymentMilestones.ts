@@ -7,7 +7,7 @@ export function usePaymentMilestones(contractorId: string, projectId: string) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: milestones, isLoading, isValidating } = useQuery({
+  const { data: milestones, isLoading, isFetching } = useQuery({
     queryKey: ["contractor-milestones", contractorId, projectId],
     queryFn: async () => {
       if (!projectId || projectId === "test-project-id") {
@@ -115,7 +115,7 @@ export function usePaymentMilestones(contractorId: string, projectId: string) {
   return {
     milestones,
     isLoading,
-    isValidating,
+    isValidating: isFetching,
     addMilestone,
     updateMilestoneStatus,
     deleteMilestone,
