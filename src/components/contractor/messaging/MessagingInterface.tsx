@@ -4,8 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Search, Paperclip } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProjectThreads } from "./ProjectThreads";
+import { FileUpload } from "./FileUpload";
 
 interface Message {
   id: string;
@@ -14,6 +17,8 @@ interface Message {
   recipient_id: string | null;
   created_at: string;
   read: boolean;
+  project_id: string;
+  attachment_url?: string;
 }
 
 interface MessagingInterfaceProps {
@@ -22,16 +27,29 @@ interface MessagingInterfaceProps {
 
 export function MessagingInterface({ contractorId }: MessagingInterfaceProps) {
   const [newMessage, setNewMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [showFileUpload, setShowFileUpload] = useState(false);
   const { toast } = useToast();
   
   const { data: messages, isLoading, refetch } = useQuery({
-    queryKey: ['messages', contractorId],
+    queryKey: ['messages', contractorId, selectedProject, searchQuery],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('project_messages')
         .select('*')
         .or(`sender_id.eq.${contractorId},recipient_id.eq.${contractorId}`)
         .order('created_at', { ascending: false });
+
+      if (selectedProject) {
+        query = query.eq('project_id', selectedProject);
+      }
+
+      if (searchQuery) {
+        query = query.ilike('message', `%${searchQuery}%`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as Message[];
@@ -59,8 +77,8 @@ export function MessagingInterface({ contractorId }: MessagingInterfaceProps) {
     };
   }, [refetch]);
 
-  const sendMessage = async () => {
-    if (!newMessage.trim()) return;
+  const sendMessage = async (attachmentUrl?: string) => {
+    if (!newMessage.trim() && !attachmentUrl) return;
 
     try {
       const { error } = await supabase
@@ -68,12 +86,14 @@ export function MessagingInterface({ contractorId }: MessagingInterfaceProps) {
         .insert({
           message: newMessage,
           sender_id: contractorId,
-          project_id: "default", // You'll want to make this dynamic based on the active project
+          project_id: selectedProject || "default",
+          attachment_url: attachmentUrl
         });
 
       if (error) throw error;
 
       setNewMessage("");
+      setShowFileUpload(false);
       toast({
         title: "Message sent",
         description: "Your message has been sent successfully.",
@@ -97,6 +117,21 @@ export function MessagingInterface({ contractorId }: MessagingInterfaceProps) {
 
   return (
     <div className="flex flex-col h-[400px]">
+      <div className="flex items-center gap-2 p-4 border-b">
+        <Input
+          placeholder="Search messages..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-xs"
+          prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+        />
+        <ProjectThreads
+          contractorId={contractorId}
+          selectedProject={selectedProject}
+          onSelectProject={setSelectedProject}
+        />
+      </div>
+
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages?.map((message) => (
@@ -108,6 +143,16 @@ export function MessagingInterface({ contractorId }: MessagingInterfaceProps) {
                   : "bg-muted"
               }`}
             >
+              {message.attachment_url && (
+                <a 
+                  href={message.attachment_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm underline block mb-2"
+                >
+                  View Attachment
+                </a>
+              )}
               <p>{message.message}</p>
               <span className="text-xs opacity-70">
                 {new Date(message.created_at).toLocaleString()}
@@ -117,16 +162,30 @@ export function MessagingInterface({ contractorId }: MessagingInterfaceProps) {
         </div>
       </ScrollArea>
       
-      <div className="p-4 border-t flex gap-2">
-        <Input
-          placeholder="Type your message..."
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-        />
-        <Button onClick={sendMessage}>
-          <Send className="h-4 w-4" />
-        </Button>
+      <div className="p-4 border-t">
+        {showFileUpload ? (
+          <FileUpload
+            onUploadComplete={(url) => {
+              sendMessage(url);
+            }}
+            onCancel={() => setShowFileUpload(false)}
+          />
+        ) : (
+          <div className="flex gap-2">
+            <Input
+              placeholder="Type your message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            />
+            <Button onClick={() => setShowFileUpload(true)}>
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Button onClick={() => sendMessage()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
