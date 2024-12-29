@@ -68,7 +68,7 @@ export default function Auth() {
             theme: ThemeSupa,
             style: {
               button: { 
-                background: '#9b87f5',
+                background: '#2D1810',
                 color: '#FFFFFF',
                 borderRadius: '0.375rem',
                 fontWeight: '500',
@@ -80,10 +80,10 @@ export default function Auth() {
                 cursor: 'pointer',
                 transition: 'background-color 0.2s ease',
                 '&:hover': {
-                  background: '#7E69AB',
+                  backgroundColor: '#8B7355',
                 }
               },
-              anchor: { color: '#9b87f5' },
+              anchor: { color: '#2D1810' },
               input: {
                 borderRadius: '0.375rem',
               },
@@ -99,8 +99,8 @@ export default function Auth() {
             variables: {
               default: {
                 colors: {
-                  brand: '#9b87f5',
-                  brandAccent: '#7E69AB',
+                  brand: '#2D1810',
+                  brandAccent: '#8B7355',
                 }
               }
             }
