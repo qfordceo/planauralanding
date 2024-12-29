@@ -7,11 +7,14 @@ import ContractorDashboard from "@/pages/ContractorDashboard"
 import LandingPage from "@/pages/LandingPage"
 import AdminDashboard from "@/pages/AdminDashboard"
 import ClientDashboard from "@/pages/ClientDashboard"
+import PrivacyPolicy from "@/pages/PrivacyPolicy"
+import DataProcessingAgreement from "@/pages/DataProcessingAgreement"
+import { Footer } from "./layout/Footer"
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
-      <main>
+    <div className="min-h-screen bg-background flex flex-col">
+      <main className="flex-1">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/listings" element={<Index />} />
@@ -21,9 +24,12 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           <Route path="/contractor-dashboard" element={<ContractorDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<ClientDashboard />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/data-processing-agreement" element={<DataProcessingAgreement />} />
         </Routes>
       </main>
+      <Footer />
       {children}
     </div>
-  )
+  );
 }

@@ -1,6 +1,7 @@
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthError } from "@supabase/supabase-js";
 
 interface AuthFormProps {
   handleError: (error: Error) => void;
@@ -46,7 +47,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
         }
       }}
       providers={["google"]}
-      onError={handleError}
+      onError={(error: AuthError) => handleError(error)}
     />
   );
 };

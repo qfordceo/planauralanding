@@ -8,6 +8,7 @@ import { useDashboardState } from "@/components/contractor/dashboard/DashboardSt
 import { useContractorData } from "@/components/contractor/dashboard/useContractorData";
 import { useNotifications } from "@/components/contractor/dashboard/useNotifications";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ContractorDashboard() {
   const navigate = useNavigate();
@@ -25,6 +26,16 @@ export default function ContractorDashboard() {
     defectCount,
     setDefectCount,
   } = useDashboardState();
+
+  useEffect(() => {
+    const checkDpaAcceptance = async () => {
+      if (contractor && !contractor.dpa_accepted_at) {
+        navigate("/data-processing-agreement");
+      }
+    };
+
+    checkDpaAcceptance();
+  }, [contractor, navigate]);
 
   const { handleRegistration, handleSignOut } = useContractorData({
     setLoading,
