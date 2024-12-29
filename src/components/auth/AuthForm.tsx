@@ -45,8 +45,8 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
           }
         }
       }}
-      providers={[]}
-      onAuthError={handleError}
+      providers={["google"]}
+      onError={handleError}
     />
   );
 };
