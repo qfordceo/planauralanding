@@ -6,6 +6,7 @@ import { useNotifications } from "@/components/contractor/dashboard/useNotificat
 import { TermsAcknowledgmentModal } from "@/components/contractor/TermsAcknowledgmentModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { ContractorFormData } from "@/types/contractor";
 
 export default function ContractorDashboard() {
   const {
@@ -22,6 +23,7 @@ export default function ContractorDashboard() {
   } = useDashboardState();
 
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [registrationLoading, setRegistrationLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -42,6 +44,40 @@ export default function ContractorDashboard() {
 
     checkContractorStatus();
   }, []);
+
+  const handleRegistrationSubmit = async (data: ContractorFormData) => {
+    setRegistrationLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const { error } = await supabase
+        .from("contractors")
+        .insert([
+          {
+            user_id: user.id,
+            ...data
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Your contractor profile has been created",
+      });
+      
+      window.location.reload();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create contractor profile",
+        variant: "destructive",
+      });
+    } finally {
+      setRegistrationLoading(false);
+    }
+  };
 
   const handleTermsAccept = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -78,7 +114,10 @@ export default function ContractorDashboard() {
   }
 
   if (registering) {
-    return <RegistrationForm />;
+    return <RegistrationForm 
+      onSubmit={handleRegistrationSubmit}
+      loading={registrationLoading}
+    />;
   }
 
   if (!contractor) {

@@ -20,6 +20,14 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
     navigate("/terms-of-service");
   };
 
+  const handleAuthSubmit = async (formData: any) => {
+    if (!termsAccepted) {
+      setShowTermsError(true);
+      return false;
+    }
+    return true;
+  };
+
   return (
     <div className="space-y-6">
       <SupabaseAuth
@@ -70,13 +78,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
             }
           }
         }}
-        beforeAuth={() => {
-          if (!termsAccepted) {
-            setShowTermsError(true);
-            return false;
-          }
-          return true;
-        }}
+        onSubmit={handleAuthSubmit}
       />
       
       <div className="flex items-center space-x-2">
