@@ -1,4 +1,3 @@
-import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConsultingAgreement } from "@/components/legal/ConsultingAgreement";
 import { ContractorAgreement } from "@/components/legal/ContractorAgreement";
@@ -12,10 +11,10 @@ export default function LegalAgreements() {
       
       <Tabs defaultValue="consulting" className="w-full">
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-          <TabsTrigger value="consulting">Consulting</TabsTrigger>
-          <TabsTrigger value="contractor">Contractor</TabsTrigger>
-          <TabsTrigger value="liability">Liability</TabsTrigger>
-          <TabsTrigger value="warranty">Warranty</TabsTrigger>
+          <TabsTrigger value="consulting">Consulting Agreement</TabsTrigger>
+          <TabsTrigger value="contractor">Contractor Agreement</TabsTrigger>
+          <TabsTrigger value="liability">Liability Waiver</TabsTrigger>
+          <TabsTrigger value="warranty">Warranty Agreement</TabsTrigger>
         </TabsList>
         
         <TabsContent value="consulting">

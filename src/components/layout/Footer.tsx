@@ -16,6 +16,10 @@ export function Footer() {
         <Link to="/data-processing-agreement" className="hover:text-foreground">
           Data Processing Agreement
         </Link>
+        <Separator orientation="vertical" className="h-4" />
+        <Link to="/legal-agreements" className="hover:text-foreground">
+          Legal Agreements
+        </Link>
       </div>
     </footer>
   );
