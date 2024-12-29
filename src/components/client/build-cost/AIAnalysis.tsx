@@ -24,11 +24,8 @@ export function AIAnalysis({ buildEstimate }: AIAnalysisProps) {
           floorPlan: buildEstimate.floor_plans,
           landListing: buildEstimate.land_listings
         },
-        // Remove any trailing slashes and ensure proper URL formatting
-        options: {
-          headers: {
-            'Content-Type': 'application/json'
-          }
+        headers: {
+          'Content-Type': 'application/json'
         }
       });
 
