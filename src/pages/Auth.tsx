@@ -72,12 +72,34 @@ export default function Auth() {
                 color: 'white',
                 borderRadius: '0.375rem',
                 fontWeight: '500',
+                padding: '0.5rem 1rem',
+                height: '2.5rem',
+                fontSize: '0.875rem',
+                lineHeight: '1.25rem',
+                border: 'none',
+                cursor: 'pointer',
               },
               anchor: { color: 'var(--primary)' },
               input: {
                 borderRadius: '0.375rem',
               },
+              message: {
+                color: 'var(--foreground)',
+              },
+              label: {
+                color: 'var(--foreground)',
+                marginBottom: '0.5rem',
+                display: 'block',
+              }
             },
+            variables: {
+              default: {
+                colors: {
+                  brand: 'var(--primary)',
+                  brandAccent: 'var(--primary)',
+                }
+              }
+            }
           }}
           providers={[]}
         />
