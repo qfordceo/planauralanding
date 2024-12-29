@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function DataProcessingAgreement() {
   const { toast } = useToast();
-  const lastUpdated = "March 13, 2024";
+  const lastUpdated = "December 29, 2024";
 
   const handleAcceptDPA = async () => {
     try {
