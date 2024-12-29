@@ -670,6 +670,66 @@ export type Database = {
           },
         ]
       }
+      contractor_payment_milestones: {
+        Row: {
+          amount: number
+          completed_date: string | null
+          contractor_id: string | null
+          created_at: string | null
+          due_date: string | null
+          id: string
+          invoice_generated: boolean | null
+          invoice_url: string | null
+          project_id: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          completed_date?: string | null
+          contractor_id?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_generated?: boolean | null
+          invoice_url?: string | null
+          project_id?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_date?: string | null
+          contractor_id?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_generated?: boolean | null
+          invoice_url?: string | null
+          project_id?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_payment_milestones_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_payment_milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_portfolio: {
         Row: {
           completed_date: string | null

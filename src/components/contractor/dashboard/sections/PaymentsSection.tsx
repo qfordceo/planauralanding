@@ -1,7 +1,6 @@
-import { CreditCard } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
-import { PaymentSettings } from "@/components/contractor/payments/PaymentSettings";
-import { PaymentHistory } from "@/components/contractor/payments/PaymentHistory";
+import { PaymentMilestones } from "@/components/contractor/payments/PaymentMilestones";
 
 interface PaymentsSectionProps {
   contractorId: string;
@@ -9,21 +8,26 @@ interface PaymentsSectionProps {
   setActiveSection: (section: string | null) => void;
 }
 
-export function PaymentsSection({ contractorId, activeSection, setActiveSection }: PaymentsSectionProps) {
+export function PaymentsSection({
+  contractorId,
+  activeSection,
+  setActiveSection,
+}: PaymentsSectionProps) {
   return (
     <DashboardCard
-      title="Payments"
-      description="Manage your payment settings and view payment history."
-      icon={CreditCard}
-      buttonText={activeSection === 'payments' ? 'Close Payments' : 'View Payments'}
-      onClick={() => setActiveSection(activeSection === 'payments' ? null : 'payments')}
-      expanded={activeSection === 'payments'}
+      title="Payments & Invoicing"
+      description="Track payments, manage invoices, and monitor financial milestones."
+      icon={DollarSign}
+      buttonText={activeSection === "payments" ? "Close Payments" : "Manage Payments"}
+      onClick={() => setActiveSection(activeSection === "payments" ? null : "payments")}
+      expanded={activeSection === "payments"}
     >
-      {activeSection === 'payments' && (
-        <div className="space-y-6">
-          <PaymentSettings contractorId={contractorId} />
-          <PaymentHistory contractorId={contractorId} />
-        </div>
+      {activeSection === "payments" && (
+        <PaymentMilestones 
+          contractorId={contractorId} 
+          // TODO: Replace with actual project ID selection
+          projectId="test-project-id"
+        />
       )}
     </DashboardCard>
   );
