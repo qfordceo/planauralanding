@@ -7,6 +7,9 @@ export function Footer() {
         <Link to="/privacy-policy" className="hover:text-foreground">
           Privacy Policy
         </Link>
+        <Link to="/terms-of-service" className="hover:text-foreground">
+          Terms of Service
+        </Link>
         <Link to="/data-processing-agreement" className="hover:text-foreground">
           Data Processing Agreement
         </Link>

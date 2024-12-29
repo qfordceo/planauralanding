@@ -8,6 +8,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Waitlist from "./pages/Waitlist";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DataProcessingAgreement from "./pages/DataProcessingAgreement";
+import TermsOfService from "./pages/TermsOfService";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="admin-dashboard" element={<AdminDashboard />} />
           <Route path="waitlist" element={<Waitlist />} />
           <Route path="privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="terms-of-service" element={<TermsOfService />} />
           <Route path="data-processing-agreement" element={<DataProcessingAgreement />} />
         </Route>
       </Routes>
