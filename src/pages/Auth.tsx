@@ -64,8 +64,16 @@ export default function Auth() {
           appearance={{ 
             theme: ThemeSupa,
             style: {
-              button: { background: 'var(--primary)', color: 'white' },
+              button: { 
+                background: 'var(--primary)',
+                color: 'white',
+                borderRadius: '0.375rem',
+                fontWeight: '500',
+              },
               anchor: { color: 'var(--primary)' },
+              input: {
+                borderRadius: '0.375rem',
+              },
             },
           }}
           providers={[]}
