@@ -32,16 +32,24 @@ export default function Auth() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/dashboard')
+      }
+      // Handle rate limit errors
+      if (event === 'USER_REGISTRATION_EMAIL_RATE_LIMITED') {
+        toast({
+          title: "Too many attempts",
+          description: "Please wait a few minutes before trying again",
+          variant: "destructive",
+        })
       }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [navigate])
+  }, [navigate, toast])
 
   if (isLoading) {
     return (
