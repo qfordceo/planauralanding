@@ -5,13 +5,16 @@ import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useNavigate } from "react-router-dom"
-import { AuthError } from "@supabase/supabase-js"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useSearchParams } from "react-router-dom"
 
 export default function Auth() {
   const { toast } = useToast()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const defaultTab = searchParams.get('type') || 'client'
 
   useEffect(() => {
     const checkSession = async () => {
@@ -36,18 +39,6 @@ export default function Auth() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/dashboard')
-      }
-
-      // Handle auth errors including rate limiting
-      if (event === 'USER_SIGNED_UP' && !session) {
-        const authError = await supabase.auth.getError() as AuthError
-        if (authError?.message?.includes('rate limit')) {
-          toast({
-            title: "Too many attempts",
-            description: "Please wait a few minutes before trying again",
-            variant: "destructive",
-          })
-        }
       }
     })
 
@@ -75,48 +66,94 @@ export default function Auth() {
         </Alert>
       )}
       <div className="bg-card rounded-lg p-8 shadow">
-        <SupabaseAuth
-          supabaseClient={supabase}
-          appearance={{ 
-            theme: ThemeSupa,
-            style: {
-              button: { 
-                backgroundColor: '#2D1810',
-                color: '#FFFFFF',
-                borderRadius: '0.375rem',
-                fontWeight: '500',
-                padding: '0.5rem 1rem',
-                height: '2.5rem',
-                fontSize: '0.875rem',
-                lineHeight: '1.25rem',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s ease'
-              },
-              anchor: { color: '#2D1810' },
-              input: {
-                borderRadius: '0.375rem',
-              },
-              message: {
-                color: 'var(--foreground)',
-              },
-              label: {
-                color: 'var(--foreground)',
-                marginBottom: '0.5rem',
-                display: 'block',
-              }
-            },
-            variables: {
-              default: {
-                colors: {
-                  brand: '#2D1810',
-                  brandAccent: '#8B7355',
+        <Tabs defaultValue={defaultTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="client">Client</TabsTrigger>
+            <TabsTrigger value="contractor">Contractor</TabsTrigger>
+          </TabsList>
+          <TabsContent value="client">
+            <SupabaseAuth
+              supabaseClient={supabase}
+              appearance={{ 
+                theme: ThemeSupa,
+                style: {
+                  button: { 
+                    backgroundColor: '#2D1810',
+                    color: '#FFFFFF',
+                    borderRadius: '0.375rem',
+                    fontWeight: '500',
+                    padding: '0.5rem 1rem',
+                    height: '2.5rem',
+                    fontSize: '0.875rem',
+                    lineHeight: '1.25rem',
+                  },
+                  anchor: { color: '#2D1810' },
+                  input: {
+                    borderRadius: '0.375rem',
+                  },
+                  message: {
+                    color: 'var(--foreground)',
+                  },
+                  label: {
+                    color: 'var(--foreground)',
+                    marginBottom: '0.5rem',
+                    display: 'block',
+                  }
+                },
+                variables: {
+                  default: {
+                    colors: {
+                      brand: '#2D1810',
+                      brandAccent: '#8B7355',
+                    }
+                  }
                 }
-              }
-            }
-          }}
-          providers={[]}
-        />
+              }}
+              providers={[]}
+            />
+          </TabsContent>
+          <TabsContent value="contractor">
+            <SupabaseAuth
+              supabaseClient={supabase}
+              appearance={{ 
+                theme: ThemeSupa,
+                style: {
+                  button: { 
+                    backgroundColor: '#2D1810',
+                    color: '#FFFFFF',
+                    borderRadius: '0.375rem',
+                    fontWeight: '500',
+                    padding: '0.5rem 1rem',
+                    height: '2.5rem',
+                    fontSize: '0.875rem',
+                    lineHeight: '1.25rem',
+                  },
+                  anchor: { color: '#2D1810' },
+                  input: {
+                    borderRadius: '0.375rem',
+                  },
+                  message: {
+                    color: 'var(--foreground)',
+                  },
+                  label: {
+                    color: 'var(--foreground)',
+                    marginBottom: '0.5rem',
+                    display: 'block',
+                  }
+                },
+                variables: {
+                  default: {
+                    colors: {
+                      brand: '#2D1810',
+                      brandAccent: '#8B7355',
+                    }
+                  }
+                }
+              }}
+              providers={[]}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
       <p className="text-sm text-center mt-4 text-muted-foreground">
         This site is protected by enhanced security measures.
