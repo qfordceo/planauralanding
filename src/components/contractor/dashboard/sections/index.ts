@@ -12,10 +12,16 @@ import { ReviewsSection } from "./ReviewsSection";
 import { ComplianceSection } from "./ComplianceSection";
 import { TrainingSection } from "./TrainingSection";
 import { MessagingSection } from "./MessagingSection";
+import { MaterialManagementSection } from "./MaterialManagementSection";
+import { WorkforceSection } from "./WorkforceSection";
+import { AnalyticsSection } from "./AnalyticsSection";
 
 export const sections = [
   MessagingSection,
   SchedulingSection,
+  MaterialManagementSection,
+  WorkforceSection,
+  AnalyticsSection,
   ExpenseSection,
   ClientManagementSection,
   MarketingSection,

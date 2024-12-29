@@ -693,6 +693,53 @@ export type Database = {
           },
         ]
       }
+      contractor_inventory: {
+        Row: {
+          category: string | null
+          contractor_id: string | null
+          created_at: string
+          id: string
+          last_updated: string
+          location: string | null
+          material_name: string
+          quantity: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          last_updated?: string
+          location?: string | null
+          material_name: string
+          quantity?: number
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          last_updated?: string
+          location?: string | null
+          material_name?: string
+          quantity?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_inventory_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_marketing: {
         Row: {
           content: string | null
@@ -1237,6 +1284,97 @@ export type Database = {
           qr_code_url?: string | null
           realtor_url?: string | null
           title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      material_orders: {
+        Row: {
+          contractor_id: string | null
+          created_at: string
+          id: string
+          order_details: Json
+          project_id: string | null
+          status: string
+          supplier_id: string | null
+          total_amount: number | null
+          tracking_info: Json | null
+          updated_at: string
+        }
+        Insert: {
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          order_details?: Json
+          project_id?: string | null
+          status?: string
+          supplier_id?: string | null
+          total_amount?: number | null
+          tracking_info?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          order_details?: Json
+          project_id?: string | null
+          status?: string
+          supplier_id?: string | null
+          total_amount?: number | null
+          tracking_info?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_orders_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_orders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "material_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_suppliers: {
+        Row: {
+          categories: string[]
+          contact_info: Json | null
+          created_at: string
+          id: string
+          name: string
+          rating: number | null
+          updated_at: string
+        }
+        Insert: {
+          categories?: string[]
+          contact_info?: Json | null
+          created_at?: string
+          id?: string
+          name: string
+          rating?: number | null
+          updated_at?: string
+        }
+        Update: {
+          categories?: string[]
+          contact_info?: Json | null
+          created_at?: string
+          id?: string
+          name?: string
+          rating?: number | null
           updated_at?: string
         }
         Relationships: []
