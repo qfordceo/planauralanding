@@ -7,11 +7,14 @@ import { TermsAcknowledgmentModal } from "@/components/contractor/TermsAcknowled
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { ContractorFormData } from "@/types/contractor";
+import { useNavigate } from "react-router-dom";
 
 export default function ContractorDashboard() {
   const {
     loading,
+    setLoading,
     registering,
+    setRegistering,
     contractor,
     setContractor,
     activeSection,
@@ -25,25 +28,49 @@ export default function ContractorDashboard() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [registrationLoading, setRegistrationLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkContractorStatus = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate("/auth");
+          return;
+        }
 
-      const { data: contractor } = await supabase
-        .from("contractors")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+        const { data: contractor, error } = await supabase
+          .from("contractors")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
 
-      if (contractor && !contractor.dpa_accepted) {
-        setShowTermsModal(true);
+        if (error) {
+          if (error.code === 'PGRST116') {
+            setRegistering(true);
+          } else {
+            console.error("Error fetching contractor:", error);
+            toast({
+              title: "Error",
+              description: "Failed to load contractor profile",
+              variant: "destructive",
+            });
+          }
+        } else if (contractor) {
+          setContractor(contractor);
+          if (!contractor.dpa_accepted) {
+            setShowTermsModal(true);
+          }
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error in checkContractorStatus:", error);
+        setLoading(false);
       }
     };
 
     checkContractorStatus();
-  }, []);
+  }, [navigate, setContractor, setLoading, setRegistering, toast]);
 
   const handleRegistrationSubmit = async (data: ContractorFormData) => {
     setRegistrationLoading(true);
@@ -69,6 +96,7 @@ export default function ContractorDashboard() {
       
       window.location.reload();
     } catch (error) {
+      console.error("Registration error:", error);
       toast({
         title: "Error",
         description: "Failed to create contractor profile",
@@ -80,48 +108,59 @@ export default function ContractorDashboard() {
   };
 
   const handleTermsAccept = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { error } = await supabase
-      .from("contractors")
-      .update({
-        dpa_accepted: true,
-        dpa_accepted_at: new Date().toISOString(),
-      })
-      .eq("user_id", user.id);
+      const { error } = await supabase
+        .from("contractors")
+        .update({
+          dpa_accepted: true,
+          dpa_accepted_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
 
-    if (error) {
+      if (error) throw error;
+
+      setShowTermsModal(false);
+      toast({
+        title: "Success",
+        description: "Terms acknowledgment recorded",
+      });
+    } catch (error) {
+      console.error("Terms acceptance error:", error);
       toast({
         title: "Error",
         description: "Failed to update terms acceptance status",
         variant: "destructive",
       });
-      return;
     }
-
-    setShowTermsModal(false);
-    toast({
-      title: "Success",
-      description: "Terms acknowledgment recorded",
-    });
   };
 
   useNotifications(contractor, setOutbidCount, setDefectCount);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   if (registering) {
-    return <RegistrationForm 
-      onSubmit={handleRegistrationSubmit}
-      loading={registrationLoading}
-    />;
+    return (
+      <RegistrationForm 
+        onSubmit={handleRegistrationSubmit}
+        loading={registrationLoading}
+      />
+    );
   }
 
   if (!contractor) {
-    return <div>No contractor found</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">No Contractor Profile Found</h2>
+          <p className="text-muted-foreground">Please contact support if this issue persists.</p>
+        </div>
+      </div>
+    );
   }
 
   return (

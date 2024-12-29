@@ -1,4 +1,4 @@
-import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
+import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -20,17 +20,9 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
     navigate("/terms-of-service");
   };
 
-  const handleAuthSubmit = async (formData: any) => {
-    if (!termsAccepted) {
-      setShowTermsError(true);
-      return false;
-    }
-    return true;
-  };
-
   return (
     <div className="space-y-6">
-      <SupabaseAuth
+      <Auth
         supabaseClient={supabase}
         appearance={{ 
           theme: ThemeSupa,
@@ -78,7 +70,13 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
             }
           }
         }}
-        onSubmit={handleAuthSubmit}
+        beforeAuth={async () => {
+          if (!termsAccepted) {
+            setShowTermsError(true);
+            return false;
+          }
+          return true;
+        }}
       />
       
       <div className="flex items-center space-x-2">
