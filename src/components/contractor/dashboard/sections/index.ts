@@ -10,6 +10,7 @@ import { DefectsSection } from "./DefectsSection";
 import { PortfolioSection } from "./PortfolioSection";
 import { ReviewsSection } from "./ReviewsSection";
 import { ComplianceSection } from "./ComplianceSection";
+import { TrainingSection } from "./TrainingSection";
 
 export const sections = [
   SchedulingSection,
@@ -24,4 +25,5 @@ export const sections = [
   PortfolioSection,
   ReviewsSection,
   ComplianceSection,
+  TrainingSection,
 ];
