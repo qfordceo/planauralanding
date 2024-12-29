@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send, Search, Paperclip } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectThreads } from "./ProjectThreads";
 import { FileUpload } from "./FileUpload";
 
@@ -18,7 +17,7 @@ interface Message {
   created_at: string;
   read: boolean;
   project_id: string;
-  attachment_url?: string;
+  attachment_url?: string | null;
 }
 
 interface MessagingInterfaceProps {
@@ -77,7 +76,7 @@ export function MessagingInterface({ contractorId }: MessagingInterfaceProps) {
     };
   }, [refetch]);
 
-  const sendMessage = async (attachmentUrl?: string) => {
+  const sendMessage = async (attachmentUrl?: string | null) => {
     if (!newMessage.trim() && !attachmentUrl) return;
 
     try {
