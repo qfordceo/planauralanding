@@ -65,12 +65,6 @@ export function DashboardContent({
         setActiveSection={setActiveSection}
       />
 
-      <ComplianceSection
-        contractorId={contractor.id}
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-      />
-
       <NotificationsSection
         contractorId={contractor.id}
         activeSection={activeSection}
@@ -98,6 +92,12 @@ export function DashboardContent({
       />
 
       <ReviewsSection
+        contractorId={contractor.id}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+      />
+
+      <ComplianceSection
         contractorId={contractor.id}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
