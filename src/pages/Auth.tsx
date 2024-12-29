@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useNavigate } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSearchParams } from "react-router-dom"
-import { AuthError, AuthResponse } from "@supabase/supabase-js"
+import { AuthError, AuthResponse, Session } from "@supabase/supabase-js"
 
 export default function Auth() {
   const { toast } = useToast()
@@ -40,36 +40,32 @@ export default function Auth() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/dashboard')
-      } else if (event === 'USER_SIGNED_UP') {
+      } else if (event === 'SIGNED_UP') {
         toast({
-          title: "Verification Email Sent",
-          description: "Please check your email to confirm your account.",
+          title: "Almost there!",
+          description: "Please check your email to confirm your account. If you don't see it, check your spam folder.",
+          duration: 6000,
         })
       }
     })
 
-    // Handle auth errors using onAuthStateChange
-    const handleError = (error: AuthError) => {
-      console.error('Auth error:', error)
-      if (error.message.includes('rate limit')) {
-        setError('Too many attempts. Please try again later.')
-      } else if (error.message.includes('confirmation email')) {
-        setError('Unable to send confirmation email. Please try again or contact support.')
-      } else {
-        setError(error.message)
-      }
-    }
-
-    // Subscribe to auth state changes including errors
-    const errorSubscription = supabase.auth.onAuthStateChange((event, session, error) => {
-      if (error) {
-        handleError(error)
+    // Handle auth state changes and errors
+    const {
+      data: { subscription: errorSubscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'USER_DELETED') {
+        setError('Account has been deleted')
+      } else if (event === 'PASSWORD_RECOVERY') {
+        toast({
+          title: "Password Recovery",
+          description: "Check your email for password reset instructions",
+        })
       }
     })
 
     return () => {
       subscription.unsubscribe()
-      errorSubscription.data.subscription.unsubscribe()
+      errorSubscription.unsubscribe()
     }
   }, [navigate, toast])
 
@@ -81,6 +77,21 @@ export default function Auth() {
         </div>
       </div>
     )
+  }
+
+  const handleError = (error: Error) => {
+    console.error('Auth error:', error)
+    if (error.message.includes('rate limit')) {
+      setError('Too many attempts. Please try again later.')
+    } else if (error.message.includes('confirmation email')) {
+      toast({
+        title: "Email Confirmation Required",
+        description: "Please check your email and spam folder for the confirmation link.",
+        duration: 6000,
+      })
+    } else {
+      setError(error.message)
+    }
   }
 
   return (
@@ -136,6 +147,7 @@ export default function Auth() {
                 }
               }}
               providers={[]}
+              onError={handleError}
             />
           </TabsContent>
           <TabsContent value="contractor">
@@ -177,6 +189,7 @@ export default function Auth() {
                 }
               }}
               providers={[]}
+              onError={handleError}
             />
           </TabsContent>
         </Tabs>
