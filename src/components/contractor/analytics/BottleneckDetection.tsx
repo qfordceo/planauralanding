@@ -2,10 +2,23 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Clock, TrendingDown } from "lucide-react";
+import { AlertTriangle, Clock } from "lucide-react";
 
 interface BottleneckDetectionProps {
   contractorId: string;
+}
+
+interface ProjectMilestone {
+  id: string;
+  title: string;
+  due_date: string;
+  status: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  project_milestones?: ProjectMilestone[];
 }
 
 export function BottleneckDetection({ contractorId }: BottleneckDetectionProps) {
@@ -15,8 +28,14 @@ export function BottleneckDetection({ contractorId }: BottleneckDetectionProps) 
       const { data: projects, error } = await supabase
         .from('contractor_projects')
         .select(`
-          *,
-          project_milestones (*)
+          id,
+          title,
+          project_milestones (
+            id,
+            title,
+            due_date,
+            status
+          )
         `)
         .eq('contractor_id', contractorId)
         .eq('status', 'in_progress');
@@ -24,16 +43,16 @@ export function BottleneckDetection({ contractorId }: BottleneckDetectionProps) 
       if (error) throw error;
 
       // Analyze projects for bottlenecks
-      const bottlenecks = projects?.map(project => {
+      const bottlenecks = (projects as Project[])?.map(project => {
         const delays = project.project_milestones?.filter(
-          (milestone: any) => new Date(milestone.due_date) < new Date() && 
+          milestone => new Date(milestone.due_date) < new Date() && 
           milestone.status !== 'completed'
         );
 
         return {
           projectId: project.id,
           projectTitle: project.title,
-          delayedMilestones: delays,
+          delayedMilestones: delays || [],
           severity: delays?.length || 0
         };
       }).filter(b => b.severity > 0);
@@ -57,7 +76,7 @@ export function BottleneckDetection({ contractorId }: BottleneckDetectionProps) 
         <div className="space-y-4">
           {bottlenecks?.map((bottleneck) => (
             <Alert key={bottleneck.projectId} variant={
-              bottleneck.severity > 2 ? "destructive" : "warning"
+              bottleneck.severity > 2 ? "destructive" : "default"
             }>
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>{bottleneck.projectTitle}</AlertTitle>
@@ -68,7 +87,7 @@ export function BottleneckDetection({ contractorId }: BottleneckDetectionProps) 
                     {bottleneck.delayedMilestones.length} delayed milestone(s)
                   </span>
                 </div>
-                {bottleneck.delayedMilestones.map((milestone: any) => (
+                {bottleneck.delayedMilestones.map((milestone: ProjectMilestone) => (
                   <div key={milestone.id} className="mt-2 pl-6 text-sm">
                     • {milestone.title}
                   </div>

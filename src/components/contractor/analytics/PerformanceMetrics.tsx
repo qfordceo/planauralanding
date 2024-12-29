@@ -16,6 +16,17 @@ interface PerformanceMetricsProps {
   contractorId: string;
 }
 
+interface ContractorProject {
+  id: string;
+  title: string;
+  budget: number;
+  actual_cost: number;
+  start_date: string;
+  end_date: string;
+  status: string;
+  contractor_reviews: { rating: number }[];
+}
+
 export function PerformanceMetrics({ contractorId }: PerformanceMetricsProps) {
   const { data: metrics } = useQuery({
     queryKey: ['contractor-performance', contractorId],
@@ -37,7 +48,7 @@ export function PerformanceMetrics({ contractorId }: PerformanceMetricsProps) {
       
       if (error) throw error;
 
-      return projects.map(project => ({
+      return (projects as ContractorProject[]).map(project => ({
         name: project.title,
         budget: project.budget || 0,
         actual: project.actual_cost || 0,
