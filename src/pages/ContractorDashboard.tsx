@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { DashboardHeader } from "@/components/contractor/DashboardHeader";
+import { RegistrationForm } from "@/components/contractor/RegistrationForm";
 import { DashboardContent } from "@/components/contractor/dashboard/DashboardContent";
 import { useDashboardState } from "@/components/contractor/dashboard/DashboardState";
 import { useContractorData } from "@/components/contractor/dashboard/useContractorData";
