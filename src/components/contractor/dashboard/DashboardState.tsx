@@ -8,6 +8,7 @@ export function useDashboardState() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [outbidCount, setOutbidCount] = useState(0);
   const [defectCount, setDefectCount] = useState(0);
+  const [registrationLoading, setRegistrationLoading] = useState(false);
 
   return {
     loading,
@@ -22,5 +23,7 @@ export function useDashboardState() {
     setOutbidCount,
     defectCount,
     setDefectCount,
+    registrationLoading,
+    setRegistrationLoading,
   };
 }

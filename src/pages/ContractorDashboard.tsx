@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { DashboardContent } from "@/components/contractor/dashboard/DashboardContent";
 import { useDashboardState } from "@/components/contractor/dashboard/DashboardState";
 import { RegistrationForm } from "@/components/contractor/RegistrationForm";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { ContractorFormData } from "@/types/contractor";
 import { useNavigate } from "react-router-dom";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 export default function ContractorDashboard() {
   const {
@@ -23,12 +24,16 @@ export default function ContractorDashboard() {
     setOutbidCount,
     defectCount,
     setDefectCount,
+    registrationLoading,
+    setRegistrationLoading,
   } = useDashboardState();
 
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [registrationLoading, setRegistrationLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Check authentication status
+  useAuthCheck(navigate, "/auth");
 
   useEffect(() => {
     const checkContractorStatus = async () => {

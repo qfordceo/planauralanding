@@ -20,14 +20,6 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
     navigate("/terms-of-service");
   };
 
-  const handleSubmit = async (formData: { email: string; password: string }) => {
-    if (!termsAccepted) {
-      setShowTermsError(true);
-      return false;
-    }
-    return true;
-  };
-
   return (
     <div className="space-y-6">
       <Auth
@@ -78,7 +70,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
             }
           }
         }}
-        onSubmit={handleSubmit}
+        redirectTo={window.location.origin}
       />
       
       <div className="flex items-center space-x-2">
