@@ -9,6 +9,7 @@ import AdminDashboard from "@/pages/AdminDashboard"
 import ClientDashboard from "@/pages/ClientDashboard"
 import PrivacyPolicy from "@/pages/PrivacyPolicy"
 import DataProcessingAgreement from "@/pages/DataProcessingAgreement"
+import LegalAgreements from "@/pages/LegalAgreements"
 import { Footer } from "./layout/Footer"
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
@@ -26,6 +27,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           <Route path="/dashboard" element={<ClientDashboard />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/data-processing-agreement" element={<DataProcessingAgreement />} />
+          <Route path="/legal" element={<LegalAgreements />} />
         </Routes>
       </main>
       <Footer />
