@@ -33,7 +33,7 @@ export function WorkerDirectory({ contractorId }: WorkerDirectoryProps) {
               <h3 className="font-semibold">{worker.name}</h3>
               <p className="text-sm text-muted-foreground">{worker.role}</p>
             </div>
-            <Badge className="ml-auto" variant={worker.status === 'available' ? 'success' : 'secondary'}>
+            <Badge className="ml-auto" variant={worker.status === 'available' ? 'default' : 'secondary'}>
               {worker.status}
             </Badge>
           </div>

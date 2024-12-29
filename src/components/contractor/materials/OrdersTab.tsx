@@ -41,7 +41,7 @@ export function OrdersTab({ contractorId }: OrdersTabProps) {
           <TableRow key={order.id}>
             <TableCell>{order.material_suppliers?.name}</TableCell>
             <TableCell>
-              <Badge variant={order.status === 'pending' ? 'secondary' : 'success'}>
+              <Badge variant={order.status === 'pending' ? 'secondary' : 'default'}>
                 {order.status}
               </Badge>
             </TableCell>
