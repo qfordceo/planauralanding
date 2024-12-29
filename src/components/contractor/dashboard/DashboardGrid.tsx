@@ -1,6 +1,7 @@
 import { Contractor } from "@/types/contractor";
 import { DashboardSection } from "./DashboardSection";
 import { sections } from "./sections";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DashboardGridProps {
   contractor: Contractor;
@@ -17,8 +18,16 @@ export function DashboardGrid({
   outbidCount,
   defectCount,
 }: DashboardGridProps) {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className={`grid gap-4 ${
+      isMobile 
+        ? 'grid-cols-1' 
+        : activeSection 
+          ? 'grid-cols-1 md:grid-cols-2' 
+          : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+    }`}>
       {sections.map((Section) => (
         <DashboardSection
           key={Section.name}
