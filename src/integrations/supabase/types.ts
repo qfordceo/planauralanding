@@ -490,6 +490,79 @@ export type Database = {
           },
         ]
       }
+      contractor_compliance_documents: {
+        Row: {
+          contractor_id: string | null
+          created_at: string | null
+          document_number: string | null
+          document_type: string
+          document_url: string | null
+          expiration_date: string | null
+          id: string
+          issue_date: string | null
+          issuing_authority: string | null
+          updated_at: string | null
+          verification_notes: string | null
+          verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          contractor_id?: string | null
+          created_at?: string | null
+          document_number?: string | null
+          document_type: string
+          document_url?: string | null
+          expiration_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_authority?: string | null
+          updated_at?: string | null
+          verification_notes?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          contractor_id?: string | null
+          created_at?: string | null
+          document_number?: string | null
+          document_type?: string
+          document_url?: string | null
+          expiration_date?: string | null
+          id?: string
+          issue_date?: string | null
+          issuing_authority?: string | null
+          updated_at?: string | null
+          verification_notes?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_compliance_documents_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_compliance_documents_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_compliance_documents_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_day_exceptions: {
         Row: {
           contractor_id: string | null

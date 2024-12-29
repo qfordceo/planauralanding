@@ -9,6 +9,7 @@ import { MarketingSection } from "./sections/MarketingSection";
 import { ClientManagementSection } from "./sections/ClientManagementSection";
 import { ExpenseSection } from "./sections/ExpenseSection";
 import { SchedulingSection } from "./sections/SchedulingSection";
+import { ComplianceSection } from "./sections/ComplianceSection";
 import type { Contractor } from "@/types/contractor";
 
 interface DashboardContentProps {
@@ -59,6 +60,12 @@ export function DashboardContent({
       />
       
       <JobsSection
+        contractorId={contractor.id}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+      />
+
+      <ComplianceSection
         contractorId={contractor.id}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
