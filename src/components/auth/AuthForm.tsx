@@ -1,11 +1,12 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthFormProps {
   handleError: (error: Error) => void;
@@ -15,6 +16,43 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTermsError, setShowTermsError] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+  const userType = searchParams.get('type') || 'client';
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Check if user exists in contractors table if they're a contractor
+        if (userType === 'contractor') {
+          try {
+            const { data: contractorData, error } = await supabase
+              .from('contractors')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+
+            if (error) throw error;
+
+            navigate('/contractor-dashboard');
+          } catch (error) {
+            console.error('Error checking contractor:', error);
+            toast({
+              title: "Error",
+              description: "Failed to verify contractor status",
+              variant: "destructive",
+            });
+          }
+        } else {
+          navigate('/client-dashboard');
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, userType, toast]);
 
   const handleTermsClick = () => {
     navigate("/terms-of-service");
@@ -70,7 +108,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
             }
           }
         }}
-        redirectTo={window.location.origin}
+        redirectTo={window.location.origin + '/auth?type=' + userType}
       />
       
       <div className="flex items-center space-x-2">
