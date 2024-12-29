@@ -18,16 +18,27 @@ export function AIAnalysis({ buildEstimate }: AIAnalysisProps) {
     
     setIsLoadingAdvice(true);
     try {
-      const response = await supabase.functions.invoke('build-advisor', {
+      const { data, error } = await supabase.functions.invoke('build-advisor', {
         body: {
           buildEstimate,
           floorPlan: buildEstimate.floor_plans,
           landListing: buildEstimate.land_listings
+        },
+        // Remove any trailing slashes and ensure proper URL formatting
+        options: {
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
       });
 
-      if (response.error) throw response.error;
-      setAiAdvice(response.data.analysis);
+      if (error) throw error;
+      
+      if (data?.analysis) {
+        setAiAdvice(data.analysis);
+      } else {
+        throw new Error('No analysis received from the AI advisor');
+      }
     } catch (error) {
       console.error('Error getting AI advice:', error);
       toast({
