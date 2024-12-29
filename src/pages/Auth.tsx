@@ -37,7 +37,7 @@ export default function Auth() {
         navigate('/dashboard')
       }
       // Handle rate limit errors
-      if (event === 'USER_REGISTRATION_EMAIL_RATE_LIMITED') {
+      if (event === 'SIGNED_UP' && !session) {
         toast({
           title: "Too many attempts",
           description: "Please wait a few minutes before trying again",
