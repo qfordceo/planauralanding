@@ -1,5 +1,7 @@
 import React from "react";
 import { AgreementDisplay } from "./AgreementDisplay";
+import { generateAgreementPDF, stripHtmlTags } from "@/utils/pdfGenerator";
+import { toast } from "@/components/ui/use-toast";
 
 export function WarrantyAgreement() {
   const content = (
@@ -39,8 +41,31 @@ export function WarrantyAgreement() {
   );
 
   const handleDownload = () => {
-    // TODO: Implement PDF download functionality
-    console.log("Downloading warranty agreement...");
+    try {
+      const contentElement = document.createElement('div');
+      contentElement.innerHTML = content.props.children
+        .map((child: React.ReactElement) => {
+          if (typeof child === 'string') return child;
+          return child.props.children;
+        })
+        .join('\n\n');
+
+      const plainText = stripHtmlTags(contentElement.innerHTML);
+      const pdf = generateAgreementPDF("Contractor Warranty and Insurance Agreement", plainText);
+      pdf.save("warranty-agreement.pdf");
+
+      toast({
+        title: "Success",
+        description: "Agreement downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download agreement",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

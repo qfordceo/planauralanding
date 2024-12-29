@@ -1,5 +1,7 @@
 import React from "react";
 import { AgreementDisplay } from "./AgreementDisplay";
+import { generateAgreementPDF, stripHtmlTags } from "@/utils/pdfGenerator";
+import { toast } from "@/components/ui/use-toast";
 
 export function ConsultingAgreement() {
   const content = (
@@ -62,8 +64,31 @@ export function ConsultingAgreement() {
   );
 
   const handleDownload = () => {
-    // TODO: Implement PDF download functionality
-    console.log("Downloading consulting agreement...");
+    try {
+      const contentElement = document.createElement('div');
+      contentElement.innerHTML = content.props.children
+        .map((child: React.ReactElement) => {
+          if (typeof child === 'string') return child;
+          return child.props.children;
+        })
+        .join('\n\n');
+
+      const plainText = stripHtmlTags(contentElement.innerHTML);
+      const pdf = generateAgreementPDF("Consulting Services Agreement", plainText);
+      pdf.save("consulting-agreement.pdf");
+
+      toast({
+        title: "Success",
+        description: "Agreement downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download agreement",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
