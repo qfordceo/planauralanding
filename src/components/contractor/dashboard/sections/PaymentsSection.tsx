@@ -47,6 +47,7 @@ export function PaymentsSection({
       buttonText={activeSection === "payments" ? "Close Payments" : "Manage Payments"}
       onClick={() => setActiveSection(activeSection === "payments" ? null : "payments")}
       expanded={activeSection === "payments"}
+      visibility="private"
     >
       {activeSection === "payments" && (
         <div className="space-y-4">

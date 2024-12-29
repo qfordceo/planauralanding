@@ -17,6 +17,7 @@ export function JobsSection({ contractorId, activeSection, setActiveSection }: J
       buttonText={activeSection === 'jobs' ? 'Close Jobs' : 'View Jobs'}
       onClick={() => setActiveSection(activeSection === 'jobs' ? null : 'jobs')}
       expanded={activeSection === 'jobs'}
+      visibility="public"
     >
       {activeSection === 'jobs' && <AvailableJobs contractorId={contractorId} />}
     </DashboardCard>

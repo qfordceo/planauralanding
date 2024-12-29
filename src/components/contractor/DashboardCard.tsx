@@ -15,6 +15,7 @@ interface DashboardCardProps {
     count: number;
     variant: "default" | "destructive" | "warning";
   };
+  visibility?: "public" | "private";
 }
 
 export function DashboardCard({ 
@@ -25,7 +26,8 @@ export function DashboardCard({
   onClick,
   children,
   expanded = false,
-  badge
+  badge,
+  visibility
 }: DashboardCardProps) {
   return (
     <Card className={expanded ? "col-span-full" : ""}>
@@ -33,11 +35,22 @@ export function DashboardCard({
         <CardTitle className="flex items-center gap-2">
           <Icon className="h-5 w-5" />
           {title}
-          {badge && (
-            <span className={`ml-auto px-2 py-1 text-xs rounded-full bg-${badge.variant} text-${badge.variant}-foreground`}>
-              {badge.count}
-            </span>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            {visibility && (
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                visibility === "public" 
+                  ? "bg-green-100 text-green-700" 
+                  : "bg-yellow-100 text-yellow-700"
+              }`}>
+                {visibility === "public" ? "Public" : "Private"}
+              </span>
+            )}
+            {badge && (
+              <span className={`px-2 py-1 text-xs rounded-full bg-${badge.variant} text-${badge.variant}-foreground`}>
+                {badge.count}
+              </span>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
