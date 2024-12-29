@@ -7,12 +7,10 @@ import { DashboardContent } from "@/components/contractor/dashboard/DashboardCon
 import { useDashboardState } from "@/components/contractor/dashboard/DashboardState";
 import { useContractorData } from "@/components/contractor/dashboard/useContractorData";
 import { useNotifications } from "@/components/contractor/dashboard/useNotifications";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 export default function ContractorDashboard() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const {
     loading,
     setLoading,
@@ -37,41 +35,7 @@ export default function ContractorDashboard() {
   });
 
   useNotifications(contractor, setOutbidCount, setDefectCount);
-
-  // Check authentication status on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!session) {
-          navigate('/auth?type=contractor');
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-        toast({
-          title: "Authentication Error",
-          description: "Please try logging in again",
-          variant: "destructive",
-        });
-        navigate('/auth?type=contractor');
-      }
-    };
-
-    checkAuth();
-
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate('/auth?type=contractor');
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
+  useAuthCheck(navigate, '/auth?type=contractor');
 
   if (loading) {
     return (
