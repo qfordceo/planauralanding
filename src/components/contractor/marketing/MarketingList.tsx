@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Trash } from "lucide-react";
+import { formatInTimeZone } from "date-fns-tz/formatInTimeZone";
 import type { MarketingContent } from "./types";
-import { formatInTimeZone } from "date-fns-tz";
 
 interface MarketingListProps {
   content: MarketingContent[];

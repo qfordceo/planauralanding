@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { CONTENT_TYPES, PLATFORMS } from "./marketingConstants";
 import { format } from "date-fns";
-import { formatInTimeZone } from "date-fns-tz";
 
 interface MarketingFormProps {
   onSubmit: (contentData: any) => void;
