@@ -6,7 +6,14 @@ import { toast } from "@/components/ui/use-toast";
 export function ConsultingAgreement() {
   const content = (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Consulting Services Agreement</h2>
+      <div className="border-b pb-4 mb-6">
+        <h2 className="text-xl font-semibold">Consulting Services Agreement</h2>
+        <div className="text-sm text-muted-foreground space-y-1">
+          <p>Version: 1.0</p>
+          <p>Last Updated: December 29, 2024</p>
+          <p className="italic">This agreement is subject to updates. Please check regularly for the latest version.</p>
+        </div>
+      </div>
       
       <p>This Consulting Services Agreement ("Agreement") is entered into by and between:</p>
       <p>Plan Aura LLC, a Texas Limited Liability Company ("Consultant"), and The Client ("Client"), collectively referred to as the "Parties".</p>
