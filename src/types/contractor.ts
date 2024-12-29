@@ -23,6 +23,8 @@ export interface Contractor {
   insurance_expiry: string | null;
   created_at: string;
   updated_at: string;
+  dpa_accepted: boolean | null;
+  dpa_accepted_at: string | null;
 }
 
 export interface ContractorFormData {
