@@ -27,7 +27,13 @@ export function BidNotifications({ contractorId }: BidNotificationsProps) {
   return (
     <div className="space-y-4">
       {outbidBids?.map((bid) => (
-        <BidNotificationItem key={bid.id} bid={bid} />
+        <BidNotificationItem 
+          key={bid.id} 
+          bid={{
+            ...bid,
+            contractor_id: contractorId // Add the contractor_id from props
+          }} 
+        />
       ))}
       {!outbidBids?.length && (
         <p className="text-center text-muted-foreground">
