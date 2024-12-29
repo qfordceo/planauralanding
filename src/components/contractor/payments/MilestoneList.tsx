@@ -1,28 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, Trash, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Trash, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-
-interface Milestone {
-  id: string;
-  title: string;
-  amount: number;
-  due_date: string;
-  status: string;
-  completed_date?: string;
-}
+import type { PaymentMilestone } from "@/types/payments";
+import { Badge } from "@/components/ui/badge";
 
 interface MilestoneListProps {
-  milestones: Milestone[];
+  milestones: PaymentMilestone[];
   onStatusUpdate: (data: { id: string; status: string; completedDate?: string }) => void;
   onDelete: (id: string) => void;
+  isValidating: boolean;
 }
 
-export function MilestoneList({ milestones, onStatusUpdate, onDelete }: MilestoneListProps) {
+export function MilestoneList({ milestones, onStatusUpdate, onDelete, isValidating }: MilestoneListProps) {
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "PPp");
   };
 
-  const handleStatusToggle = (milestone: Milestone) => {
+  const handleStatusToggle = (milestone: PaymentMilestone) => {
     if (milestone.status === "completed") {
       onStatusUpdate({ id: milestone.id, status: "pending" });
     } else {
@@ -34,6 +28,21 @@ export function MilestoneList({ milestones, onStatusUpdate, onDelete }: Mileston
     }
   };
 
+  const getEscrowStatusColor = (status: string) => {
+    switch (status) {
+      case 'funded':
+        return 'bg-blue-100 text-blue-800';
+      case 'released':
+        return 'bg-green-100 text-green-800';
+      case 'disputed':
+        return 'bg-red-100 text-red-800';
+      case 'refunded':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="space-y-4">
       {milestones.map((milestone) => (
@@ -41,28 +50,38 @@ export function MilestoneList({ milestones, onStatusUpdate, onDelete }: Mileston
           key={milestone.id}
           className="p-4 border rounded-lg flex justify-between items-start"
         >
-          <div>
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold">{milestone.title}</h3>
-              <span className={`text-sm px-2 py-1 rounded-full ${
-                milestone.status === "completed" 
-                  ? "bg-green-100 text-green-800" 
-                  : "bg-yellow-100 text-yellow-800"
-              }`}>
+              <Badge variant={milestone.status === "completed" ? "success" : "warning"}>
                 {milestone.status}
-              </span>
+              </Badge>
+              <Badge className={getEscrowStatusColor(milestone.escrow_status)}>
+                {milestone.escrow_status}
+              </Badge>
             </div>
             <p className="text-lg font-medium text-green-600">
               ${milestone.amount.toFixed(2)}
             </p>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Due: {formatDate(milestone.due_date)}
+              Due: {milestone.due_date ? formatDate(milestone.due_date) : 'Not set'}
             </p>
             {milestone.completed_date && (
               <p className="text-sm text-muted-foreground">
                 Completed: {formatDate(milestone.completed_date)}
               </p>
+            )}
+            {milestone.description && (
+              <p className="text-sm text-muted-foreground mt-2">
+                {milestone.description}
+              </p>
+            )}
+            {milestone.dispute_reason && (
+              <div className="flex items-center gap-2 text-red-600 text-sm mt-2">
+                <AlertCircle className="h-4 w-4" />
+                Dispute: {milestone.dispute_reason}
+              </div>
             )}
           </div>
           <div className="flex gap-2">
@@ -70,6 +89,7 @@ export function MilestoneList({ milestones, onStatusUpdate, onDelete }: Mileston
               variant="ghost"
               size="icon"
               onClick={() => handleStatusToggle(milestone)}
+              disabled={isValidating}
             >
               {milestone.status === "completed" ? (
                 <XCircle className="h-4 w-4 text-red-500" />
@@ -81,6 +101,7 @@ export function MilestoneList({ milestones, onStatusUpdate, onDelete }: Mileston
               variant="ghost"
               size="icon"
               onClick={() => onDelete(milestone.id)}
+              disabled={isValidating}
             >
               <Trash className="h-4 w-4" />
             </Button>

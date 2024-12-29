@@ -1,23 +1,31 @@
-export interface ContractorPayment {
+export interface PaymentMilestone {
   id: string;
   contractor_id: string;
   project_id: string;
+  title: string;
   amount: number;
-  platform_fee: number;
-  processing_fee: number;
-  status: 'pending' | 'processing' | 'paid' | 'failed';
-  stripe_payment_id: string | null;
+  due_date: string | null;
+  completed_date: string | null;
+  status: 'pending' | 'completed';
+  description?: string;
+  invoice_generated: boolean;
+  invoice_url: string | null;
+  stripe_payment_intent_id: string | null;
+  stripe_transfer_id: string | null;
+  escrow_status: 'pending' | 'funded' | 'released' | 'disputed' | 'refunded';
+  escrow_funded_at: string | null;
+  escrow_released_at: string | null;
+  dispute_reason: string | null;
+  dispute_resolution_notes: string | null;
+  release_conditions: any[];
   created_at: string;
   updated_at: string;
 }
 
-export interface PaymentSettings {
-  id: string;
-  contractor_id: string;
-  stripe_connect_id: string | null;
-  payment_type: 'individual' | 'organization';
-  tax_id_type: string | null;
-  tax_id: string | null;
-  created_at: string;
-  updated_at: string;
+export interface MilestoneFormData {
+  title: string;
+  amount: string;
+  due_date: string;
+  description: string;
+  release_conditions?: string[];
 }

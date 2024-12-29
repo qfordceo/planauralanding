@@ -5,6 +5,7 @@ import { MilestoneList } from "./MilestoneList";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { usePaymentMilestones } from "./hooks/usePaymentMilestones";
+import { useToast } from "@/hooks/use-toast";
 
 interface PaymentMilestonesProps {
   contractorId: string;
@@ -13,12 +14,15 @@ interface PaymentMilestonesProps {
 
 export function PaymentMilestones({ contractorId, projectId }: PaymentMilestonesProps) {
   const [isAddingMilestone, setIsAddingMilestone] = useState(false);
+  const { toast } = useToast();
+  
   const { 
     milestones, 
     isLoading, 
     addMilestone, 
     updateMilestoneStatus, 
-    deleteMilestone 
+    deleteMilestone,
+    isValidating
   } = usePaymentMilestones(contractorId, projectId);
 
   if (isLoading) {
@@ -28,6 +32,23 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
   if (!projectId || projectId === "test-project-id") {
     return <p className="text-muted-foreground">Please select a project to manage payment milestones.</p>;
   }
+
+  const handleAddMilestone = async (data: any) => {
+    try {
+      await addMilestone.mutateAsync(data);
+      setIsAddingMilestone(false);
+      toast({
+        title: "Success",
+        description: "Payment milestone added successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add payment milestone",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -40,10 +61,7 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
 
       {isAddingMilestone && (
         <MilestoneForm
-          onSubmit={(data) => {
-            addMilestone.mutate(data);
-            setIsAddingMilestone(false);
-          }}
+          onSubmit={handleAddMilestone}
           onCancel={() => setIsAddingMilestone(false)}
         />
       )}
@@ -52,6 +70,7 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
         milestones={milestones || []}
         onStatusUpdate={updateMilestoneStatus.mutate}
         onDelete={(id) => deleteMilestone.mutate(id)}
+        isValidating={isValidating}
       />
     </div>
   );

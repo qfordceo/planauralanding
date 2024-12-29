@@ -676,12 +676,20 @@ export type Database = {
           completed_date: string | null
           contractor_id: string | null
           created_at: string | null
+          dispute_reason: string | null
+          dispute_resolution_notes: string | null
           due_date: string | null
+          escrow_funded_at: string | null
+          escrow_released_at: string | null
+          escrow_status: string | null
           id: string
           invoice_generated: boolean | null
           invoice_url: string | null
           project_id: string | null
+          release_conditions: Json | null
           status: string | null
+          stripe_payment_intent_id: string | null
+          stripe_transfer_id: string | null
           title: string
           updated_at: string | null
         }
@@ -690,12 +698,20 @@ export type Database = {
           completed_date?: string | null
           contractor_id?: string | null
           created_at?: string | null
+          dispute_reason?: string | null
+          dispute_resolution_notes?: string | null
           due_date?: string | null
+          escrow_funded_at?: string | null
+          escrow_released_at?: string | null
+          escrow_status?: string | null
           id?: string
           invoice_generated?: boolean | null
           invoice_url?: string | null
           project_id?: string | null
+          release_conditions?: Json | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_transfer_id?: string | null
           title: string
           updated_at?: string | null
         }
@@ -704,12 +720,20 @@ export type Database = {
           completed_date?: string | null
           contractor_id?: string | null
           created_at?: string | null
+          dispute_reason?: string | null
+          dispute_resolution_notes?: string | null
           due_date?: string | null
+          escrow_funded_at?: string | null
+          escrow_released_at?: string | null
+          escrow_status?: string | null
           id?: string
           invoice_generated?: boolean | null
           invoice_url?: string | null
           project_id?: string | null
+          release_conditions?: Json | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_transfer_id?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -932,6 +956,10 @@ export type Database = {
           insurance_expiry: string | null
           insurance_verified: boolean | null
           phone: string | null
+          stripe_account_created_at: string | null
+          stripe_account_enabled: boolean | null
+          stripe_account_id: string | null
+          stripe_account_requirements: Json | null
           updated_at: string
           user_id: string | null
         }
@@ -948,6 +976,10 @@ export type Database = {
           insurance_expiry?: string | null
           insurance_verified?: boolean | null
           phone?: string | null
+          stripe_account_created_at?: string | null
+          stripe_account_enabled?: boolean | null
+          stripe_account_id?: string | null
+          stripe_account_requirements?: Json | null
           updated_at?: string
           user_id?: string | null
         }
@@ -964,6 +996,10 @@ export type Database = {
           insurance_expiry?: string | null
           insurance_verified?: boolean | null
           phone?: string | null
+          stripe_account_created_at?: string | null
+          stripe_account_enabled?: boolean | null
+          stripe_account_id?: string | null
+          stripe_account_requirements?: Json | null
           updated_at?: string
           user_id?: string | null
         }
