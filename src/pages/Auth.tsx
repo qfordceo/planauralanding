@@ -68,7 +68,7 @@ export default function Auth() {
             theme: ThemeSupa,
             style: {
               button: { 
-                background: '#2D1810',
+                backgroundColor: '#2D1810',
                 color: '#FFFFFF',
                 borderRadius: '0.375rem',
                 fontWeight: '500',
@@ -78,10 +78,7 @@ export default function Auth() {
                 lineHeight: '1.25rem',
                 border: 'none',
                 cursor: 'pointer',
-                transition: 'background-color 0.2s ease',
-                ":hover": {
-                  backgroundColor: '#8B7355',
-                }
+                transition: 'background-color 0.2s ease'
               },
               anchor: { color: '#2D1810' },
               input: {
