@@ -74,7 +74,7 @@ export default function LandingPage() {
       <div className="mt-8 flex flex-col items-center gap-2 text-muted-foreground">
         <div className="flex items-center gap-2">
           <Phone className="h-4 w-4" />
-          <span>949-820-4035</span>
+          <span>877-595-5672</span>
         </div>
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4" />
