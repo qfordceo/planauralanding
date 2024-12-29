@@ -39,6 +39,23 @@ export default function Auth() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/dashboard')
+      } else if (event === 'SIGNED_UP') {
+        toast({
+          title: "Verification Email Sent",
+          description: "Please check your email to confirm your account.",
+        })
+      }
+    })
+
+    // Handle auth errors
+    supabase.auth.onError((error) => {
+      console.error('Auth error:', error)
+      if (error.message.includes('rate limit')) {
+        setError('Too many attempts. Please try again later.')
+      } else if (error.message.includes('confirmation email')) {
+        setError('Unable to send confirmation email. Please try again or contact support.')
+      } else {
+        setError(error.message)
       }
     })
 
