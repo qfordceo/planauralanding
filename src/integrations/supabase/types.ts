@@ -1072,6 +1072,8 @@ export type Database = {
           contact_name: string
           contractor_types: Database["public"]["Enums"]["contractor_type"][]
           created_at: string
+          dpa_accepted: boolean | null
+          dpa_accepted_at: string | null
           id: string
           insurance_expiry: string | null
           insurance_verified: boolean | null
@@ -1092,6 +1094,8 @@ export type Database = {
           contact_name: string
           contractor_types: Database["public"]["Enums"]["contractor_type"][]
           created_at?: string
+          dpa_accepted?: boolean | null
+          dpa_accepted_at?: string | null
           id?: string
           insurance_expiry?: string | null
           insurance_verified?: boolean | null
@@ -1112,6 +1116,8 @@ export type Database = {
           contact_name?: string
           contractor_types?: Database["public"]["Enums"]["contractor_type"][]
           created_at?: string
+          dpa_accepted?: boolean | null
+          dpa_accepted_at?: string | null
           id?: string
           insurance_expiry?: string | null
           insurance_verified?: boolean | null

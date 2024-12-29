@@ -16,7 +16,10 @@ export default function DataProcessingAgreement() {
 
       const { error } = await supabase
         .from('contractors')
-        .update({ dpa_accepted: true, dpa_accepted_at: new Date().toISOString() })
+        .update({ 
+          dpa_accepted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -99,4 +102,4 @@ export default function DataProcessingAgreement() {
       </Card>
     </div>
   );
-}
+};
