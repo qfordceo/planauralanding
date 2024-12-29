@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, Video, Certificate, FileText } from "lucide-react";
+import { BookOpen, Video, GraduationCap, FileText } from "lucide-react";
 
 interface Course {
   id: string;
@@ -89,7 +89,7 @@ export function TrainingHub() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Certificate className="h-5 w-5" />
+                <GraduationCap className="h-5 w-5" />
                 Available Certifications
               </CardTitle>
             </CardHeader>

@@ -41,14 +41,14 @@ export function PerformanceMetrics({ contractorId }: PerformanceMetricsProps) {
           start_date,
           end_date,
           status,
-          contractor_reviews (rating)
+          contractor_reviews!contractor_projects_id_fkey (rating)
         `)
         .eq('contractor_id', contractorId)
         .order('start_date', { ascending: true });
       
       if (error) throw error;
 
-      return (projects as ContractorProject[]).map(project => ({
+      return (projects as unknown as ContractorProject[]).map(project => ({
         name: project.title,
         budget: project.budget || 0,
         actual: project.actual_cost || 0,

@@ -18,7 +18,7 @@ interface ProjectMilestone {
 interface Project {
   id: string;
   title: string;
-  project_milestones?: ProjectMilestone[];
+  project_milestones: ProjectMilestone[];
 }
 
 export function BottleneckDetection({ contractorId }: BottleneckDetectionProps) {
@@ -30,7 +30,7 @@ export function BottleneckDetection({ contractorId }: BottleneckDetectionProps) 
         .select(`
           id,
           title,
-          project_milestones (
+          project_milestones!contractor_projects_id_fkey (
             id,
             title,
             due_date,
@@ -43,7 +43,7 @@ export function BottleneckDetection({ contractorId }: BottleneckDetectionProps) 
       if (error) throw error;
 
       // Analyze projects for bottlenecks
-      const bottlenecks = (projects as Project[])?.map(project => {
+      const bottlenecks = (projects as unknown as Project[])?.map(project => {
         const delays = project.project_milestones?.filter(
           milestone => new Date(milestone.due_date) < new Date() && 
           milestone.status !== 'completed'
