@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function PrivacyPolicy() {
-  const lastUpdated = "March 13, 2024";
+  const lastUpdated = "December 19, 2023";
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

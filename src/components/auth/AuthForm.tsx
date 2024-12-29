@@ -52,10 +52,6 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
           sign_in: {
             email_input_placeholder: "Your email address",
             password_input_placeholder: "Your password",
-          }
-        },
-        translations: {
-          sign_in: {
             email_label: "Email",
             password_label: "Password",
           }
