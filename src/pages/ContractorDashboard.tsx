@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DashboardContent } from "@/components/contractor/dashboard/DashboardContent";
 import { useDashboardState } from "@/components/contractor/dashboard/DashboardState";
 import { RegistrationForm } from "@/components/contractor/RegistrationForm";
