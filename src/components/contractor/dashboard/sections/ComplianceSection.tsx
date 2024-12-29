@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ComplianceDocuments } from "../../compliance/ComplianceDocuments";
 import { FileCheck } from "lucide-react";
+import { DashboardCard } from "../../DashboardCard";
+import { ComplianceDocuments } from "../../compliance/ComplianceDocuments";
 
 interface ComplianceSectionProps {
   contractorId: string;
@@ -17,19 +16,15 @@ export function ComplianceSection({
   const isActive = activeSection === "compliance";
 
   return (
-    <Card 
-      className="cursor-pointer hover:shadow-md transition-shadow"
+    <DashboardCard
+      title="Compliance & Documentation"
+      description="Manage your licenses, certifications, and other compliance documents."
+      icon={FileCheck}
+      buttonText={isActive ? "Close" : "Manage Documents"}
       onClick={() => setActiveSection(isActive ? null : "compliance")}
+      expanded={isActive}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Compliance & Documentation</CardTitle>
-        <FileCheck className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        {isActive && (
-          <ComplianceDocuments contractorId={contractorId} />
-        )}
-      </CardContent>
-    </Card>
+      <ComplianceDocuments contractorId={contractorId} />
+    </DashboardCard>
   );
 }
