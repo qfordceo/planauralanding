@@ -1,16 +1,49 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { generateAgreementPDF, stripHtmlTags } from "@/utils/pdfGenerator";
+import { toast } from "@/components/ui/use-toast";
 
 export default function TermsOfService() {
   const effectiveDate = "December 29, 2024";
 
+  const handleDownload = () => {
+    try {
+      const contentElement = document.querySelector('.terms-content');
+      if (!contentElement) throw new Error("Content not found");
+
+      const plainText = stripHtmlTags(contentElement.innerHTML);
+      const pdf = generateAgreementPDF("Terms of Service", plainText);
+      pdf.save("terms-of-service.pdf");
+
+      toast({
+        title: "Success",
+        description: "Terms of Service downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download Terms of Service",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Terms of Service</CardTitle>
+          <Button variant="outline" size="icon" onClick={handleDownload}>
+            <Download className="h-4 w-4" />
+          </Button>
+        </CardHeader>
         <CardContent className="p-6">
           <ScrollArea className="h-[80vh]">
-            <div className="space-y-6">
+            <div className="terms-content space-y-6">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Plan Aura LLC Terms of Service</h1>
                 <p className="text-sm text-muted-foreground">Effective Date: {effectiveDate}</p>

@@ -1,16 +1,49 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { generateAgreementPDF, stripHtmlTags } from "@/utils/pdfGenerator";
+import { toast } from "@/components/ui/use-toast";
 
 export default function PrivacyPolicy() {
   const lastUpdated = "December 29, 2024";
 
+  const handleDownload = () => {
+    try {
+      const contentElement = document.querySelector('.privacy-policy-content');
+      if (!contentElement) throw new Error("Content not found");
+
+      const plainText = stripHtmlTags(contentElement.innerHTML);
+      const pdf = generateAgreementPDF("Privacy Policy", plainText);
+      pdf.save("privacy-policy.pdf");
+
+      toast({
+        title: "Success",
+        description: "Privacy Policy downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download Privacy Policy",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Privacy Policy</CardTitle>
+          <Button variant="outline" size="icon" onClick={handleDownload}>
+            <Download className="h-4 w-4" />
+          </Button>
+        </CardHeader>
         <CardContent className="p-6">
           <ScrollArea className="h-[80vh]">
-            <div className="space-y-6">
+            <div className="privacy-policy-content space-y-6">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
                 <p className="text-sm text-muted-foreground">Last Updated: {lastUpdated}</p>

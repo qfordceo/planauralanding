@@ -1,13 +1,39 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { generateAgreementPDF, stripHtmlTags } from "@/utils/pdfGenerator";
+import { toast } from "@/components/ui/use-toast";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function DataProcessingAgreement() {
   const { toast } = useToast();
   const lastUpdated = "December 29, 2024";
+
+  const handleDownload = () => {
+    try {
+      const contentElement = document.querySelector('.dpa-content');
+      if (!contentElement) throw new Error("Content not found");
+
+      const plainText = stripHtmlTags(contentElement.innerHTML);
+      const pdf = generateAgreementPDF("Data Processing Agreement", plainText);
+      pdf.save("data-processing-agreement.pdf");
+
+      toast({
+        title: "Success",
+        description: "Data Processing Agreement downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download Data Processing Agreement",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleAcceptDPA = async () => {
     try {
@@ -40,13 +66,17 @@ export default function DataProcessingAgreement() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Data Processing Agreement</CardTitle>
+          <Button variant="outline" size="icon" onClick={handleDownload}>
+            <Download className="h-4 w-4" />
+          </Button>
+        </CardHeader>
         <CardContent className="p-6">
           <ScrollArea className="h-[80vh]">
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Data Processing Agreement</h1>
-                <p className="text-sm text-muted-foreground">Last Updated: {lastUpdated}</p>
-              </div>
+            <div className="dpa-content space-y-6">
+              <h1 className="text-3xl font-bold mb-2">Data Processing Agreement</h1>
+              <p className="text-sm text-muted-foreground">Last Updated: {lastUpdated}</p>
 
               <section>
                 <h2 className="text-2xl font-semibold mb-4">1. Parties</h2>
@@ -102,4 +132,4 @@ export default function DataProcessingAgreement() {
       </Card>
     </div>
   );
-};
+}
