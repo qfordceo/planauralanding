@@ -1,22 +1,16 @@
-import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { DashboardHeader } from "@/components/contractor/DashboardHeader";
-import { RegistrationForm } from "@/components/contractor/RegistrationForm";
+import { useEffect, useState } from "react";
 import { DashboardContent } from "@/components/contractor/dashboard/DashboardContent";
 import { useDashboardState } from "@/components/contractor/dashboard/DashboardState";
-import { useContractorData } from "@/components/contractor/dashboard/useContractorData";
+import { RegistrationForm } from "@/components/contractor/RegistrationForm";
 import { useNotifications } from "@/components/contractor/dashboard/useNotifications";
-import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { TermsAcknowledgmentModal } from "@/components/contractor/TermsAcknowledgmentModal";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ContractorDashboard() {
-  const navigate = useNavigate();
   const {
     loading,
-    setLoading,
     registering,
-    setRegistering,
     contractor,
     setContractor,
     activeSection,
@@ -27,44 +21,72 @@ export default function ContractorDashboard() {
     setDefectCount,
   } = useDashboardState();
 
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const { toast } = useToast();
+
   useEffect(() => {
-    const checkDpaAcceptance = async () => {
-      if (contractor && !contractor.dpa_accepted_at) {
-        navigate("/data-processing-agreement");
+    const checkContractorStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: contractor } = await supabase
+        .from("contractors")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (contractor && !contractor.dpa_accepted) {
+        setShowTermsModal(true);
       }
     };
 
-    checkDpaAcceptance();
-  }, [contractor, navigate]);
+    checkContractorStatus();
+  }, []);
 
-  const { handleRegistration, handleSignOut } = useContractorData({
-    setLoading,
-    setRegistering,
-    setContractor,
-    setOutbidCount,
-    setDefectCount,
-  });
+  const handleTermsAccept = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("contractors")
+      .update({
+        dpa_accepted: true,
+        dpa_accepted_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update terms acceptance status",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setShowTermsModal(false);
+    toast({
+      title: "Success",
+      description: "Terms acknowledgment recorded",
+    });
+  };
 
   useNotifications(contractor, setOutbidCount, setDefectCount);
-  useAuthCheck(navigate, '/auth?type=contractor');
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   if (registering) {
-    return <RegistrationForm onSubmit={handleRegistration} loading={loading} />;
+    return <RegistrationForm />;
   }
 
-  if (!contractor) return null;
+  if (!contractor) {
+    return <div>No contractor found</div>;
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <DashboardHeader contractor={contractor} onSignOut={handleSignOut} />
+    <>
       <DashboardContent
         contractor={contractor}
         activeSection={activeSection}
@@ -72,6 +94,11 @@ export default function ContractorDashboard() {
         outbidCount={outbidCount}
         defectCount={defectCount}
       />
-    </div>
+      <TermsAcknowledgmentModal
+        open={showTermsModal}
+        onOpenChange={setShowTermsModal}
+        onAccept={handleTermsAccept}
+      />
+    </>
   );
 }
