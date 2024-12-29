@@ -13,7 +13,21 @@ interface EmailRequest {
   contractorId: string;
   subject: string;
   html: string;
+  type: 'bid' | 'inspection' | 'compliance';
 }
+
+const getFromEmail = (type: string) => {
+  switch (type) {
+    case 'bid':
+      return 'bids@planaura.com';
+    case 'inspection':
+      return 'inspections@planaura.com';
+    case 'compliance':
+      return 'compliance@planaura.com';
+    default:
+      return 'notifications@planaura.com';
+  }
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -21,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { contractorId, subject, html } = await req.json() as EmailRequest;
+    const { contractorId, subject, html, type } = await req.json() as EmailRequest;
 
     // Get contractor email from the database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -48,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Contractor email not found");
     }
 
-    // Send email using Resend
+    // Send email using Resend with the appropriate from address
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -56,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Plan Aura <notifications@planaura.com>",
+        from: getFromEmail(type),
         to: [profile.email],
         subject,
         html,
