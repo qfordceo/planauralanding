@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useNavigate } from "react-router-dom"
+import { AuthError } from "@supabase/supabase-js"
 
 export default function Auth() {
   const { toast } = useToast()
@@ -36,13 +37,17 @@ export default function Auth() {
       if (event === 'SIGNED_IN' && session) {
         navigate('/dashboard')
       }
-      // Handle rate limit errors
-      if (event === 'SIGNED_UP' && !session) {
-        toast({
-          title: "Too many attempts",
-          description: "Please wait a few minutes before trying again",
-          variant: "destructive",
-        })
+
+      // Handle auth errors including rate limiting
+      if (event === 'USER_SIGNED_UP' && !session) {
+        const authError = await supabase.auth.getError() as AuthError
+        if (authError?.message?.includes('rate limit')) {
+          toast({
+            title: "Too many attempts",
+            description: "Please wait a few minutes before trying again",
+            variant: "destructive",
+          })
+        }
       }
     })
 
