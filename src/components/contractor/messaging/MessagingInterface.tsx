@@ -117,13 +117,15 @@ export function MessagingInterface({ contractorId }: MessagingInterfaceProps) {
   return (
     <div className="flex flex-col h-[400px]">
       <div className="flex items-center gap-2 p-4 border-b">
-        <Input
-          placeholder="Search messages..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-xs"
-          prefix={<Search className="h-4 w-4 text-muted-foreground" />}
-        />
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search messages..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8"
+          />
+        </div>
         <ProjectThreads
           contractorId={contractorId}
           selectedProject={selectedProject}
