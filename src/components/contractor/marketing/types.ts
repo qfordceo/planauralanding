@@ -12,3 +12,9 @@ export interface MarketingContent {
     conversions?: number;
   };
 }
+
+export interface EmailCampaign {
+  subject: string;
+  html: string;
+  recipients: string[];
+}

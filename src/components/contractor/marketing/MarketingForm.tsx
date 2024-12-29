@@ -10,6 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CONTENT_TYPES, PLATFORMS } from "./marketingConstants";
+import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 interface MarketingFormProps {
   onSubmit: (contentData: any) => void;
@@ -24,6 +26,18 @@ export function MarketingForm({ onSubmit, onCancel }: MarketingFormProps) {
     platform: "",
     scheduled_date: "",
   });
+
+  const handleDateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const localDateTime = e.target.value;
+    // Convert local datetime to UTC for storage
+    const utcDate = new Date(localDateTime);
+    setNewContent({ ...newContent, scheduled_date: utcDate.toISOString() });
+  };
+
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    return format(now, "yyyy-MM-dd'T'HH:mm");
+  };
 
   return (
     <div className="space-y-4 p-4 border rounded-lg">
@@ -71,10 +85,8 @@ export function MarketingForm({ onSubmit, onCancel }: MarketingFormProps) {
       </Select>
       <Input
         type="datetime-local"
-        value={newContent.scheduled_date}
-        onChange={(e) =>
-          setNewContent({ ...newContent, scheduled_date: e.target.value })
-        }
+        value={newContent.scheduled_date ? format(new Date(newContent.scheduled_date), "yyyy-MM-dd'T'HH:mm") : getCurrentDateTime()}
+        onChange={handleDateTimeChange}
       />
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={onCancel}>

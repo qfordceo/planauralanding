@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Trash } from "lucide-react";
 import type { MarketingContent } from "./types";
+import { formatInTimeZone } from "date-fns-tz";
 
 interface MarketingListProps {
   content: MarketingContent[];
@@ -8,6 +9,12 @@ interface MarketingListProps {
 }
 
 export function MarketingList({ content, onDelete }: MarketingListProps) {
+  const formatScheduledDate = (dateString: string) => {
+    if (!dateString) return "";
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return formatInTimeZone(new Date(dateString), userTimeZone, "PPpp");
+  };
+
   return (
     <div className="grid gap-4">
       {content?.map((item) => (
@@ -31,7 +38,7 @@ export function MarketingList({ content, onDelete }: MarketingListProps) {
             {item.scheduled_date && (
               <p className="text-sm text-muted-foreground flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                {new Date(item.scheduled_date).toLocaleString()}
+                {formatScheduledDate(item.scheduled_date)}
               </p>
             )}
             {item.metrics && (
