@@ -1,24 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, Plus, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { Plus, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface PaymentMilestone {
-  id: string;
-  title: string;
-  amount: number;
-  due_date: string;
-  status: string;
-  invoice_generated: boolean;
-  invoice_url?: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { MilestoneForm } from "./MilestoneForm";
+import { MilestoneList } from "./MilestoneList";
 
 interface PaymentMilestonesProps {
   contractorId: string;
@@ -29,14 +16,9 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddingMilestone, setIsAddingMilestone] = useState(false);
-  const [newMilestone, setNewMilestone] = useState({
-    title: "",
-    amount: "",
-    due_date: new Date(),
-  });
 
   const { data: milestones, isLoading } = useQuery({
-    queryKey: ["payment-milestones", contractorId, projectId],
+    queryKey: ["contractor-milestones", contractorId, projectId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contractor_payment_milestones")
@@ -46,29 +28,25 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
         .order("due_date", { ascending: true });
 
       if (error) throw error;
-      return data as PaymentMilestone[];
+      return data;
     },
   });
 
   const addMilestone = useMutation({
-    mutationFn: async (milestoneData: typeof newMilestone) => {
-      const { error } = await supabase.from("contractor_payment_milestones").insert([
-        {
+    mutationFn: async (milestoneData: any) => {
+      const { error } = await supabase
+        .from("contractor_payment_milestones")
+        .insert([{
+          ...milestoneData,
           contractor_id: contractorId,
           project_id: projectId,
-          title: milestoneData.title,
-          amount: parseFloat(milestoneData.amount),
-          due_date: milestoneData.due_date.toISOString(),
-          status: "pending",
-        },
-      ]);
+        }]);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payment-milestones"] });
+      queryClient.invalidateQueries({ queryKey: ["contractor-milestones"] });
       setIsAddingMilestone(false);
-      setNewMilestone({ title: "", amount: "", due_date: new Date() });
       toast({
         title: "Success",
         description: "Payment milestone added successfully",
@@ -80,26 +58,63 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
         description: "Failed to add payment milestone",
         variant: "destructive",
       });
-      console.error("Error adding payment milestone:", error);
+      console.error("Error adding milestone:", error);
     },
   });
 
-  const generateInvoice = useMutation({
-    mutationFn: async (milestoneId: string) => {
-      // TODO: Implement invoice generation logic
+  const updateMilestoneStatus = useMutation({
+    mutationFn: async ({ id, status, completedDate }: { id: string; status: string; completedDate?: string }) => {
       const { error } = await supabase
         .from("contractor_payment_milestones")
-        .update({ invoice_generated: true })
-        .eq("id", milestoneId);
+        .update({ 
+          status,
+          completed_date: completedDate,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payment-milestones"] });
+      queryClient.invalidateQueries({ queryKey: ["contractor-milestones"] });
       toast({
         title: "Success",
-        description: "Invoice generated successfully",
+        description: "Milestone status updated successfully",
       });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update milestone status",
+        variant: "destructive",
+      });
+      console.error("Error updating milestone:", error);
+    },
+  });
+
+  const deleteMilestone = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("contractor_payment_milestones")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contractor-milestones"] });
+      toast({
+        title: "Success",
+        description: "Milestone deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete milestone",
+        variant: "destructive",
+      });
+      console.error("Error deleting milestone:", error);
     },
   });
 
@@ -108,7 +123,7 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {!isAddingMilestone && (
         <Button onClick={() => setIsAddingMilestone(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -117,113 +132,17 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
       )}
 
       {isAddingMilestone && (
-        <div className="space-y-4 p-4 border rounded-lg">
-          <Input
-            placeholder="Milestone Title"
-            value={newMilestone.title}
-            onChange={(e) =>
-              setNewMilestone({ ...newMilestone, title: e.target.value })
-            }
-          />
-          <Input
-            type="number"
-            placeholder="Amount"
-            value={newMilestone.amount}
-            onChange={(e) =>
-              setNewMilestone({ ...newMilestone, amount: e.target.value })
-            }
-          />
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !newMilestone.due_date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {newMilestone.due_date ? (
-                  format(newMilestone.due_date, "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={newMilestone.due_date}
-                onSelect={(date) =>
-                  setNewMilestone({ ...newMilestone, due_date: date || new Date() })
-                }
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsAddingMilestone(false);
-                setNewMilestone({ title: "", amount: "", due_date: new Date() });
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => addMilestone.mutate(newMilestone)}
-              disabled={!newMilestone.title || !newMilestone.amount}
-            >
-              Add Milestone
-            </Button>
-          </div>
-        </div>
+        <MilestoneForm
+          onSubmit={(data) => addMilestone.mutate(data)}
+          onCancel={() => setIsAddingMilestone(false)}
+        />
       )}
 
-      <div className="space-y-4">
-        {milestones?.map((milestone) => (
-          <div
-            key={milestone.id}
-            className="p-4 border rounded-lg flex justify-between items-center"
-          >
-            <div>
-              <h3 className="font-semibold">{milestone.title}</h3>
-              <p className="text-sm text-muted-foreground">
-                Due: {format(new Date(milestone.due_date), "PPP")}
-              </p>
-              <p className="text-sm font-medium">
-                Amount: ${milestone.amount.toLocaleString()}
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <span
-                  className={cn(
-                    "text-xs px-2 py-1 rounded-full",
-                    milestone.status === "completed"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
-                  )}
-                >
-                  {milestone.status}
-                </span>
-                {milestone.invoice_generated && (
-                  <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                    Invoice Generated
-                  </span>
-                )}
-              </div>
-            </div>
-            {!milestone.invoice_generated && (
-              <Button
-                variant="outline"
-                onClick={() => generateInvoice.mutate(milestone.id)}
-              >
-                Generate Invoice
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
+      <MilestoneList
+        milestones={milestones || []}
+        onStatusUpdate={updateMilestoneStatus.mutate}
+        onDelete={(id) => deleteMilestone.mutate(id)}
+      />
     </div>
   );
 }
