@@ -20,6 +20,11 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
   const { data: milestones, isLoading } = useQuery({
     queryKey: ["contractor-milestones", contractorId, projectId],
     queryFn: async () => {
+      // Only fetch if we have a valid projectId (not empty and not "test-project-id")
+      if (!projectId || projectId === "test-project-id") {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("contractor_payment_milestones")
         .select("*")
@@ -30,6 +35,7 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
       if (error) throw error;
       return data;
     },
+    enabled: Boolean(projectId && projectId !== "test-project-id"), // Only run query if we have a valid projectId
   });
 
   const addMilestone = useMutation({
@@ -118,8 +124,14 @@ export function PaymentMilestones({ contractorId, projectId }: PaymentMilestones
     },
   });
 
+  // Show loading state
   if (isLoading) {
     return <Loader2 className="h-8 w-8 animate-spin" />;
+  }
+
+  // If no project is selected, show a message
+  if (!projectId || projectId === "test-project-id") {
+    return <p className="text-muted-foreground">Please select a project to manage payment milestones.</p>;
   }
 
   return (
