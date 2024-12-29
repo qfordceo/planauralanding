@@ -1,21 +1,31 @@
-import { BrowserRouter } from "react-router-dom"
-import { Toaster } from "@/components/ui/toaster"
-import Layout from "@/components/Layout"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import "./App.css"
-
-const queryClient = new QueryClient()
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import LandingPage from "./pages/LandingPage";
+import Auth from "./pages/Auth";
+import ClientDashboard from "./pages/ClientDashboard";
+import ContractorDashboard from "./pages/ContractorDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import Waitlist from "./pages/Waitlist";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DataProcessingAgreement from "./pages/DataProcessingAgreement";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Layout>
-          <Toaster />
-        </Layout>
-      </BrowserRouter>
-    </QueryClientProvider>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="auth" element={<Auth />} />
+          <Route path="client-dashboard" element={<ClientDashboard />} />
+          <Route path="contractor-dashboard" element={<ContractorDashboard />} />
+          <Route path="admin-dashboard" element={<AdminDashboard />} />
+          <Route path="waitlist" element={<Waitlist />} />
+          <Route path="privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="data-processing-agreement" element={<DataProcessingAgreement />} />
+        </Route>
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
