@@ -40,7 +40,7 @@ export function ConsultingAgreement() {
 
       <div className="space-y-2">
         <h3 className="font-semibold">5. Limitation of Liability</h3>
-        <p>Plan Aura’s liability is limited to the fees paid under this agreement.</p>
+        <p>Plan Aura's liability is limited to the fees paid under this agreement.</p>
         <p>Plan Aura is not liable for outcomes of contractor work or third-party services.</p>
       </div>
 

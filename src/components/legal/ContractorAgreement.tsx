@@ -47,7 +47,7 @@ export function ContractorAgreement() {
       <div className="space-y-2">
         <h3 className="font-semibold">5. Limitation of Liability</h3>
         <ul className="list-disc pl-6 space-y-1">
-          <li>Plan Aura assumes no liability for Contractor’s performance or project outcomes.</li>
+          <li>Plan Aura assumes no liability for Contractor's performance or project outcomes.</li>
         </ul>
       </div>
 
