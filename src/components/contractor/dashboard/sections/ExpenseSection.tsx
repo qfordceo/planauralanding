@@ -8,11 +8,7 @@ interface ExpenseSectionProps {
   setActiveSection: (section: string | null) => void;
 }
 
-export function ExpenseSection({ 
-  contractorId, 
-  activeSection, 
-  setActiveSection 
-}: ExpenseSectionProps) {
+export function ExpenseSection({ contractorId, activeSection, setActiveSection }: ExpenseSectionProps) {
   return (
     <DashboardCard
       title="Expense Tracker"
@@ -21,6 +17,7 @@ export function ExpenseSection({
       buttonText={activeSection === 'expenses' ? 'Close Expenses' : 'Manage Expenses'}
       onClick={() => setActiveSection(activeSection === 'expenses' ? null : 'expenses')}
       expanded={activeSection === 'expenses'}
+      visibility="private"
     >
       {activeSection === 'expenses' && <ExpenseTracker contractorId={contractorId} />}
     </DashboardCard>

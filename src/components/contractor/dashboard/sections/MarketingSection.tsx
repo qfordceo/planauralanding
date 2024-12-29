@@ -8,11 +8,7 @@ interface MarketingSectionProps {
   setActiveSection: (section: string | null) => void;
 }
 
-export function MarketingSection({ 
-  contractorId, 
-  activeSection, 
-  setActiveSection 
-}: MarketingSectionProps) {
+export function MarketingSection({ contractorId, activeSection, setActiveSection }: MarketingSectionProps) {
   return (
     <DashboardCard
       title="Marketing Hub"
@@ -21,6 +17,7 @@ export function MarketingSection({
       buttonText={activeSection === 'marketing' ? 'Close Marketing' : 'Marketing Hub'}
       onClick={() => setActiveSection(activeSection === 'marketing' ? null : 'marketing')}
       expanded={activeSection === 'marketing'}
+      visibility="private"
     >
       {activeSection === 'marketing' && <MarketingHub contractorId={contractorId} />}
     </DashboardCard>

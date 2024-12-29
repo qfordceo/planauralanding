@@ -8,11 +8,7 @@ interface ClientManagementSectionProps {
   setActiveSection: (section: string | null) => void;
 }
 
-export function ClientManagementSection({ 
-  contractorId, 
-  activeSection, 
-  setActiveSection 
-}: ClientManagementSectionProps) {
+export function ClientManagementSection({ contractorId, activeSection, setActiveSection }: ClientManagementSectionProps) {
   return (
     <DashboardCard
       title="Client Management"
@@ -21,6 +17,7 @@ export function ClientManagementSection({
       buttonText={activeSection === 'clients' ? 'Close Clients' : 'Manage Clients'}
       onClick={() => setActiveSection(activeSection === 'clients' ? null : 'clients')}
       expanded={activeSection === 'clients'}
+      visibility="private"
     >
       {activeSection === 'clients' && <ClientManager contractorId={contractorId} />}
     </DashboardCard>

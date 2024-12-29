@@ -17,6 +17,7 @@ export function ReviewsSection({ contractorId, activeSection, setActiveSection }
       buttonText={activeSection === 'reviews' ? 'Close Reviews' : 'View Reviews'}
       onClick={() => setActiveSection(activeSection === 'reviews' ? null : 'reviews')}
       expanded={activeSection === 'reviews'}
+      visibility="public"
     >
       {activeSection === 'reviews' && <ContractorReviews contractorId={contractorId} />}
     </DashboardCard>

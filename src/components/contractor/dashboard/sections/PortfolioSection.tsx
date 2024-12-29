@@ -17,6 +17,7 @@ export function PortfolioSection({ contractorId, activeSection, setActiveSection
       buttonText={activeSection === 'portfolio' ? 'Close Portfolio' : 'Manage Portfolio'}
       onClick={() => setActiveSection(activeSection === 'portfolio' ? null : 'portfolio')}
       expanded={activeSection === 'portfolio'}
+      visibility="public"
     >
       {activeSection === 'portfolio' && <PortfolioManager contractorId={contractorId} />}
     </DashboardCard>
