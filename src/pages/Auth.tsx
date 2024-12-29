@@ -79,7 +79,7 @@ export default function Auth() {
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'background-color 0.2s ease',
-                '&:hover': {
+                ":hover": {
                   backgroundColor: '#8B7355',
                 }
               },
