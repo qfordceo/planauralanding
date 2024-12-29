@@ -1,7 +1,16 @@
 import { Contractor } from "@/types/contractor";
-import { DashboardGrid } from "./DashboardGrid";
+import { ComponentType } from "react";
 
-interface DashboardContentProps {
+interface SectionProps {
+  contractorId: string;
+  activeSection: string | null;
+  setActiveSection: (section: string | null) => void;
+  outbidCount?: number;
+  defectCount?: number;
+}
+
+interface DashboardSectionProps {
+  Section: ComponentType<SectionProps>;
   contractor: Contractor;
   activeSection: string | null;
   setActiveSection: (section: string | null) => void;
@@ -9,16 +18,17 @@ interface DashboardContentProps {
   defectCount: number;
 }
 
-export function DashboardContent({
+export function DashboardSection({
+  Section,
   contractor,
   activeSection,
   setActiveSection,
   outbidCount,
   defectCount,
-}: DashboardContentProps) {
+}: DashboardSectionProps) {
   return (
-    <DashboardGrid
-      contractor={contractor}
+    <Section
+      contractorId={contractor.id}
       activeSection={activeSection}
       setActiveSection={setActiveSection}
       outbidCount={outbidCount}
