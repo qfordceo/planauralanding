@@ -78,7 +78,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
             }
           }
         }}
-        onSubmitData={handleAuthSubmit}
+        onSubmit={handleAuthSubmit}
       />
       
       <div className="flex items-center space-x-2">
