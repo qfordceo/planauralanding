@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useNavigate } from "react-router-dom"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSearchParams } from "react-router-dom"
+import { AuthError, AuthResponse } from "@supabase/supabase-js"
 
 export default function Auth() {
   const { toast } = useToast()
@@ -39,7 +40,7 @@ export default function Auth() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/dashboard')
-      } else if (event === 'SIGNED_UP') {
+      } else if (event === 'USER_SIGNED_UP') {
         toast({
           title: "Verification Email Sent",
           description: "Please check your email to confirm your account.",
@@ -47,8 +48,8 @@ export default function Auth() {
       }
     })
 
-    // Handle auth errors
-    supabase.auth.onError((error) => {
+    // Handle auth errors using onAuthStateChange
+    const handleError = (error: AuthError) => {
       console.error('Auth error:', error)
       if (error.message.includes('rate limit')) {
         setError('Too many attempts. Please try again later.')
@@ -57,10 +58,18 @@ export default function Auth() {
       } else {
         setError(error.message)
       }
+    }
+
+    // Subscribe to auth state changes including errors
+    const errorSubscription = supabase.auth.onAuthStateChange((event, session, error) => {
+      if (error) {
+        handleError(error)
+      }
     })
 
     return () => {
       subscription.unsubscribe()
+      errorSubscription.data.subscription.unsubscribe()
     }
   }, [navigate, toast])
 
