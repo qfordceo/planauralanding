@@ -5,6 +5,7 @@ import { BuildConsulting } from "@/components/client/BuildConsulting";
 import { BuildCostCard } from "@/components/client/BuildCostCard";
 import { ProjectTimeline } from "@/components/client/build-cost/ProjectTimeline";
 import { MaterialsCard } from "@/components/client/MaterialsCard";
+import { FloorPlanAnalyzer } from "@/components/floor-plans/FloorPlanAnalyzer";
 import { Home, FileText, Wallet, HardHat, Construction, Palette } from "lucide-react";
 import type { Profile } from "@/types/profile";
 import type { BuildData } from "./types";
@@ -101,6 +102,17 @@ export function DashboardGrid({
             floorPlanId={activeBuild?.floor_plan_id}
           />
         )}
+      </DashboardCard>
+
+      <DashboardCard
+        title="Floor Plan Analysis"
+        description="Analyze and customize floor plans"
+        icon={Home}
+        buttonText={activeSection === 'floor-plan-analysis' ? 'Close Analysis' : 'View Analysis'}
+        onClick={() => setActiveSection(activeSection === 'floor-plan-analysis' ? null : 'floor-plan-analysis')}
+        expanded={activeSection === 'floor-plan-analysis'}
+      >
+        {activeSection === 'floor-plan-analysis' && <FloorPlanAnalyzer />}
       </DashboardCard>
     </div>
   );
