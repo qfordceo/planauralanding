@@ -35,14 +35,18 @@ export default function TermsAcknowledgment() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error("No authenticated user found");
 
-      const { error } = await supabase
+      // Use a more specific query with better error handling
+      const { error: updateError } = await supabase
         .from('profiles')
-        .update({ terms_accepted: true })
+        .update({ 
+          terms_accepted: true,
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', user.id);
 
-      if (error) {
-        console.error('Error updating terms acceptance:', error);
-        throw error;
+      if (updateError) {
+        console.error('Error updating terms acceptance:', updateError);
+        throw updateError;
       }
 
       toast({
@@ -52,7 +56,11 @@ export default function TermsAcknowledgment() {
 
       // Check user type and redirect accordingly
       const userType = new URLSearchParams(window.location.search).get('type');
-      navigate(userType === 'contractor' ? '/contractor-dashboard' : '/client-dashboard');
+      
+      // Add a small delay to ensure the profile update is complete
+      setTimeout(() => {
+        navigate(userType === 'contractor' ? '/contractor-dashboard' : '/client-dashboard');
+      }, 500);
     } catch (error) {
       console.error('Error updating terms acceptance:', error);
       toast({
