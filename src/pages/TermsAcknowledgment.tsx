@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function TermsAcknowledgment() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,13 +30,20 @@ export default function TermsAcknowledgment() {
       return;
     }
 
+    setIsUpdating(true);
     try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error("No authenticated user found");
+
       const { error } = await supabase
         .from('profiles')
         .update({ terms_accepted: true })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating terms acceptance:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
@@ -49,9 +57,11 @@ export default function TermsAcknowledgment() {
       console.error('Error updating terms acceptance:', error);
       toast({
         title: "Error",
-        description: "Failed to update terms acceptance",
+        description: "Failed to update terms acceptance. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -96,8 +106,12 @@ export default function TermsAcknowledgment() {
           </Alert>
         )}
 
-        <Button onClick={handleAccept} className="w-full">
-          Accept & Continue
+        <Button 
+          onClick={handleAccept} 
+          className="w-full"
+          disabled={isUpdating}
+        >
+          {isUpdating ? "Updating..." : "Accept & Continue"}
         </Button>
       </div>
     </div>
