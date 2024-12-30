@@ -1,11 +1,12 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { AdminDashboardContainer } from "@/components/admin/dashboard/AdminDashboardContainer";
-import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { AdminDashboardContainer } from "@/components/admin/dashboard/AdminDashboardContainer"
+
+const queryClient = new QueryClient()
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
-  useAuthCheck(navigate, "/auth");
-
-  return <AdminDashboardContainer />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AdminDashboardContainer />
+    </QueryClientProvider>
+  )
 }

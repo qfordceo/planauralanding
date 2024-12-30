@@ -1651,6 +1651,7 @@ export type Database = {
     Views: {
       admin_users: {
         Row: {
+          email: string | null
           id: string | null
         }
         Relationships: []
