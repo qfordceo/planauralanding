@@ -22,12 +22,14 @@ serve(async (req) => {
 
     // Validate that the URL is accessible and is an image
     try {
-      const urlCheck = await fetch(imageUrl, { method: 'HEAD' });
+      const urlCheck = await fetch(imageUrl);
       if (!urlCheck.ok) {
         throw new Error('Image URL is not accessible');
       }
       const contentType = urlCheck.headers.get('content-type');
-      if (!contentType?.startsWith('image/')) {
+      console.log('Content-Type:', contentType);
+      
+      if (!contentType?.toLowerCase().includes('image/')) {
         throw new Error('URL does not point to a valid image');
       }
     } catch (error) {
