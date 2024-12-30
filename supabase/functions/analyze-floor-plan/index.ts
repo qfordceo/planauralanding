@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import { 
-  calculateDimensions, 
-  extractFeatures, 
-  calculateMaterialEstimates 
-} from '../../../src/utils/floor-plan-analysis.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,13 +7,30 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     const { imageUrl, customizations } = await req.json();
-    
+
+    // Validate image URL
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      throw new Error('Invalid image URL provided');
+    }
+
+    // Validate that the URL is accessible
+    try {
+      const urlCheck = await fetch(imageUrl, { method: 'HEAD' });
+      if (!urlCheck.ok) {
+        throw new Error('Image URL is not accessible');
+      }
+    } catch (error) {
+      console.error('Image URL validation error:', error);
+      throw new Error('Unable to access image URL');
+    }
+
     const endpoint = Deno.env.get('AZURE_CV_ENDPOINT');
     const apiKey = Deno.env.get('AZURE_CV_KEY');
 
@@ -26,8 +38,11 @@ serve(async (req) => {
       throw new Error('Azure CV credentials not configured');
     }
 
-    // 1. Analyze floor plan with Azure Computer Vision
-    const analysisUrl = `${endpoint}computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,text,tags`;
+    console.log('Analyzing floor plan:', imageUrl);
+    console.log('Using Azure endpoint:', endpoint);
+
+    // Make request to Azure Computer Vision
+    const analysisUrl = `${endpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,text,tags`;
     const response = await fetch(analysisUrl, {
       method: 'POST',
       headers: {
@@ -38,26 +53,29 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      console.error('Azure API Response:', await response.text());
       throw new Error(`Azure CV API error: ${response.statusText}`);
     }
 
     const azureResult = await response.json();
-    console.log('Azure CV Analysis Result:', azureResult);
+    console.log('Azure CV Analysis Result:', JSON.stringify(azureResult, null, 2));
 
-    // 2. Extract room dimensions and features
+    // Extract room information
     const rooms = azureResult.objects
       ?.filter((obj: any) => obj.tags?.includes('room'))
-      .map((obj: any) => {
-        const dimensions = calculateDimensions(obj.boundingBox);
-        return {
-          type: obj.tags[0] || 'room',
-          dimensions,
-          area: dimensions.width * dimensions.length,
-          features: extractFeatures(obj, azureResult.text)
-        };
-      }) || [];
+      .map((obj: any) => ({
+        type: obj.tags[0] || 'room',
+        dimensions: {
+          width: Math.round(obj.boundingBox[2] * 0.1), // Convert pixels to feet
+          length: Math.round(obj.boundingBox[3] * 0.1)
+        },
+        area: Math.round(obj.boundingBox[2] * obj.boundingBox[3] * 0.01), // Square feet
+        features: obj.tags.filter((tag: string) => 
+          ['window', 'door', 'sink', 'bathtub', 'shower'].includes(tag)
+        )
+      })) || [];
 
-    // 3. Detect electrical layout
+    // Detect electrical elements
     const electricalElements = azureResult.objects
       ?.filter((obj: any) => 
         obj.tags?.some((tag: string) => 
@@ -74,40 +92,65 @@ serve(async (req) => {
         }
       })) || [];
 
-    // 4. Prepare analysis result
+    // Calculate material estimates
+    const totalArea = rooms.reduce((sum: number, room: any) => sum + room.area, 0);
+    const materialEstimates = [
+      {
+        category: 'Flooring',
+        items: [{
+          name: 'Standard Flooring',
+          quantity: totalArea,
+          unit: 'sq ft',
+          estimatedCost: totalArea * (customizations?.flooringCostPerSqFt || 5)
+        }]
+      },
+      {
+        category: 'Paint',
+        items: rooms.map((room: any) => {
+          const wallArea = (room.dimensions.length * 8 * 2) + (room.dimensions.width * 8 * 2);
+          return {
+            name: `${room.type} Paint`,
+            quantity: wallArea,
+            unit: 'sq ft',
+            estimatedCost: wallArea * (customizations?.paintCostPerSqFt || 0.5)
+          };
+        })
+      }
+    ];
+
     const result = {
       rooms,
-      totalArea: rooms.reduce((total: number, room: any) => total + room.area, 0),
+      totalArea,
       electricalLayout: {
         elements: electricalElements
       },
-      materialEstimates: calculateMaterialEstimates(rooms, customizations)
+      materialEstimates
     };
-
-    // 5. Store analysis in Supabase
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    await supabase
-      .from('ai_floor_plan_analyses')
-      .insert({
-        analysis_data: azureResult,
-        room_dimensions: { rooms },
-        electrical_layout: { elements: electricalElements },
-        material_suggestions: result.materialEstimates
-      });
 
     return new Response(
       JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     );
+
   } catch (error) {
-    console.error('Error analyzing floor plan:', error);
+    console.error('Error in analyze-floor-plan:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        details: error.toString()
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
+        status: 400
+      }
     );
   }
 });
