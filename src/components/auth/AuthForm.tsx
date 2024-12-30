@@ -20,9 +20,45 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
   const { toast } = useToast();
   const userType = searchParams.get('type') || 'client';
 
+  // Check if terms were previously accepted
+  useEffect(() => {
+    const checkTermsAcceptance = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id) {
+          const { data } = await supabase
+            .from('profiles')
+            .select('terms_accepted')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (data?.terms_accepted) {
+            setTermsAccepted(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking terms acceptance:', error);
+      }
+    };
+
+    checkTermsAcceptance();
+  }, []);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        // Update terms acceptance in profile if checked
+        if (termsAccepted) {
+          try {
+            await supabase
+              .from('profiles')
+              .update({ terms_accepted: true })
+              .eq('id', session.user.id);
+          } catch (error) {
+            console.error('Error updating terms acceptance:', error);
+          }
+        }
+
         // Check if user exists in contractors table if they're a contractor
         if (userType === 'contractor') {
           try {
@@ -33,7 +69,6 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
               .maybeSingle();
 
             if (error) throw error;
-
             navigate('/contractor-dashboard');
           } catch (error) {
             console.error('Error checking contractor:', error);
@@ -52,7 +87,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, userType, toast]);
+  }, [navigate, userType, toast, termsAccepted]);
 
   const handleTermsClick = () => {
     navigate("/terms-of-service");
@@ -97,7 +132,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
             }
           }
         }}
-        providers={["google"]}
+        providers={[]}
         localization={{
           variables: {
             sign_in: {
@@ -111,33 +146,37 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
         redirectTo={window.location.origin + '/auth?type=' + userType}
       />
       
-      <div className="flex items-center space-x-2">
-        <Checkbox 
-          id="terms" 
-          checked={termsAccepted}
-          onCheckedChange={(checked) => {
-            setTermsAccepted(checked as boolean);
-            setShowTermsError(false);
-          }}
-        />
-        <Label htmlFor="terms" className="text-sm">
-          I have read and agree to the{" "}
-          <button
-            type="button"
-            className="text-primary underline hover:text-primary/80"
-            onClick={handleTermsClick}
-          >
-            Terms of Service
-          </button>
-        </Label>
-      </div>
+      {!termsAccepted && (
+        <>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="terms" 
+              checked={termsAccepted}
+              onCheckedChange={(checked) => {
+                setTermsAccepted(checked as boolean);
+                setShowTermsError(false);
+              }}
+            />
+            <Label htmlFor="terms" className="text-sm">
+              I have read and agree to the{" "}
+              <button
+                type="button"
+                className="text-primary underline hover:text-primary/80"
+                onClick={handleTermsClick}
+              >
+                Terms of Service
+              </button>
+            </Label>
+          </div>
 
-      {showTermsError && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            You must accept the Terms of Service to continue
-          </AlertDescription>
-        </Alert>
+          {showTermsError && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                You must accept the Terms of Service to continue
+              </AlertDescription>
+            </Alert>
+          )}
+        </>
       )}
     </div>
   );
