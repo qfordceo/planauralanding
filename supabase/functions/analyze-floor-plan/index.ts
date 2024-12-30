@@ -21,16 +21,30 @@ serve(async (req) => {
     }
 
     // Validate that the URL is accessible and is an image
+    let imageResponse;
     try {
-      const urlCheck = await fetch(imageUrl);
-      if (!urlCheck.ok) {
+      imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        console.error('Image URL response not OK:', {
+          status: imageResponse.status,
+          statusText: imageResponse.statusText
+        });
         throw new Error('Image URL is not accessible');
       }
-      const contentType = urlCheck.headers.get('content-type');
-      console.log('Content-Type:', contentType);
+
+      const contentType = imageResponse.headers.get('content-type');
+      console.log('Content-Type from image URL:', contentType);
       
       if (!contentType?.toLowerCase().includes('image/')) {
-        throw new Error('URL does not point to a valid image');
+        // Try to validate the URL by checking if it redirects to an image
+        const finalUrl = imageResponse.url;
+        console.log('Checking final URL after potential redirect:', finalUrl);
+        
+        if (finalUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          console.log('URL points to an image file based on extension');
+        } else {
+          throw new Error('URL does not point to a valid image');
+        }
       }
     } catch (error) {
       console.error('Image URL validation error:', error);
@@ -47,7 +61,6 @@ serve(async (req) => {
     console.log('Using Azure endpoint:', endpoint);
 
     // Make request to Azure Computer Vision with proper error handling
-    // Updated to use the correct features parameter
     const analysisUrl = `${endpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read,objects`;
     console.log('Making request to Azure CV API:', analysisUrl);
 
