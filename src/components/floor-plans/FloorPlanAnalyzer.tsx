@@ -2,38 +2,10 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface AnalysisResult {
-  rooms: {
-    type: string;
-    dimensions: {
-      width: number;
-      length: number;
-    };
-    area: number;
-    features: string[];
-  }[];
-  totalArea: number;
-  materialEstimates: {
-    category: string;
-    items: {
-      name: string;
-      quantity: number;
-      unit: string;
-      estimatedCost: number;
-    }[];
-  }[];
-}
-
-interface CustomizationOptions {
-  flooringCostPerSqFt: number;
-  paintCostPerSqFt: number;
-}
+import { FloorPlanAnalysisForm } from './FloorPlanAnalysisForm';
+import { FloorPlanAnalysisResults } from './FloorPlanAnalysisResults';
+import type { AnalysisResult, CustomizationOptions } from '@/types/floor-plans';
 
 export function FloorPlanAnalyzer() {
   const { toast } = useToast();
@@ -72,109 +44,33 @@ export function FloorPlanAnalyzer() {
     enabled: !!imageUrl && isAnalyzing
   });
 
+  const handleAnalyze = (url: string) => {
+    setImageUrl(url);
+    setIsAnalyzing(true);
+  };
+
+  const handleCustomizationChange = (updates: Partial<CustomizationOptions>) => {
+    setCustomizations(prev => ({ ...prev, ...updates }));
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Floor Plan Analysis</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Input
-              type="url"
-              placeholder="Enter floor plan image URL"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
-            <Button 
-              onClick={() => setIsAnalyzing(true)}
-              disabled={!imageUrl || isLoading}
-            >
-              Analyze Floor Plan
-            </Button>
-          </div>
-
-          {isLoading && <Progress value={50} className="w-full" />}
-
-          {analysis && (
-            <Tabs defaultValue="overview">
-              <TabsList>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="rooms">Rooms</TabsTrigger>
-                <TabsTrigger value="materials">Materials</TabsTrigger>
-                <TabsTrigger value="customize">Customize</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="overview">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Floor Plan Overview</h3>
-                  <p>Total Area: {analysis.totalArea} sq ft</p>
-                  <p>Number of Rooms: {analysis.rooms.length}</p>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="rooms">
-                <div className="space-y-4">
-                  {analysis.rooms.map((room, index) => (
-                    <div key={index} className="p-4 border rounded">
-                      <h4 className="font-medium">{room.type}</h4>
-                      <p>Dimensions: {room.dimensions.width}' x {room.dimensions.length}'</p>
-                      <p>Area: {room.area} sq ft</p>
-                      <p>Features: {room.features.join(', ')}</p>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="materials">
-                <div className="space-y-4">
-                  {analysis.materialEstimates.map((category, index) => (
-                    <div key={index} className="space-y-2">
-                      <h4 className="font-medium">{category.category}</h4>
-                      {category.items.map((item, itemIndex) => (
-                        <div key={itemIndex} className="flex justify-between items-center">
-                          <span>{item.name}</span>
-                          <span>{item.quantity} {item.unit}</span>
-                          <span>${item.estimatedCost}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="customize">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Customize Materials</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Flooring Cost (per sq ft)</label>
-                      <Input
-                        type="number"
-                        value={customizations.flooringCostPerSqFt}
-                        onChange={(e) => setCustomizations(prev => ({
-                          ...prev,
-                          flooringCostPerSqFt: parseFloat(e.target.value)
-                        }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Paint Cost (per sq ft)</label>
-                      <Input
-                        type="number"
-                        value={customizations.paintCostPerSqFt}
-                        onChange={(e) => setCustomizations(prev => ({
-                          ...prev,
-                          paintCostPerSqFt: parseFloat(e.target.value)
-                        }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          )}
-        </div>
+        <FloorPlanAnalysisForm 
+          onAnalyze={handleAnalyze}
+          isLoading={isLoading}
+        />
+        
+        {analysis && (
+          <FloorPlanAnalysisResults
+            analysis={analysis}
+            customizations={customizations}
+            onCustomizationChange={handleCustomizationChange}
+          />
+        )}
       </CardContent>
     </Card>
   );
