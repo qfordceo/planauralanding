@@ -47,10 +47,10 @@ export function DashboardCard({
   };
 
   return (
-    <Card className={expanded ? "col-span-full" : ""}>
+    <Card className={`transition-all duration-200 hover:shadow-md ${expanded ? 'col-span-full' : ''}`}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Icon className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Icon className="h-5 w-5 text-muted-foreground" />
           {title}
           <div className="ml-auto flex items-center gap-2">
             {visibility && (
@@ -87,10 +87,16 @@ export function DashboardCard({
       <CardContent>
         {!expanded && (
           <>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               {description}
             </p>
-            <Button onClick={onClick}>{buttonText}</Button>
+            <Button 
+              onClick={onClick}
+              className="w-full"
+              variant={expanded ? "outline" : "default"}
+            >
+              {buttonText}
+            </Button>
           </>
         )}
         {expanded && children}
