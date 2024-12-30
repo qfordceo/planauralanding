@@ -20,11 +20,15 @@ export function AuthContainer() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Session check error:', sessionError);
+          setError("Unable to check login status. Please try again.");
+        }
         setIsLoading(false);
       } catch (error) {
         console.error('Session check error:', error);
+        setError("An unexpected error occurred. Please try again.");
         setIsLoading(false);
       }
     };
@@ -36,6 +40,8 @@ export function AuthContainer() {
     console.error('Auth error:', error);
     if (error.message.includes('rate limit')) {
       setError('Too many attempts. Please try again later.');
+    } else if (error.message.includes('Invalid login credentials')) {
+      setError('Invalid email or password. Please try again.');
     } else if (error.message.includes('confirmation email')) {
       toast({
         title: "Email Confirmation Required",
@@ -43,7 +49,7 @@ export function AuthContainer() {
         duration: 6000,
       });
     } else {
-      setError(error.message);
+      setError('An error occurred during login. Please try again.');
     }
   };
 

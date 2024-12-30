@@ -19,13 +19,21 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         try {
-          const { data: profile, error } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('terms_accepted')
             .eq('id', session.user.id)
             .single();
 
-          if (error) throw error;
+          if (profileError) {
+            console.error('Profile fetch error:', profileError);
+            toast({
+              title: "Error",
+              description: "Unable to load your profile. Please try again.",
+              variant: "destructive",
+            });
+            return;
+          }
 
           if (!profile?.terms_accepted) {
             navigate('/terms-acknowledgment');
@@ -35,13 +43,15 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
             navigate('/client-dashboard');
           }
         } catch (error) {
-          console.error('Error checking terms acceptance:', error);
+          console.error('Auth state change error:', error);
           toast({
             title: "Error",
-            description: "Failed to verify account status",
+            description: "An error occurred during login. Please try again.",
             variant: "destructive",
           });
         }
+      } else if (event === 'SIGNED_OUT') {
+        navigate('/auth');
       }
     });
 
