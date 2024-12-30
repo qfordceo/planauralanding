@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthError } from "@supabase/supabase-js";
 
 export const useAuthEvents = (setError: (error: string | null) => void) => {
   const navigate = useNavigate();
@@ -12,6 +11,8 @@ export const useAuthEvents = (setError: (error: string | null) => void) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
+      
       if (event === "SIGNED_IN" && session) {
         navigate("/dashboard");
       } else if (event === "SIGNED_OUT") {

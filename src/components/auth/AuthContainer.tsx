@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { AuthForm } from "./AuthForm";
 import { useAuthEvents } from "@/hooks/useAuthEvents";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AuthContainer() {
   const { toast } = useToast();
@@ -15,6 +16,21 @@ export function AuthContainer() {
   const defaultTab = searchParams.get('type') || 'client';
 
   useAuthEvents(setError);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Session check error:', error);
+        setIsLoading(false);
+      }
+    };
+
+    checkSession();
+  }, []);
 
   const handleError = (error: Error) => {
     console.error('Auth error:', error);
