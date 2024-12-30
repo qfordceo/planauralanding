@@ -47,7 +47,8 @@ serve(async (req) => {
     console.log('Using Azure endpoint:', endpoint);
 
     // Make request to Azure Computer Vision with proper error handling
-    const analysisUrl = `${endpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,text,tags`;
+    // Updated to use the correct features parameter
+    const analysisUrl = `${endpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read,objects`;
     console.log('Making request to Azure CV API:', analysisUrl);
 
     const response = await fetch(analysisUrl, {
@@ -87,25 +88,13 @@ serve(async (req) => {
         )
       })) || [];
 
-    // Detect electrical elements
-    const electricalElements = azureResult.objects
-      ?.filter((obj: any) => 
-        obj.tags?.some((tag: string) => 
-          ['outlet', 'switch', 'light_fixture'].includes(tag)
-        )
-      )
-      .map((obj: any) => ({
-        type: obj.tags.find((tag: string) => 
-          ['outlet', 'switch', 'light_fixture'].includes(tag)
-        ),
-        position: {
-          x: obj.boundingBox[0],
-          y: obj.boundingBox[1]
-        }
-      })) || [];
-
-    // Calculate material estimates
+    // Extract text information for room labels
+    const textResults = azureResult.readResult?.pages?.[0] || {};
+    
+    // Calculate total area
     const totalArea = rooms.reduce((sum: number, room: any) => sum + room.area, 0);
+
+    // Generate material estimates based on room data
     const materialEstimates = [
       {
         category: 'Flooring',
@@ -133,9 +122,7 @@ serve(async (req) => {
     const result = {
       rooms,
       totalArea,
-      electricalLayout: {
-        elements: electricalElements
-      },
+      textResults,
       materialEstimates
     };
 
