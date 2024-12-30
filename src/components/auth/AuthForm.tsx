@@ -19,11 +19,13 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         try {
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('terms_accepted')
             .eq('id', session.user.id)
             .single();
+
+          if (error) throw error;
 
           if (!profile?.terms_accepted) {
             navigate('/terms-acknowledgment');
