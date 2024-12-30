@@ -1,4 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import type { AnalysisResult, CustomizationOptions } from "@/types/floor-plans";
 
 interface FloorPlanAnalysisResultsProps {
