@@ -30,10 +30,18 @@ interface AnalysisResult {
   }[];
 }
 
+interface CustomizationOptions {
+  flooringCostPerSqFt: number;
+  paintCostPerSqFt: number;
+}
+
 export function FloorPlanAnalyzer() {
   const { toast } = useToast();
   const [imageUrl, setImageUrl] = useState('');
-  const [customizations, setCustomizations] = useState({});
+  const [customizations, setCustomizations] = useState<CustomizationOptions>({
+    flooringCostPerSqFt: 5,
+    paintCostPerSqFt: 0.5
+  });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const analyzeFloorPlan = async () => {
@@ -143,7 +151,7 @@ export function FloorPlanAnalyzer() {
                       <label className="text-sm font-medium">Flooring Cost (per sq ft)</label>
                       <Input
                         type="number"
-                        value={customizations.flooringCostPerSqFt || 5}
+                        value={customizations.flooringCostPerSqFt}
                         onChange={(e) => setCustomizations(prev => ({
                           ...prev,
                           flooringCostPerSqFt: parseFloat(e.target.value)
@@ -154,7 +162,7 @@ export function FloorPlanAnalyzer() {
                       <label className="text-sm font-medium">Paint Cost (per sq ft)</label>
                       <Input
                         type="number"
-                        value={customizations.paintCostPerSqFt || 0.5}
+                        value={customizations.paintCostPerSqFt}
                         onChange={(e) => setCustomizations(prev => ({
                           ...prev,
                           paintCostPerSqFt: parseFloat(e.target.value)
