@@ -11,9 +11,11 @@ import { PurchasesTable } from "@/components/admin/PurchasesTable"
 import { PreApprovalTable } from "@/components/admin/PreApprovalTable"
 import { StripeDashboard } from "@/components/admin/StripeDashboard"
 import { FinancialOverview } from "@/components/admin/FinancialOverview"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -21,7 +23,11 @@ export default function AdminDashboard() {
     const checkAdminAccess = async () => {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        if (sessionError) throw sessionError
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError)
+          throw sessionError
+        }
         
         if (!session) {
           navigate('/auth')
@@ -32,9 +38,12 @@ export default function AdminDashboard() {
           .from('profiles')
           .select('is_admin')
           .eq('id', session.user.id)
-          .maybeSingle()
+          .single()
 
-        if (profileError) throw profileError
+        if (profileError) {
+          console.error('Profile error:', profileError)
+          throw profileError
+        }
 
         if (!profile?.is_admin) {
           navigate('/')
@@ -49,24 +58,42 @@ export default function AdminDashboard() {
         setLoading(false)
       } catch (error) {
         console.error('Error checking admin access:', error)
-        navigate('/')
-        toast({
-          title: "Error",
-          description: "Failed to verify admin access",
-          variant: "destructive",
-        })
+        setError('Failed to verify admin access. Please try logging in again.')
+        setLoading(false)
       }
     }
 
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/auth')
+      }
+    })
+
     checkAdminAccess()
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [navigate, toast])
 
   if (loading) {
     return (
       <div className="container py-8">
         <div className="flex items-center justify-center">
-          <div className="text-lg">Loading...</div>
+          <div className="text-lg">Verifying admin access...</div>
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container py-8">
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       </div>
     )
   }
