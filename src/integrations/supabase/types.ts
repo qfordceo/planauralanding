@@ -1131,6 +1131,44 @@ export type Database = {
         }
         Relationships: []
       }
+      floor_plan_analyses: {
+        Row: {
+          analysis_data: Json
+          created_at: string
+          customizations: Json
+          floor_plan_id: string | null
+          id: string
+          material_estimates: Json
+          updated_at: string
+        }
+        Insert: {
+          analysis_data?: Json
+          created_at?: string
+          customizations?: Json
+          floor_plan_id?: string | null
+          id?: string
+          material_estimates?: Json
+          updated_at?: string
+        }
+        Update: {
+          analysis_data?: Json
+          created_at?: string
+          customizations?: Json
+          floor_plan_id?: string | null
+          id?: string
+          material_estimates?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "floor_plan_analyses_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       floor_plan_purchases: {
         Row: {
           commission_amount: number

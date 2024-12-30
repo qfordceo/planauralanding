@@ -136,7 +136,33 @@ export function FloorPlanAnalyzer() {
               </TabsContent>
 
               <TabsContent value="customize">
-                {/* Add customization controls here */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Customize Materials</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Flooring Cost (per sq ft)</label>
+                      <Input
+                        type="number"
+                        value={customizations.flooringCostPerSqFt || 5}
+                        onChange={(e) => setCustomizations(prev => ({
+                          ...prev,
+                          flooringCostPerSqFt: parseFloat(e.target.value)
+                        }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Paint Cost (per sq ft)</label>
+                      <Input
+                        type="number"
+                        value={customizations.paintCostPerSqFt || 0.5}
+                        onChange={(e) => setCustomizations(prev => ({
+                          ...prev,
+                          paintCostPerSqFt: parseFloat(e.target.value)
+                        }))}
+                      />
+                    </div>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           )}

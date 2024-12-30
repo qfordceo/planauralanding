@@ -65,7 +65,6 @@ serve(async (req) => {
     console.log('Azure CV Analysis Result:', azureResult)
 
     // Process the Azure results into our format
-    // This is a simplified example - you'll need to enhance this based on your needs
     const result: AnalysisResult = {
       rooms: [],
       totalArea: 0,
@@ -73,11 +72,43 @@ serve(async (req) => {
     }
 
     // Extract room information from Azure's analysis
-    // This is where you'll implement the logic to interpret Azure's results
-    // and convert them into room data
+    if (azureResult.objects) {
+      azureResult.objects.forEach((obj: any) => {
+        if (obj.tags?.includes('room')) {
+          const dimensions = calculateDimensions(obj.boundingBox)
+          result.rooms.push({
+            type: obj.tags[0] || 'room',
+            dimensions: dimensions,
+            area: dimensions.width * dimensions.length,
+            features: extractFeatures(obj, azureResult.text)
+          })
+        }
+      })
+    }
+
+    // Calculate total area
+    result.totalArea = result.rooms.reduce((total, room) => total + room.area, 0)
 
     // Calculate material estimates based on the analysis
     result.materialEstimates = calculateMaterialEstimates(result.rooms, customizations)
+
+    // Store the analysis result in Supabase
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { error: dbError } = await supabase
+      .from('floor_plan_analyses')
+      .insert({
+        analysis_data: azureResult,
+        material_estimates: result.materialEstimates,
+        customizations
+      })
+
+    if (dbError) {
+      console.error('Error storing analysis:', dbError)
+    }
 
     return new Response(
       JSON.stringify(result),
@@ -100,6 +131,47 @@ serve(async (req) => {
   }
 })
 
+function calculateDimensions(boundingBox: number[]) {
+  // Convert pixel dimensions to approximate real-world dimensions
+  // This is a simplified calculation - would need calibration in production
+  const pixelToFeet = 0.1 // Example conversion factor
+  return {
+    width: Math.round(boundingBox[2] * pixelToFeet),
+    length: Math.round(boundingBox[3] * pixelToFeet)
+  }
+}
+
+function extractFeatures(obj: any, textResults: any) {
+  const features: string[] = []
+  
+  // Extract features from object tags
+  if (obj.tags) {
+    features.push(...obj.tags.filter((tag: string) => 
+      ['window', 'door', 'sink', 'bathtub', 'shower'].includes(tag)
+    ))
+  }
+
+  // Extract features from text analysis
+  if (textResults?.lines) {
+    textResults.lines.forEach((line: any) => {
+      if (isWithinBoundingBox(line.boundingBox, obj.boundingBox)) {
+        features.push(line.text)
+      }
+    })
+  }
+
+  return features
+}
+
+function isWithinBoundingBox(innerBox: number[], outerBox: number[]) {
+  return (
+    innerBox[0] >= outerBox[0] &&
+    innerBox[1] >= outerBox[1] &&
+    innerBox[0] + innerBox[2] <= outerBox[0] + outerBox[2] &&
+    innerBox[1] + innerBox[3] <= outerBox[1] + outerBox[3]
+  )
+}
+
 function calculateMaterialEstimates(
   rooms: AnalysisResult['rooms'], 
   customizations?: Record<string, any>
@@ -107,24 +179,48 @@ function calculateMaterialEstimates(
   const estimates = [
     {
       category: 'Flooring',
-      items: []
+      items: rooms.map(room => ({
+        name: `${room.type} Flooring`,
+        quantity: room.area,
+        unit: 'sq ft',
+        estimatedCost: room.area * (customizations?.flooringCostPerSqFt || 5)
+      }))
     },
     {
       category: 'Paint',
-      items: []
+      items: rooms.map(room => {
+        const wallArea = (room.dimensions.length * 8 * 2) + (room.dimensions.width * 8 * 2)
+        return {
+          name: `${room.type} Paint`,
+          quantity: wallArea,
+          unit: 'sq ft',
+          estimatedCost: wallArea * (customizations?.paintCostPerSqFt || 0.5)
+        }
+      })
     },
     {
       category: 'Electrical',
-      items: []
+      items: rooms.map(room => ({
+        name: `${room.type} Electrical`,
+        quantity: Math.ceil(room.area / 100), // One outlet per 100 sq ft
+        unit: 'outlets',
+        estimatedCost: Math.ceil(room.area / 100) * (customizations?.outletCost || 20)
+      }))
     },
     {
       category: 'Fixtures',
-      items: []
+      items: rooms.flatMap(room => 
+        room.features
+          .filter(feature => ['sink', 'bathtub', 'shower'].includes(feature))
+          .map(feature => ({
+            name: `${feature} (${room.type})`,
+            quantity: 1,
+            unit: 'piece',
+            estimatedCost: customizations?.fixtureCosts?.[feature] || 200
+          }))
+      )
     }
   ]
 
-  // Calculate estimates based on room data and customizations
-  // This is where you'll implement detailed calculations
-  
   return estimates
 }
