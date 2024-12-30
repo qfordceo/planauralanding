@@ -1,37 +1,37 @@
-import { SchedulingSection } from "./SchedulingSection";
-import { ExpenseSection } from "./ExpenseSection";
-import { ClientManagementSection } from "./ClientManagementSection";
-import { MarketingSection } from "./MarketingSection";
-import { PaymentsSection } from "./PaymentsSection";
 import { JobsSection } from "./JobsSection";
-import { NotificationsSection } from "./NotificationsSection";
 import { RebidSection } from "./RebidSection";
 import { DefectsSection } from "./DefectsSection";
 import { PortfolioSection } from "./PortfolioSection";
 import { ReviewsSection } from "./ReviewsSection";
+import { ClientManagementSection } from "./ClientManagementSection";
+import { WorkforceSection } from "./WorkforceSection";
+import { MaterialManagementSection } from "./MaterialManagementSection";
+import { ExpenseSection } from "./ExpenseSection";
+import { SchedulingSection } from "./SchedulingSection";
+import { MessagingSection } from "./MessagingSection";
+import { MarketingSection } from "./MarketingSection";
+import { AnalyticsSection } from "./AnalyticsSection";
+import { PaymentsSection } from "./PaymentsSection";
 import { ComplianceSection } from "./ComplianceSection";
 import { TrainingSection } from "./TrainingSection";
-import { MessagingSection } from "./MessagingSection";
-import { MaterialManagementSection } from "./MaterialManagementSection";
-import { WorkforceSection } from "./WorkforceSection";
-import { AnalyticsSection } from "./AnalyticsSection";
+import { NotificationsSection } from "./NotificationsSection";
 
 export const sections = [
-  MessagingSection,
-  SchedulingSection,
-  MaterialManagementSection,
-  WorkforceSection,
-  AnalyticsSection,
-  ExpenseSection,
-  ClientManagementSection,
-  MarketingSection,
-  PaymentsSection,
   JobsSection,
-  NotificationsSection,
   RebidSection,
   DefectsSection,
   PortfolioSection,
   ReviewsSection,
+  ClientManagementSection,
+  WorkforceSection,
+  MaterialManagementSection,
+  ExpenseSection,
+  SchedulingSection,
+  MessagingSection,
+  MarketingSection,
+  AnalyticsSection,
+  PaymentsSection,
   ComplianceSection,
   TrainingSection,
+  NotificationsSection,
 ];
