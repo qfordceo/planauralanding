@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DashboardContent } from "@/components/contractor/dashboard/DashboardContent";
 import { useDashboardState } from "@/components/contractor/dashboard/DashboardState";
 import { useNotifications } from "@/components/contractor/dashboard/useNotifications";
@@ -10,6 +11,8 @@ import { LoadingState } from "@/components/contractor/dashboard/LoadingState";
 import { NoProfileState } from "@/components/contractor/dashboard/NoProfileState";
 import { ContractorRegistration } from "@/components/contractor/dashboard/ContractorRegistration";
 import { TermsModal } from "@/components/contractor/dashboard/TermsModal";
+
+const queryClient = new QueryClient();
 
 export default function ContractorDashboard() {
   const {
@@ -98,7 +101,7 @@ export default function ContractorDashboard() {
   }
 
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <DashboardContent
         contractor={contractor}
         activeSection={activeSection}
@@ -110,6 +113,6 @@ export default function ContractorDashboard() {
         showTermsModal={showTermsModal}
         setShowTermsModal={setShowTermsModal}
       />
-    </>
+    </QueryClientProvider>
   );
 }
