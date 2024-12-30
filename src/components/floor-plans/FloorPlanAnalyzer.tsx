@@ -14,44 +14,57 @@ export function FloorPlanAnalyzer() {
     flooringCostPerSqFt: 5,
     paintCostPerSqFt: 0.5
   });
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const analyzeFloorPlan = async () => {
-    setIsAnalyzing(true);
-    try {
-      const response = await supabase.functions.invoke('analyze-floor-plan', {
-        body: { imageUrl, customizations }
-      });
-
-      if (response.error) throw response.error;
-      return response.data;
-    } catch (error) {
-      console.error('Error analyzing floor plan:', error);
-      toast({
-        title: "Error",
-        description: "Failed to analyze floor plan",
-        variant: "destructive"
-      });
-      throw error;
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const { data: analysis, isLoading } = useQuery({
+  const { data: analysis, isLoading, error } = useQuery({
     queryKey: ['floor-plan-analysis', imageUrl, customizations],
-    queryFn: analyzeFloorPlan,
-    enabled: !!imageUrl && isAnalyzing
+    queryFn: async () => {
+      try {
+        const response = await supabase.functions.invoke('analyze-floor-plan', {
+          body: { imageUrl, customizations }
+        });
+
+        if (response.error) throw response.error;
+        return response.data as AnalysisResult;
+      } catch (error) {
+        console.error('Error analyzing floor plan:', error);
+        toast({
+          title: "Error",
+          description: "Failed to analyze floor plan. Please check the image URL and try again.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+    },
+    enabled: !!imageUrl,
+    retry: 1
   });
 
   const handleAnalyze = (url: string) => {
     setImageUrl(url);
-    setIsAnalyzing(true);
   };
 
   const handleCustomizationChange = (updates: Partial<CustomizationOptions>) => {
     setCustomizations(prev => ({ ...prev, ...updates }));
   };
+
+  if (error) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Floor Plan Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-red-500">
+            Error analyzing floor plan. Please try again with a different image.
+          </div>
+          <FloorPlanAnalysisForm 
+            onAnalyze={handleAnalyze}
+            isLoading={isLoading}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">

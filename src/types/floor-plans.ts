@@ -20,9 +20,20 @@ export interface MaterialCategory {
   items: MaterialItem[];
 }
 
+export interface ElectricalElement {
+  type: string;
+  position: {
+    x: number;
+    y: number;
+  };
+}
+
 export interface AnalysisResult {
   rooms: Room[];
   totalArea: number;
+  electricalLayout: {
+    elements: ElectricalElement[];
+  };
   materialEstimates: MaterialCategory[];
 }
 
