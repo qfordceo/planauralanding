@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,21 +13,26 @@ serve(async (req) => {
 
   try {
     const { imageUrl, customizations } = await req.json();
+    console.log('Received request with imageUrl:', imageUrl);
 
     // Validate image URL
     if (!imageUrl || typeof imageUrl !== 'string') {
-      throw new Error('Invalid image URL provided');
+      throw new Error('Invalid or missing image URL');
     }
 
-    // Validate that the URL is accessible
+    // Validate that the URL is accessible and is an image
     try {
       const urlCheck = await fetch(imageUrl, { method: 'HEAD' });
       if (!urlCheck.ok) {
         throw new Error('Image URL is not accessible');
       }
+      const contentType = urlCheck.headers.get('content-type');
+      if (!contentType?.startsWith('image/')) {
+        throw new Error('URL does not point to a valid image');
+      }
     } catch (error) {
       console.error('Image URL validation error:', error);
-      throw new Error('Unable to access image URL');
+      throw new Error(`Unable to access image URL: ${error.message}`);
     }
 
     const endpoint = Deno.env.get('AZURE_CV_ENDPOINT');
@@ -38,11 +42,12 @@ serve(async (req) => {
       throw new Error('Azure CV credentials not configured');
     }
 
-    console.log('Analyzing floor plan:', imageUrl);
     console.log('Using Azure endpoint:', endpoint);
 
-    // Make request to Azure Computer Vision
+    // Make request to Azure Computer Vision with proper error handling
     const analysisUrl = `${endpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,text,tags`;
+    console.log('Making request to Azure CV API:', analysisUrl);
+
     const response = await fetch(analysisUrl, {
       method: 'POST',
       headers: {
@@ -53,23 +58,28 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error('Azure API Response:', await response.text());
-      throw new Error(`Azure CV API error: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Azure API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
+      throw new Error(`Azure CV API error (${response.status}): ${errorText}`);
     }
 
     const azureResult = await response.json();
     console.log('Azure CV Analysis Result:', JSON.stringify(azureResult, null, 2));
 
-    // Extract room information
+    // Extract room information with better error handling
     const rooms = azureResult.objects
       ?.filter((obj: any) => obj.tags?.includes('room'))
       .map((obj: any) => ({
         type: obj.tags[0] || 'room',
         dimensions: {
-          width: Math.round(obj.boundingBox[2] * 0.1), // Convert pixels to feet
+          width: Math.round(obj.boundingBox[2] * 0.1),
           length: Math.round(obj.boundingBox[3] * 0.1)
         },
-        area: Math.round(obj.boundingBox[2] * obj.boundingBox[3] * 0.01), // Square feet
+        area: Math.round(obj.boundingBox[2] * obj.boundingBox[3] * 0.01),
         features: obj.tags.filter((tag: string) => 
           ['window', 'door', 'sink', 'bathtub', 'shower'].includes(tag)
         )
