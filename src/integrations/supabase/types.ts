@@ -1396,6 +1396,7 @@ export type Database = {
           preapproval_amount: number | null
           preapproval_status: string | null
           sustainability_preferences: Json | null
+          terms_accepted: boolean | null
           updated_at: string
         }
         Insert: {
@@ -1408,6 +1409,7 @@ export type Database = {
           preapproval_amount?: number | null
           preapproval_status?: string | null
           sustainability_preferences?: Json | null
+          terms_accepted?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -1420,6 +1422,7 @@ export type Database = {
           preapproval_amount?: number | null
           preapproval_status?: string | null
           sustainability_preferences?: Json | null
+          terms_accepted?: boolean | null
           updated_at?: string
         }
         Relationships: []

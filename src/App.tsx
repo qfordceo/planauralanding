@@ -10,6 +10,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DataProcessingAgreement from "./pages/DataProcessingAgreement";
 import TermsOfService from "./pages/TermsOfService";
 import LegalAgreements from "./pages/LegalAgreements";
+import TermsAcknowledgment from "./pages/TermsAcknowledgment";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="terms-of-service" element={<TermsOfService />} />
           <Route path="data-processing-agreement" element={<DataProcessingAgreement />} />
           <Route path="legal-agreements" element={<LegalAgreements />} />
+          <Route path="terms-acknowledgment" element={<TermsAcknowledgment />} />
         </Route>
       </Routes>
     </Router>

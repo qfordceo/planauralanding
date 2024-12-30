@@ -1,10 +1,6 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,73 +9,35 @@ interface AuthFormProps {
 }
 
 export const AuthForm = ({ handleError }: AuthFormProps) => {
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [showTermsError, setShowTermsError] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const userType = searchParams.get('type') || 'client';
 
-  // Check if terms were previously accepted
   useEffect(() => {
-    const checkTermsAcceptance = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user?.id) {
-          const { data } = await supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        try {
+          const { data: profile } = await supabase
             .from('profiles')
             .select('terms_accepted')
             .eq('id', session.user.id)
             .single();
-          
-          if (data?.terms_accepted) {
-            setTermsAccepted(true);
-          }
-        }
-      } catch (error) {
-        console.error('Error checking terms acceptance:', error);
-      }
-    };
 
-    checkTermsAcceptance();
-  }, []);
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // Update terms acceptance in profile if checked
-        if (termsAccepted) {
-          try {
-            await supabase
-              .from('profiles')
-              .update({ terms_accepted: true })
-              .eq('id', session.user.id);
-          } catch (error) {
-            console.error('Error updating terms acceptance:', error);
-          }
-        }
-
-        // Check if user exists in contractors table if they're a contractor
-        if (userType === 'contractor') {
-          try {
-            const { data: contractorData, error } = await supabase
-              .from('contractors')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .maybeSingle();
-
-            if (error) throw error;
+          if (!profile?.terms_accepted) {
+            navigate('/terms-acknowledgment');
+          } else if (userType === 'contractor') {
             navigate('/contractor-dashboard');
-          } catch (error) {
-            console.error('Error checking contractor:', error);
-            toast({
-              title: "Error",
-              description: "Failed to verify contractor status",
-              variant: "destructive",
-            });
+          } else {
+            navigate('/client-dashboard');
           }
-        } else {
-          navigate('/client-dashboard');
+        } catch (error) {
+          console.error('Error checking terms acceptance:', error);
+          toast({
+            title: "Error",
+            description: "Failed to verify account status",
+            variant: "destructive",
+          });
         }
       }
     });
@@ -87,11 +45,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, userType, toast, termsAccepted]);
-
-  const handleTermsClick = () => {
-    navigate("/terms-of-service");
-  };
+  }, [navigate, userType, toast]);
 
   return (
     <div className="space-y-6">
@@ -145,39 +99,6 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
         }}
         redirectTo={window.location.origin + '/auth?type=' + userType}
       />
-      
-      {!termsAccepted && (
-        <>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="terms" 
-              checked={termsAccepted}
-              onCheckedChange={(checked) => {
-                setTermsAccepted(checked as boolean);
-                setShowTermsError(false);
-              }}
-            />
-            <Label htmlFor="terms" className="text-sm">
-              I have read and agree to the{" "}
-              <button
-                type="button"
-                className="text-primary underline hover:text-primary/80"
-                onClick={handleTermsClick}
-              >
-                Terms of Service
-              </button>
-            </Label>
-          </div>
-
-          {showTermsError && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                You must accept the Terms of Service to continue
-              </AlertDescription>
-            </Alert>
-          )}
-        </>
-      )}
     </div>
   );
 };
