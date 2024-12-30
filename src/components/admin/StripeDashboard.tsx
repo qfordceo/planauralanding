@@ -1,13 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import { FinancialMetrics } from "./stripe/FinancialMetrics"
-import { RecentTransactions } from "./stripe/RecentTransactions"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
+import { StripeHeader } from "./stripe/StripeHeader"
+import { StripeOverview } from "./stripe/StripeOverview"
 import { ExpensesOverview } from "./stripe/ExpensesOverview"
 import { SubscriptionsOverview } from "./stripe/SubscriptionsOverview"
 
@@ -66,20 +61,14 @@ export function StripeDashboard() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
-          <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <FinancialMetrics 
-            totalRevenue={totalRevenue} 
-            monthlyRevenue={monthlyRevenue} 
-            totalExpenses={mockExpenses.total}
-          />
-          <RecentTransactions transactions={purchases || []} />
-        </TabsContent>
+        <StripeHeader />
+        
+        <StripeOverview 
+          totalRevenue={totalRevenue}
+          monthlyRevenue={monthlyRevenue}
+          totalExpenses={mockExpenses.total}
+          purchases={purchases || []}
+        />
 
         <TabsContent value="expenses" className="space-y-6">
           <ExpensesOverview expenses={mockExpenses} />

@@ -1,150 +1,29 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/integrations/supabase/client"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { WaitlistTable } from "@/components/admin/WaitlistTable"
-import { CommissionsTable } from "@/components/admin/CommissionsTable"
-import { ContractorAvailability } from "@/components/admin/ContractorAvailability"
-import { ClientBuildsTable } from "@/components/admin/ClientBuildsTable"
-import { PurchasesTable } from "@/components/admin/PurchasesTable"
-import { PreApprovalTable } from "@/components/admin/PreApprovalTable"
-import { StripeDashboard } from "@/components/admin/StripeDashboard"
+import { useState } from "react"
+import { AdminHeader } from "@/components/admin/dashboard/AdminHeader"
+import { AdminTabs } from "@/components/admin/dashboard/AdminTabs"
+import { useAdminAuth } from "@/components/admin/dashboard/AdminAuth"
+import { LoadingState } from "@/components/admin/dashboard/LoadingState"
 import { FinancialOverview } from "@/components/admin/FinancialOverview"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
-  const navigate = useNavigate()
 
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError)
-          throw sessionError
-        }
-        
-        if (!session) {
-          navigate('/auth')
-          return
-        }
-
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single()
-
-        if (profileError) {
-          console.error('Profile error:', profileError)
-          throw profileError
-        }
-
-        if (!profile?.is_admin) {
-          navigate('/')
-          toast({
-            title: "Access Denied",
-            description: "You don't have permission to access this page",
-            variant: "destructive",
-          })
-          return
-        }
-
-        setLoading(false)
-      } catch (error) {
-        console.error('Error checking admin access:', error)
-        setError('Failed to verify admin access. Please try logging in again.')
-        setLoading(false)
-      }
-    }
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate('/auth')
-      }
-    })
-
-    checkAdminAccess()
-
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [navigate, toast])
+  useAdminAuth({ setLoading, setError })
 
   if (loading) {
-    return (
-      <div className="container py-8">
-        <div className="flex items-center justify-center">
-          <div className="text-lg">Verifying admin access...</div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="container py-8">
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      </div>
-    )
+    return <LoadingState />
   }
 
   return (
     <div className="container py-8 space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-      </div>
-
-      <FinancialOverview />
-
-      <Tabs defaultValue="waitlist" className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 w-full">
-          <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
-          <TabsTrigger value="commissions">Commissions</TabsTrigger>
-          <TabsTrigger value="availability">Contractor Availability</TabsTrigger>
-          <TabsTrigger value="builds">Saved Builds</TabsTrigger>
-          <TabsTrigger value="purchases">Floor Plan Purchases</TabsTrigger>
-          <TabsTrigger value="preapproval">Pre-approvals</TabsTrigger>
-          <TabsTrigger value="stripe">Stripe Dashboard</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="waitlist" className="space-y-4">
-          <WaitlistTable />
-        </TabsContent>
-        
-        <TabsContent value="commissions" className="space-y-4">
-          <CommissionsTable />
-        </TabsContent>
-        
-        <TabsContent value="availability" className="space-y-4">
-          <ContractorAvailability />
-        </TabsContent>
-        
-        <TabsContent value="builds" className="space-y-4">
-          <ClientBuildsTable />
-        </TabsContent>
-        
-        <TabsContent value="purchases" className="space-y-4">
-          <PurchasesTable />
-        </TabsContent>
-        
-        <TabsContent value="preapproval" className="space-y-4">
-          <PreApprovalTable />
-        </TabsContent>
-
-        <TabsContent value="stripe" className="space-y-4">
-          <StripeDashboard />
-        </TabsContent>
-      </Tabs>
+      <AdminHeader error={error} />
+      {!error && (
+        <>
+          <FinancialOverview />
+          <AdminTabs />
+        </>
+      )}
     </div>
   )
 }
