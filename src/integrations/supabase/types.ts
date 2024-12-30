@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_floor_plan_analyses: {
+        Row: {
+          analysis_data: Json
+          created_at: string
+          electrical_layout: Json
+          floor_plan_id: string | null
+          id: string
+          material_suggestions: Json
+          room_dimensions: Json
+          updated_at: string
+        }
+        Insert: {
+          analysis_data?: Json
+          created_at?: string
+          electrical_layout?: Json
+          floor_plan_id?: string | null
+          id?: string
+          material_suggestions?: Json
+          room_dimensions?: Json
+          updated_at?: string
+        }
+        Update: {
+          analysis_data?: Json
+          created_at?: string
+          electrical_layout?: Json
+          floor_plan_id?: string | null
+          id?: string
+          material_suggestions?: Json
+          room_dimensions?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_floor_plan_analyses_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author_id: string | null
@@ -1681,6 +1722,50 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visualization_data: {
+        Row: {
+          camera_positions: Json
+          created_at: string
+          floor_plan_id: string | null
+          id: string
+          lighting_data: Json
+          materials_data: Json
+          model_format: string
+          scene_data: Json
+          updated_at: string
+        }
+        Insert: {
+          camera_positions?: Json
+          created_at?: string
+          floor_plan_id?: string | null
+          id?: string
+          lighting_data?: Json
+          materials_data?: Json
+          model_format: string
+          scene_data?: Json
+          updated_at?: string
+        }
+        Update: {
+          camera_positions?: Json
+          created_at?: string
+          floor_plan_id?: string | null
+          id?: string
+          lighting_data?: Json
+          materials_data?: Json
+          model_format?: string
+          scene_data?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visualization_data_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
             referencedColumns: ["id"]
           },
         ]

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { FirecrawlService } from '@/utils/FirecrawlService';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { FloorPlanAnalyzer } from './floor-plans/FloorPlanAnalyzer';
 
 interface FloorPlan {
   name: string;
@@ -93,7 +94,7 @@ export const FloorPlanScraper = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
+    <div className="w-full max-w-4xl mx-auto p-6 space-y-8">
       <form onSubmit={handleSubmit} className="space-y-6 mb-8">
         <div className="space-y-2">
           <label htmlFor="url" className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -121,50 +122,56 @@ export const FloorPlanScraper = () => {
         </Button>
       </form>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {floorPlans.map((plan, index) => (
-          <Card key={index} className="overflow-hidden">
-            {plan.imageUrl && (
-              <img 
-                src={plan.imageUrl} 
-                alt={plan.name} 
-                className="w-full h-48 object-cover"
-              />
-            )}
-            <CardHeader>
-              <CardTitle>{plan.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="space-y-2 text-sm">
-                {plan.bedrooms && (
-                  <div className="flex justify-between">
-                    <dt>Bedrooms:</dt>
-                    <dd>{plan.bedrooms}</dd>
-                  </div>
+      {floorPlans.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {floorPlans.map((plan, index) => (
+              <Card key={index} className="overflow-hidden">
+                {plan.imageUrl && (
+                  <img 
+                    src={plan.imageUrl} 
+                    alt={plan.name} 
+                    className="w-full h-48 object-cover"
+                  />
                 )}
-                {plan.bathrooms && (
-                  <div className="flex justify-between">
-                    <dt>Bathrooms:</dt>
-                    <dd>{plan.bathrooms}</dd>
-                  </div>
-                )}
-                {plan.squareFeet && (
-                  <div className="flex justify-between">
-                    <dt>Square Feet:</dt>
-                    <dd>{plan.squareFeet}</dd>
-                  </div>
-                )}
-                {plan.price && (
-                  <div className="flex justify-between">
-                    <dt>Price:</dt>
-                    <dd>{plan.price}</dd>
-                  </div>
-                )}
-              </dl>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <CardHeader>
+                  <CardTitle>{plan.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="space-y-2 text-sm">
+                    {plan.bedrooms && (
+                      <div className="flex justify-between">
+                        <dt>Bedrooms:</dt>
+                        <dd>{plan.bedrooms}</dd>
+                      </div>
+                    )}
+                    {plan.bathrooms && (
+                      <div className="flex justify-between">
+                        <dt>Bathrooms:</dt>
+                        <dd>{plan.bathrooms}</dd>
+                      </div>
+                    )}
+                    {plan.squareFeet && (
+                      <div className="flex justify-between">
+                        <dt>Square Feet:</dt>
+                        <dd>{plan.squareFeet}</dd>
+                      </div>
+                    )}
+                    {plan.price && (
+                      <div className="flex justify-between">
+                        <dt>Price:</dt>
+                        <dd>{plan.price}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <FloorPlanAnalyzer />
+        </>
+      )}
     </div>
   );
 };

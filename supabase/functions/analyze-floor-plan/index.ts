@@ -26,7 +26,8 @@ serve(async (req) => {
       throw new Error('Azure CV credentials not configured');
     }
 
-    const analysisUrl = `${endpoint}computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,text`;
+    // 1. Analyze floor plan with Azure Computer Vision
+    const analysisUrl = `${endpoint}computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,text,tags`;
     const response = await fetch(analysisUrl, {
       method: 'POST',
       headers: {
@@ -43,6 +44,7 @@ serve(async (req) => {
     const azureResult = await response.json();
     console.log('Azure CV Analysis Result:', azureResult);
 
+    // 2. Extract room dimensions and features
     const rooms = azureResult.objects
       ?.filter((obj: any) => obj.tags?.includes('room'))
       .map((obj: any) => {
@@ -55,23 +57,46 @@ serve(async (req) => {
         };
       }) || [];
 
+    // 3. Detect electrical layout
+    const electricalElements = azureResult.objects
+      ?.filter((obj: any) => 
+        obj.tags?.some((tag: string) => 
+          ['outlet', 'switch', 'light_fixture'].includes(tag)
+        )
+      )
+      .map((obj: any) => ({
+        type: obj.tags.find((tag: string) => 
+          ['outlet', 'switch', 'light_fixture'].includes(tag)
+        ),
+        position: {
+          x: obj.boundingBox[0],
+          y: obj.boundingBox[1]
+        }
+      })) || [];
+
+    // 4. Prepare analysis result
     const result = {
       rooms,
       totalArea: rooms.reduce((total: number, room: any) => total + room.area, 0),
+      electricalLayout: {
+        elements: electricalElements
+      },
       materialEstimates: calculateMaterialEstimates(rooms, customizations)
     };
 
+    // 5. Store analysis in Supabase
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     await supabase
-      .from('floor_plan_analyses')
+      .from('ai_floor_plan_analyses')
       .insert({
         analysis_data: azureResult,
-        material_estimates: result.materialEstimates,
-        customizations
+        room_dimensions: { rooms },
+        electrical_layout: { elements: electricalElements },
+        material_suggestions: result.materialEstimates
       });
 
     return new Response(
