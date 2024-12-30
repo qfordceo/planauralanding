@@ -25,13 +25,13 @@ export function DashboardGrid({
   // Group sections by category
   const sectionGroups = {
     projects: sections.filter(section => 
-      ['JobsSection', 'RebidSection', 'DefectsSection', 'PortfolioSection'].includes(section.name)
+      ['JobsSection', 'RebidSection', 'DefectsSection', 'PortfolioSection', 'ReviewsSection'].includes(section.name)
     ),
     management: sections.filter(section => 
-      ['ClientManagementSection', 'WorkforceSection', 'MaterialManagementSection', 'ExpenseSection'].includes(section.name)
+      ['ClientManagementSection', 'WorkforceSection', 'MaterialManagementSection', 'ExpenseSection', 'SchedulingSection', 'MessagingSection'].includes(section.name)
     ),
     business: sections.filter(section => 
-      ['MarketingSection', 'AnalyticsSection', 'PaymentsSection', 'ComplianceSection'].includes(section.name)
+      ['MarketingSection', 'AnalyticsSection', 'PaymentsSection', 'ComplianceSection', 'TrainingSection', 'NotificationsSection'].includes(section.name)
     )
   };
 
