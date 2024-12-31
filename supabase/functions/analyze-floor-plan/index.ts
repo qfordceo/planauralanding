@@ -1,221 +1,41 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const PIXELS_TO_FEET = 0.1;
-
-function calculateRoomDimensions(boundingBox: number[]) {
-  const width = Math.round(boundingBox[2] * PIXELS_TO_FEET);
-  const length = Math.round(boundingBox[3] * PIXELS_TO_FEET);
-  return {
-    width,
-    length,
-    area: width * length
-  };
-}
-
-function detectRoomType(text: string, features: string[]) {
-  const roomTypes = {
-    'bedroom': ['bed', 'bedroom', 'master', 'guest'],
-    'bathroom': ['bath', 'bathroom', 'shower', 'wc'],
-    'kitchen': ['kitchen', 'cooking', 'stove'],
-    'living': ['living', 'family', 'great'],
-    'dining': ['dining', 'dinner'],
-    'garage': ['garage', 'parking'],
-    'utility': ['utility', 'laundry'],
-    'office': ['office', 'study', 'den']
-  };
-
-  const lowerText = text.toLowerCase();
-  
-  for (const [type, keywords] of Object.entries(roomTypes)) {
-    if (keywords.some(keyword => lowerText.includes(keyword))) {
-      return type;
-    }
-  }
-
-  if (features.includes('sink') && features.includes('shower')) return 'bathroom';
-  if (features.includes('sink') && !features.includes('shower')) return 'kitchen';
-  if (features.includes('window') && features.length === 1) return 'living';
-  
-  return 'room';
-}
-
-function calculateMaterialEstimates(rooms: any[]) {
-  const totalArea = rooms.reduce((sum, room) => sum + room.area, 0);
-  const wallHeight = 8;
-  
-  const flooringOptions = [
-    { name: 'Standard Carpet', costPerSqFt: 3 },
-    { name: 'Hardwood', costPerSqFt: 8 },
-    { name: 'Luxury Vinyl', costPerSqFt: 4 },
-    { name: 'Ceramic Tile', costPerSqFt: 6 }
-  ];
-
-  const paintOptions = [
-    { name: 'Basic Paint', costPerSqFt: 0.5 },
-    { name: 'Premium Paint', costPerSqFt: 0.8 },
-    { name: 'Designer Paint', costPerSqFt: 1.2 }
-  ];
-
-  const roomEstimates = rooms.map(room => {
-    const wallArea = ((room.dimensions.width + room.dimensions.length) * 2) * wallHeight;
-    return {
-      name: room.type,
-      flooring: {
-        area: room.area,
-        estimates: flooringOptions.map(option => ({
-          type: option.name,
-          cost: room.area * option.costPerSqFt
-        }))
-      },
-      paint: {
-        area: wallArea,
-        estimates: paintOptions.map(option => ({
-          type: option.name,
-          cost: wallArea * option.costPerSqFt
-        }))
-      }
-    };
-  });
-
-  return {
-    totalArea,
-    rooms: roomEstimates,
-    flooringOptions,
-    paintOptions
-  };
-}
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { corsHeaders, downloadImageFromStorage, downloadExternalImage, analyzeImageWithAzure } from './utils.ts'
+import { processAnalysisResult } from './analysis.ts'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const { imageUrl } = await req.json();
     console.log('Processing floor plan:', imageUrl);
 
-    // Create Supabase client with service role key
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // If the URL is from Supabase storage, download the file first
     let imageBuffer;
-    if (imageUrl.includes(Deno.env.get('SUPABASE_URL') ?? '')) {
-      const bucketPath = imageUrl.split('/storage/v1/object/public/')[1];
-      if (!bucketPath) {
-        throw new Error('Invalid Supabase storage URL');
+    try {
+      if (imageUrl.includes(Deno.env.get('SUPABASE_URL') ?? '')) {
+        imageBuffer = await downloadImageFromStorage(imageUrl);
+      } else {
+        imageBuffer = await downloadExternalImage(imageUrl);
       }
-
-      const [bucket, ...pathParts] = bucketPath.split('/');
-      const path = pathParts.join('/');
-
-      const { data, error } = await supabase
-        .storage
-        .from(bucket)
-        .download(path);
-
-      if (error) {
-        throw new Error(`Failed to download image from Supabase storage: ${error.message}`);
-      }
-
-      imageBuffer = await data.arrayBuffer();
-    } else {
-      // For external URLs, fetch directly
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        throw new Error('Image URL is not accessible');
-      }
-      imageBuffer = await response.arrayBuffer();
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: error.message || 'Failed to download image',
+          details: error.toString()
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
     }
 
-    const endpoint = Deno.env.get('AZURE_CV_ENDPOINT');
-    const apiKey = Deno.env.get('AZURE_CV_KEY');
-
-    if (!endpoint || !apiKey) {
-      throw new Error('Azure CV credentials not configured');
-    }
-
-    // Convert ArrayBuffer to base64
-    const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
-    
-    // Make request to Azure Computer Vision
-    const analysisUrl = `${endpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read,objects,tags`;
-    console.log('Making request to Azure CV API');
-
-    const response = await fetch(analysisUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key': apiKey,
-      },
-      body: JSON.stringify({ base64Image }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Azure CV API error (${response.status}): ${errorText}`);
-    }
-
-    const azureResult = await response.json();
+    const azureResult = await analyzeImageWithAzure(imageBuffer);
     console.log('Azure CV Analysis Result:', JSON.stringify(azureResult, null, 2));
 
-    // Process detected objects and text to identify rooms
-    const detectedRooms = [];
-    const processedAreas = new Set();
-
-    if (azureResult.objects) {
-      for (const obj of azureResult.objects) {
-        if (obj.tags?.some((tag: string) => 
-          ['room', 'bedroom', 'bathroom', 'kitchen', 'living'].includes(tag.toLowerCase()))) {
-          
-          const dimensions = calculateRoomDimensions(obj.boundingBox);
-          
-          const nearbyText = azureResult.readResult?.pages?.[0]?.lines
-            ?.filter((line: any) => {
-              const lineBox = line.boundingBox;
-              return Math.abs(lineBox[0] - obj.boundingBox[0]) < 100 &&
-                     Math.abs(lineBox[1] - obj.boundingBox[1]) < 100;
-            })
-            ?.map((line: any) => line.text)
-            ?.join(' ') || '';
-
-          const roomType = detectRoomType(nearbyText, obj.tags);
-          
-          detectedRooms.push({
-            type: roomType,
-            dimensions: {
-              width: dimensions.width,
-              length: dimensions.length
-            },
-            area: dimensions.area,
-            features: obj.tags.filter((tag: string) => 
-              ['window', 'door', 'sink', 'bathtub', 'shower', 'closet'].includes(tag))
-          });
-
-          processedAreas.add(`${obj.boundingBox.join(',')}`);
-        }
-      }
-    }
-
-    const materialEstimates = calculateMaterialEstimates(detectedRooms);
-
-    const result = {
-      rooms: detectedRooms,
-      totalArea: materialEstimates.totalArea,
-      materialEstimates: materialEstimates.rooms,
-      customizationOptions: {
-        flooring: materialEstimates.flooringOptions,
-        paint: materialEstimates.paintOptions
-      }
-    };
+    const result = processAnalysisResult(azureResult);
 
     return new Response(
       JSON.stringify(result),
