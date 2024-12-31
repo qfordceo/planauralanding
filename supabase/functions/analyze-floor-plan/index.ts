@@ -1,11 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Improved scale factor based on typical floor plan dimensions
 const PIXELS_TO_FEET = 0.1;
 
 function calculateRoomDimensions(boundingBox: number[]) {
@@ -32,14 +32,12 @@ function detectRoomType(text: string, features: string[]) {
 
   const lowerText = text.toLowerCase();
   
-  // Check text against room types
   for (const [type, keywords] of Object.entries(roomTypes)) {
     if (keywords.some(keyword => lowerText.includes(keyword))) {
       return type;
     }
   }
 
-  // Check features for additional clues
   if (features.includes('sink') && features.includes('shower')) return 'bathroom';
   if (features.includes('sink') && !features.includes('shower')) return 'kitchen';
   if (features.includes('window') && features.length === 1) return 'living';
@@ -49,7 +47,7 @@ function detectRoomType(text: string, features: string[]) {
 
 function calculateMaterialEstimates(rooms: any[]) {
   const totalArea = rooms.reduce((sum, room) => sum + room.area, 0);
-  const wallHeight = 8; // Standard ceiling height in feet
+  const wallHeight = 8;
   
   const flooringOptions = [
     { name: 'Standard Carpet', costPerSqFt: 3 },
@@ -102,15 +100,40 @@ serve(async (req) => {
     const { imageUrl } = await req.json();
     console.log('Processing floor plan:', imageUrl);
 
-    // Validate image URL
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error('Image URL is not accessible');
-    }
+    // Create Supabase client with service role key
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    const contentType = imageResponse.headers.get('content-type');
-    if (!contentType?.toLowerCase().includes('image/')) {
-      throw new Error('URL does not point to a valid image');
+    // If the URL is from Supabase storage, download the file first
+    let imageBuffer;
+    if (imageUrl.includes(Deno.env.get('SUPABASE_URL') ?? '')) {
+      const bucketPath = imageUrl.split('/storage/v1/object/public/')[1];
+      if (!bucketPath) {
+        throw new Error('Invalid Supabase storage URL');
+      }
+
+      const [bucket, ...pathParts] = bucketPath.split('/');
+      const path = pathParts.join('/');
+
+      const { data, error } = await supabase
+        .storage
+        .from(bucket)
+        .download(path);
+
+      if (error) {
+        throw new Error(`Failed to download image from Supabase storage: ${error.message}`);
+      }
+
+      imageBuffer = await data.arrayBuffer();
+    } else {
+      // For external URLs, fetch directly
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        throw new Error('Image URL is not accessible');
+      }
+      imageBuffer = await response.arrayBuffer();
     }
 
     const endpoint = Deno.env.get('AZURE_CV_ENDPOINT');
@@ -120,6 +143,9 @@ serve(async (req) => {
       throw new Error('Azure CV credentials not configured');
     }
 
+    // Convert ArrayBuffer to base64
+    const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+    
     // Make request to Azure Computer Vision
     const analysisUrl = `${endpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read,objects,tags`;
     console.log('Making request to Azure CV API');
@@ -130,7 +156,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
         'Ocp-Apim-Subscription-Key': apiKey,
       },
-      body: JSON.stringify({ url: imageUrl }),
+      body: JSON.stringify({ base64Image }),
     });
 
     if (!response.ok) {
@@ -145,7 +171,6 @@ serve(async (req) => {
     const detectedRooms = [];
     const processedAreas = new Set();
 
-    // First, process objects tagged as rooms
     if (azureResult.objects) {
       for (const obj of azureResult.objects) {
         if (obj.tags?.some((tag: string) => 
@@ -153,7 +178,6 @@ serve(async (req) => {
           
           const dimensions = calculateRoomDimensions(obj.boundingBox);
           
-          // Find nearby text for room identification
           const nearbyText = azureResult.readResult?.pages?.[0]?.lines
             ?.filter((line: any) => {
               const lineBox = line.boundingBox;
@@ -181,7 +205,6 @@ serve(async (req) => {
       }
     }
 
-    // Calculate material estimates
     const materialEstimates = calculateMaterialEstimates(detectedRooms);
 
     const result = {
