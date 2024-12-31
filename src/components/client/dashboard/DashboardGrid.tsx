@@ -7,8 +7,10 @@ import { ProjectTimeline } from "@/components/client/build-cost/ProjectTimeline"
 import { MaterialsCard } from "@/components/client/MaterialsCard";
 import { FloorPlanAnalyzer } from "@/components/floor-plans/FloorPlanAnalyzer";
 import { Home, FileText, Wallet, HardHat, Construction, Palette } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/types/profile";
 import type { BuildData } from "./types";
+import { useEffect, useState } from "react";
 
 interface DashboardGridProps {
   profile: Profile;
@@ -23,6 +25,24 @@ export function DashboardGrid({
   activeSection, 
   setActiveSection 
 }: DashboardGridProps) {
+  const [floorPlanUrl, setFloorPlanUrl] = useState<string | undefined>();
+
+  useEffect(() => {
+    const getFloorPlanUrl = async () => {
+      if (activeBuild?.floor_plan_id) {
+        const fileName = `floor-plan-${activeBuild.floor_plan_id}.jpg`;
+        const { data: { publicUrl } } = supabase.storage
+          .from('floor-plans')
+          .getPublicUrl(fileName);
+        setFloorPlanUrl(publicUrl);
+      } else {
+        setFloorPlanUrl(undefined);
+      }
+    };
+
+    getFloorPlanUrl();
+  }, [activeBuild?.floor_plan_id]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <DashboardCard
@@ -112,7 +132,7 @@ export function DashboardGrid({
         onClick={() => setActiveSection(activeSection === 'floor-plan-analysis' ? null : 'floor-plan-analysis')}
         expanded={activeSection === 'floor-plan-analysis'}
       >
-        {activeSection === 'floor-plan-analysis' && <FloorPlanAnalyzer imageUrl={activeBuild?.floor_plan_id ? `floor-plan-${activeBuild.floor_plan_id}.jpg` : undefined} />}
+        {activeSection === 'floor-plan-analysis' && <FloorPlanAnalyzer imageUrl={floorPlanUrl} />}
       </DashboardCard>
     </div>
   );
