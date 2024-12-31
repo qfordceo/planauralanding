@@ -112,7 +112,7 @@ export function DashboardGrid({
         onClick={() => setActiveSection(activeSection === 'floor-plan-analysis' ? null : 'floor-plan-analysis')}
         expanded={activeSection === 'floor-plan-analysis'}
       >
-        {activeSection === 'floor-plan-analysis' && <FloorPlanAnalyzer />}
+        {activeSection === 'floor-plan-analysis' && <FloorPlanAnalyzer imageUrl={activeBuild?.floor_plan_id ? `floor-plan-${activeBuild.floor_plan_id}.jpg` : undefined} />}
       </DashboardCard>
     </div>
   );

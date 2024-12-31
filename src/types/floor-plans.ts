@@ -45,3 +45,13 @@ export interface CustomizationOptions {
   flooringCostPerSqFt: number;
   paintCostPerSqFt: number;
 }
+
+export interface MaterialCategory {
+  category: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+    unit: string;
+    estimatedCost: number;
+  }>;
+}

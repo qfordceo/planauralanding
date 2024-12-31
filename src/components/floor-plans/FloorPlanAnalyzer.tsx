@@ -4,15 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { FloorPlanAnalysisResults } from './FloorPlanAnalysisResults';
-import type { AnalysisResult } from '@/types/floor-plans';
+import type { AnalysisResult, CustomizationOptions } from '@/types/floor-plans';
 
 interface FloorPlanAnalyzerProps {
-  imageUrl: string;
+  imageUrl?: string;
 }
 
 export function FloorPlanAnalyzer({ imageUrl }: FloorPlanAnalyzerProps) {
   const { toast } = useToast();
-  const [customizations, setCustomizations] = useState({
+  const [customizations, setCustomizations] = useState<CustomizationOptions>({
     flooringCostPerSqFt: 5,
     paintCostPerSqFt: 0.5
   });
@@ -41,6 +41,13 @@ export function FloorPlanAnalyzer({ imageUrl }: FloorPlanAnalyzerProps) {
     retry: 1
   });
 
+  const handleCustomizationChange = (updates: Partial<CustomizationOptions>) => {
+    setCustomizations(prev => ({
+      ...prev,
+      ...updates
+    }));
+  };
+
   if (error) {
     return (
       <Card className="w-full">
@@ -68,7 +75,7 @@ export function FloorPlanAnalyzer({ imageUrl }: FloorPlanAnalyzerProps) {
           <FloorPlanAnalysisResults
             analysis={analysis}
             customizations={customizations}
-            onCustomizationChange={setCustomizations}
+            onCustomizationChange={handleCustomizationChange}
           />
         ) : null}
       </CardContent>
