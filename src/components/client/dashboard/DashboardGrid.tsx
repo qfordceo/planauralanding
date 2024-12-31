@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/types/profile";
 import type { BuildData } from "./types";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardGridProps {
   profile: Profile;
@@ -26,31 +27,40 @@ export function DashboardGrid({
   setActiveSection 
 }: DashboardGridProps) {
   const [floorPlanUrl, setFloorPlanUrl] = useState<string | undefined>();
+  const { toast } = useToast();
 
   useEffect(() => {
     const getFloorPlanUrl = async () => {
       if (activeBuild?.floor_plan_id) {
         try {
-          // First try to download the file to verify it exists
-          const { data: fileData, error: downloadError } = await supabase.storage
-            .from('floor-plans')
-            .download(`floor-plan-${activeBuild.floor_plan_id}.jpg`);
+          // Check if the floor plan exists in the saved_builds table first
+          const { data: savedBuild, error: savedBuildError } = await supabase
+            .from('saved_builds')
+            .select('floor_plans(*)')
+            .eq('floor_plan_id', activeBuild.floor_plan_id)
+            .single();
 
-          if (downloadError || !fileData) {
-            console.error('Error verifying floor plan file:', downloadError);
+          if (savedBuildError || !savedBuild?.floor_plans?.image_url) {
+            console.error('Error getting floor plan details:', savedBuildError);
+            toast({
+              title: "Error",
+              description: "Could not find floor plan details",
+              variant: "destructive",
+            });
             setFloorPlanUrl(undefined);
             return;
           }
 
-          // If file exists, get the public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('floor-plans')
-            .getPublicUrl(`floor-plan-${activeBuild.floor_plan_id}.jpg`);
-
-          console.log('Floor plan URL:', publicUrl);
-          setFloorPlanUrl(publicUrl);
+          // Use the image_url from the floor_plans table
+          setFloorPlanUrl(savedBuild.floor_plans.image_url);
+          console.log('Floor plan URL:', savedBuild.floor_plans.image_url);
         } catch (error) {
           console.error('Error getting floor plan URL:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load floor plan image",
+            variant: "destructive",
+          });
           setFloorPlanUrl(undefined);
         }
       } else {
@@ -59,7 +69,7 @@ export function DashboardGrid({
     };
 
     getFloorPlanUrl();
-  }, [activeBuild?.floor_plan_id]);
+  }, [activeBuild?.floor_plan_id, toast]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
