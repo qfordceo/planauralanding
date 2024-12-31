@@ -13,6 +13,12 @@ import type { BuildData } from "./types";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
+interface SavedBuildWithFloorPlan {
+  floor_plans: {
+    image_url: string | null;
+  } | null;
+}
+
 interface DashboardGridProps {
   profile: Profile;
   activeBuild: BuildData | null;
@@ -38,13 +44,24 @@ export function DashboardGrid({
             .from('saved_builds')
             .select('floor_plans(*)')
             .eq('floor_plan_id', activeBuild.floor_plan_id)
-            .single();
+            .maybeSingle<SavedBuildWithFloorPlan>();
 
-          if (savedBuildError || !savedBuild?.floor_plans?.image_url) {
+          if (savedBuildError) {
             console.error('Error getting floor plan details:', savedBuildError);
             toast({
               title: "Error",
               description: "Could not find floor plan details",
+              variant: "destructive",
+            });
+            setFloorPlanUrl(undefined);
+            return;
+          }
+
+          if (!savedBuild?.floor_plans?.image_url) {
+            console.log('No floor plan image found');
+            toast({
+              title: "Warning",
+              description: "No floor plan image available",
               variant: "destructive",
             });
             setFloorPlanUrl(undefined);
