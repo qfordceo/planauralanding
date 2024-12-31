@@ -30,11 +30,29 @@ export function DashboardGrid({
   useEffect(() => {
     const getFloorPlanUrl = async () => {
       if (activeBuild?.floor_plan_id) {
-        const fileName = `floor-plan-${activeBuild.floor_plan_id}.jpg`;
-        const { data: { publicUrl } } = supabase.storage
-          .from('floor-plans')
-          .getPublicUrl(fileName);
-        setFloorPlanUrl(publicUrl);
+        try {
+          // First try to download the file to verify it exists
+          const { data: fileData, error: downloadError } = await supabase.storage
+            .from('floor-plans')
+            .download(`floor-plan-${activeBuild.floor_plan_id}.jpg`);
+
+          if (downloadError || !fileData) {
+            console.error('Error verifying floor plan file:', downloadError);
+            setFloorPlanUrl(undefined);
+            return;
+          }
+
+          // If file exists, get the public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('floor-plans')
+            .getPublicUrl(`floor-plan-${activeBuild.floor_plan_id}.jpg`);
+
+          console.log('Floor plan URL:', publicUrl);
+          setFloorPlanUrl(publicUrl);
+        } catch (error) {
+          console.error('Error getting floor plan URL:', error);
+          setFloorPlanUrl(undefined);
+        }
       } else {
         setFloorPlanUrl(undefined);
       }
@@ -132,7 +150,9 @@ export function DashboardGrid({
         onClick={() => setActiveSection(activeSection === 'floor-plan-analysis' ? null : 'floor-plan-analysis')}
         expanded={activeSection === 'floor-plan-analysis'}
       >
-        {activeSection === 'floor-plan-analysis' && <FloorPlanAnalyzer imageUrl={floorPlanUrl} />}
+        {activeSection === 'floor-plan-analysis' && floorPlanUrl && (
+          <FloorPlanAnalyzer imageUrl={floorPlanUrl} />
+        )}
       </DashboardCard>
     </div>
   );
