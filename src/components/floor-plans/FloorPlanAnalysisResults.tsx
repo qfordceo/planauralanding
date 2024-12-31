@@ -1,5 +1,4 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice } from "@/lib/utils";
 import type { AnalysisResult, CustomizationOptions } from "@/types/floor-plans";
@@ -82,17 +81,17 @@ export function FloorPlanAnalysisResults({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {analysis.materialEstimates.map((room, index) => (
+                {analysis.materialEstimates.map((estimate, index) => (
                   <div key={index} className="space-y-2">
-                    <p className="font-medium capitalize">{room.name}</p>
+                    <p className="font-medium capitalize">{estimate.name}</p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-muted-foreground">Area</p>
-                        <p>{room.flooring.area} sq ft</p>
+                        <p>{estimate.flooring.area} sq ft</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Estimated Cost</p>
-                        <p>{formatPrice(room.flooring.estimates[0].cost)}</p>
+                        <p>{formatPrice(estimate.flooring.estimates[0].cost)}</p>
                       </div>
                     </div>
                   </div>
@@ -107,17 +106,17 @@ export function FloorPlanAnalysisResults({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {analysis.materialEstimates.map((room, index) => (
+                {analysis.materialEstimates.map((estimate, index) => (
                   <div key={index} className="space-y-2">
-                    <p className="font-medium capitalize">{room.name}</p>
+                    <p className="font-medium capitalize">{estimate.name}</p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-muted-foreground">Wall Area</p>
-                        <p>{room.paint.area} sq ft</p>
+                        <p>{estimate.paint.area} sq ft</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Estimated Cost</p>
-                        <p>{formatPrice(room.paint.estimates[0].cost)}</p>
+                        <p>{formatPrice(estimate.paint.estimates[0].cost)}</p>
                       </div>
                     </div>
                   </div>

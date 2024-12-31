@@ -8,33 +8,37 @@ export interface Room {
   features: string[];
 }
 
-export interface MaterialItem {
+export interface MaterialEstimate {
   name: string;
-  quantity: number;
-  unit: string;
-  estimatedCost: number;
-}
-
-export interface MaterialCategory {
-  category: string;
-  items: MaterialItem[];
-}
-
-export interface ElectricalElement {
-  type: string;
-  position: {
-    x: number;
-    y: number;
+  flooring: {
+    area: number;
+    estimates: Array<{
+      type: string;
+      cost: number;
+    }>;
   };
+  paint: {
+    area: number;
+    estimates: Array<{
+      type: string;
+      cost: number;
+    }>;
+  };
+}
+
+export interface CustomizationOption {
+  name: string;
+  costPerSqFt: number;
 }
 
 export interface AnalysisResult {
   rooms: Room[];
   totalArea: number;
-  electricalLayout: {
-    elements: ElectricalElement[];
+  materialEstimates: MaterialEstimate[];
+  customizationOptions: {
+    flooring: CustomizationOption[];
+    paint: CustomizationOption[];
   };
-  materialEstimates: MaterialCategory[];
 }
 
 export interface CustomizationOptions {
