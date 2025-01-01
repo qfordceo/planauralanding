@@ -37,7 +37,12 @@ export default function ContractorResourceHub() {
               <p className="mb-4 text-muted-foreground">{resource.description}</p>
               <p className="text-sm mb-4">Cost: {resource.cost}</p>
               <Button asChild variant="outline" className="w-full">
-                <a href={resource.link} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                <a 
+                  href={resource.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center justify-center gap-2"
+                >
                   View Resource <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>
