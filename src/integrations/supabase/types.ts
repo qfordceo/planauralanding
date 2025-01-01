@@ -1789,6 +1789,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_admin_users: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
