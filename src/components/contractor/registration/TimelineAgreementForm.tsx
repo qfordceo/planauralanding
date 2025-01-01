@@ -6,10 +6,66 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info, Shield, Clock, Award } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ContractorType } from "@/types/contractor";
+import { PerformanceBadge } from "../badges/PerformanceBadge";
 
 interface TimelineAgreementFormProps {
   onComplete: () => void;
 }
+
+const contractorTypeTimelines: Record<ContractorType, string[]> = {
+  electrical: [
+    "Complete rough-in within 3-5 days of framing completion",
+    "Install fixtures within 2-3 days of drywall completion",
+    "Final inspection within 1-2 days of fixture installation"
+  ],
+  plumbing: [
+    "Complete rough-in within 4-6 days of foundation completion",
+    "Install fixtures within 2-3 days of cabinet installation",
+    "Final inspection within 1-2 days of fixture installation"
+  ],
+  hvac: [
+    "Complete rough-in within 4-5 days of framing completion",
+    "Install equipment within 2-3 days of roof completion",
+    "Final inspection within 1-2 days of system installation"
+  ],
+  roofing: [
+    "Complete installation within 2-3 days of decking inspection",
+    "Install flashing within 1-2 days of roofing completion",
+    "Final inspection within 1 day of completion"
+  ],
+  foundation: [
+    "Complete form setup within 2-3 days of site preparation",
+    "Pour concrete within 1 day of inspection approval",
+    "Allow 7 days for proper curing"
+  ],
+  framing: [
+    "Complete wall framing within 5-7 days",
+    "Complete roof framing within 3-4 days",
+    "Inspection ready within 1-2 days of completion"
+  ],
+  drywall: [
+    "Complete hanging within 3-4 days of inspection approval",
+    "Complete finishing within 3-4 days of hanging",
+    "Ready for paint within 1-2 days of completion"
+  ],
+  painting: [
+    "Complete primer coat within 2-3 days of surface preparation",
+    "Complete final coats within 2-3 days of primer",
+    "Touch-ups within 1 day of request"
+  ],
+  landscaping: [
+    "Complete grading within 2-3 days of construction completion",
+    "Install irrigation within 2-3 days of grading",
+    "Complete planting within 2-3 days of irrigation"
+  ],
+  general: [
+    "Project planning and scheduling within 5-7 days of contract",
+    "Daily oversight and coordination of all trades",
+    "Final walk-through within 2-3 days of substantial completion"
+  ]
+};
 
 export function TimelineAgreementForm({ onComplete }: TimelineAgreementFormProps) {
   const [agreements, setAgreements] = useState({
@@ -19,6 +75,8 @@ export function TimelineAgreementForm({ onComplete }: TimelineAgreementFormProps
     compliance: false,
     dispute: false
   });
+
+  const [contractorType, setContractorType] = useState<ContractorType>("general");
 
   const allAgreed = Object.values(agreements).every(value => value);
 
@@ -42,7 +100,6 @@ export function TimelineAgreementForm({ onComplete }: TimelineAgreementFormProps
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Authority & Independence Section */}
           <div className="space-y-4">
             <Alert>
               <Shield className="h-4 w-4" />
@@ -52,6 +109,39 @@ export function TimelineAgreementForm({ onComplete }: TimelineAgreementFormProps
             </Alert>
 
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Select Your Contractor Type</Label>
+                <Select 
+                  value={contractorType} 
+                  onValueChange={(value) => setContractorType(value as ContractorType)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select contractor type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General Contractor</SelectItem>
+                    <SelectItem value="electrical">Electrical Contractor</SelectItem>
+                    <SelectItem value="plumbing">Plumbing Contractor</SelectItem>
+                    <SelectItem value="hvac">HVAC Contractor</SelectItem>
+                    <SelectItem value="roofing">Roofing Contractor</SelectItem>
+                    <SelectItem value="foundation">Foundation Contractor</SelectItem>
+                    <SelectItem value="framing">Framing Contractor</SelectItem>
+                    <SelectItem value="drywall">Drywall Contractor</SelectItem>
+                    <SelectItem value="painting">Painting Contractor</SelectItem>
+                    <SelectItem value="landscaping">Landscaping Contractor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-medium">Timeline Requirements for {contractorType.charAt(0).toUpperCase() + contractorType.slice(1)} Contractors:</h3>
+                <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                  {contractorTypeTimelines[contractorType].map((requirement, index) => (
+                    <li key={index}>{requirement}</li>
+                  ))}
+                </ul>
+              </div>
+
               <div className="flex items-start space-x-3">
                 <Checkbox
                   id="authority"
@@ -62,7 +152,7 @@ export function TimelineAgreementForm({ onComplete }: TimelineAgreementFormProps
                 />
                 <div className="space-y-1">
                   <Label htmlFor="authority" className="text-sm leading-tight">
-                    I understand that as a General Contractor, I retain full authority over:
+                    I understand that as an Independent Contractor, I retain full authority over:
                   </Label>
                   <ul className="list-disc pl-5 text-sm text-muted-foreground">
                     <li>Project management decisions</li>
@@ -97,11 +187,19 @@ export function TimelineAgreementForm({ onComplete }: TimelineAgreementFormProps
 
             <Separator />
 
-            {/* Performance & Incentives Section */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-muted-foreground" />
                 <h3 className="font-semibold">Performance Recognition</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <PerformanceBadge type="expeditious" />
+                <PerformanceBadge type="clientFavorite" />
+                <PerformanceBadge type="precision" />
+                <PerformanceBadge type="responsive" />
+                <PerformanceBadge type="adaptable" />
+                <PerformanceBadge type="topContractor" />
               </div>
 
               <div className="flex items-start space-x-3">
@@ -134,7 +232,7 @@ export function TimelineAgreementForm({ onComplete }: TimelineAgreementFormProps
                   }
                 />
                 <Label htmlFor="compliance" className="text-sm leading-tight">
-                  I agree to maintain compliance with platform requirements and understand that consistent high performance may result in "Preferred Contractor" status and increased visibility on the platform
+                  I agree to maintain compliance with platform requirements and understand that consistent high performance may result in earning performance badges and increased visibility on the platform
                 </Label>
               </div>
 
