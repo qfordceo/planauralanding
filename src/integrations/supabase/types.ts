@@ -1781,6 +1781,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_access_admin_users: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       cleanup_rate_limits: {
         Args: Record<PropertyKey, never>
         Returns: undefined
