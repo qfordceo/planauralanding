@@ -115,10 +115,10 @@ export function TimelineAgreementForm({ onComplete }: TimelineAgreementFormProps
                   value={contractorType} 
                   onValueChange={(value) => setContractorType(value as ContractorType)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background border-input">
                     <SelectValue placeholder="Select contractor type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border shadow-lg">
                     <SelectItem value="general">General Contractor</SelectItem>
                     <SelectItem value="electrical">Electrical Contractor</SelectItem>
                     <SelectItem value="plumbing">Plumbing Contractor</SelectItem>
