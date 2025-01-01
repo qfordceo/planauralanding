@@ -12,8 +12,10 @@ import DataProcessingAgreement from "./pages/DataProcessingAgreement";
 import TermsOfService from "./pages/TermsOfService";
 import LegalAgreements from "./pages/LegalAgreements";
 import TermsAcknowledgment from "./pages/TermsAcknowledgment";
+import ContractorRegistrationFlow from "./pages/ContractorRegistrationFlow";
+import ContractorResourceHub from "./pages/ContractorResourceHub";
+import ContractorCompliance from "./pages/ContractorCompliance";
 
-// Create a client
 const queryClient = new QueryClient();
 
 function App() {
@@ -33,6 +35,9 @@ function App() {
             <Route path="data-processing-agreement" element={<DataProcessingAgreement />} />
             <Route path="legal-agreements" element={<LegalAgreements />} />
             <Route path="terms-acknowledgment" element={<TermsAcknowledgment />} />
+            <Route path="contractor-registration/*" element={<ContractorRegistrationFlow />} />
+            <Route path="contractor-resources" element={<ContractorResourceHub />} />
+            <Route path="contractor-compliance" element={<ContractorCompliance />} />
           </Route>
         </Routes>
       </Router>
