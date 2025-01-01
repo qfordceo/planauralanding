@@ -34,10 +34,10 @@ export function LicenseVerificationForm({ onComplete }: LicenseVerificationFormP
             <div className="space-y-2">
               <Label htmlFor="licenseType">License Type</Label>
               <Select>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background border-input">
                   <SelectValue placeholder="Select license type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border shadow-lg">
                   <SelectItem value="electrical">Electrical</SelectItem>
                   <SelectItem value="plumbing">Plumbing</SelectItem>
                   <SelectItem value="hvac">HVAC</SelectItem>
