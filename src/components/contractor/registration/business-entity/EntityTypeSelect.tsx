@@ -13,8 +13,8 @@ export const entityTypes = [
 export type EntityType = typeof entityTypes[number]["value"];
 
 interface EntityTypeSelectProps {
-  value: string;
-  onChange: (value: string) => void;
+  value: EntityType;
+  onChange: (value: EntityType) => void;
 }
 
 export function EntityTypeSelect({ value, onChange }: EntityTypeSelectProps) {
