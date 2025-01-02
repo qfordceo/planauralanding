@@ -1,59 +1,58 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
 
-export const entityTypes = [
-  { value: "individual", label: "Individual/Sole Proprietorship" },
-  { value: "llc", label: "Limited Liability Company (LLC)" },
-  { value: "corporation", label: "Corporation" },
-  { value: "partnership", label: "Partnership" },
-  { value: "lp", label: "Limited Partnership" },
-  { value: "llp", label: "Limited Liability Partnership" }
-] as const;
-
-export type EntityType = typeof entityTypes[number]["value"];
+export type EntityType = "individual" | "llc" | "corporation" | "partnership" | "lp" | "llp";
 
 interface EntityTypeSelectProps {
   value: EntityType;
   onChange: (value: EntityType) => void;
+  form: UseFormReturn<any>;
 }
 
-export function EntityTypeSelect({ value, onChange }: EntityTypeSelectProps) {
-  const showSoleProprietorWarning = value === "individual";
+export function EntityTypeSelect({ value, onChange, form }: EntityTypeSelectProps) {
+  const isSoleProprietor = value === "individual";
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="entityType">Entity Type</Label>
-        <Select 
-          onValueChange={(val) => onChange(val as EntityType)} 
-          value={value}
-        >
-          <SelectTrigger className="w-full bg-background">
-            <SelectValue placeholder="Select your business entity type" />
-          </SelectTrigger>
-          <SelectContent className="bg-white border shadow-lg">
-            {entityTypes.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <FormField
+        control={form.control}
+        name="entityType"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Business Entity Type</FormLabel>
+            <Select onValueChange={(val) => {
+              onChange(val as EntityType);
+              field.onChange(val);
+            }} value={value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your business type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="individual">Sole Proprietorship</SelectItem>
+                <SelectItem value="llc">Limited Liability Company (LLC)</SelectItem>
+                <SelectItem value="corporation">Corporation</SelectItem>
+                <SelectItem value="partnership">General Partnership</SelectItem>
+                <SelectItem value="lp">Limited Partnership (LP)</SelectItem>
+                <SelectItem value="llp">Limited Liability Partnership (LLP)</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      {showSoleProprietorWarning && (
-        <Alert>
-          <Info className="h-4 w-4" />
+      {isSoleProprietor && (
+        <Alert variant="warning">
+          <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            As a sole proprietor, you'll need to provide additional documentation including:
-            <ul className="list-disc pl-5 mt-2">
-              <li>Tax identification (EIN recommended, SSN accepted)</li>
-              <li>General liability insurance</li>
-              <li>Additional liability waivers</li>
-            </ul>
-            We recommend forming an LLC for better liability protection.
+            Operating as a sole proprietor provides no legal separation between personal and business assets.
+            We strongly recommend forming an LLC for better protection. Additional documentation and waivers
+            will be required for sole proprietors.
           </AlertDescription>
         </Alert>
       )}

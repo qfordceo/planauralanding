@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExternalLink, Info } from "lucide-react";
 import { useState } from "react";
 import { EntityTypeSelect, EntityType } from "./business-entity/EntityTypeSelect";
 import { StateSelect } from "./business-entity/StateSelect";
 import { IdentificationFields } from "./business-entity/IdentificationFields";
+import { TermsAcknowledgmentModal } from "../TermsAcknowledgmentModal";
+import { useForm } from "react-hook-form";
 
 interface BusinessEntityFormProps {
   onComplete: () => void;
@@ -16,9 +16,22 @@ interface BusinessEntityFormProps {
 export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
   const [entityType, setEntityType] = useState<EntityType>("individual");
   const [registrationState, setRegistrationState] = useState<string>("TX");
+  const [showTerms, setShowTerms] = useState(false);
   
+  const form = useForm({
+    defaultValues: {
+      entityType: "individual",
+      registrationState: "TX",
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowTerms(true);
+  };
+
+  const handleTermsAccept = () => {
+    setShowTerms(false);
     onComplete();
   };
 
@@ -38,18 +51,21 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
           </Alert>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <EntityTypeSelect value={entityType} onChange={setEntityType} />
-            <StateSelect value={registrationState} onChange={setRegistrationState} />
-            <IdentificationFields entityType={entityType} registrationState={registrationState} />
-
-            <div className="space-y-2">
-              <Label htmlFor="formation">Formation/Registration Date</Label>
-              <Input 
-                id="formation" 
-                type="date" 
-                required
-              />
-            </div>
+            <EntityTypeSelect 
+              value={entityType} 
+              onChange={setEntityType}
+              form={form}
+            />
+            <StateSelect 
+              value={registrationState} 
+              onChange={setRegistrationState}
+              form={form}
+            />
+            <IdentificationFields 
+              entityType={entityType} 
+              registrationState={registrationState}
+              form={form}
+            />
 
             <div className="flex flex-col space-y-4">
               <Button asChild variant="outline">
@@ -67,6 +83,13 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
             </div>
           </form>
         </div>
+
+        <TermsAcknowledgmentModal
+          open={showTerms}
+          onOpenChange={setShowTerms}
+          onAccept={handleTermsAccept}
+          isSoleProprietor={entityType === "individual"}
+        />
       </CardContent>
     </Card>
   );

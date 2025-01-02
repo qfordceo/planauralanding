@@ -781,6 +781,50 @@ export type Database = {
           },
         ]
       }
+      contractor_liability_waivers: {
+        Row: {
+          accepted_at: string | null
+          contractor_id: string | null
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          updated_at: string | null
+          user_agent: string | null
+          waiver_type: string
+          waiver_version: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          contractor_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+          waiver_type: string
+          waiver_version: string
+        }
+        Update: {
+          accepted_at?: string | null
+          contractor_id?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+          waiver_type?: string
+          waiver_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_liability_waivers_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_marketing: {
         Row: {
           content: string | null
@@ -1109,15 +1153,19 @@ export type Database = {
           average_rating: number | null
           bbb_certified: boolean | null
           bid_notifications: boolean | null
+          business_classification: string | null
           business_name: string
           contact_name: string
           contractor_types: Database["public"]["Enums"]["contractor_type"][]
           created_at: string
           dpa_accepted: boolean | null
           dpa_accepted_at: string | null
+          has_workers_comp: boolean | null
           id: string
           insurance_expiry: string | null
           insurance_verified: boolean | null
+          liability_waiver_accepted: boolean | null
+          liability_waiver_accepted_at: string | null
           phone: string | null
           stripe_account_created_at: string | null
           stripe_account_enabled: boolean | null
@@ -1131,15 +1179,19 @@ export type Database = {
           average_rating?: number | null
           bbb_certified?: boolean | null
           bid_notifications?: boolean | null
+          business_classification?: string | null
           business_name: string
           contact_name: string
           contractor_types: Database["public"]["Enums"]["contractor_type"][]
           created_at?: string
           dpa_accepted?: boolean | null
           dpa_accepted_at?: string | null
+          has_workers_comp?: boolean | null
           id?: string
           insurance_expiry?: string | null
           insurance_verified?: boolean | null
+          liability_waiver_accepted?: boolean | null
+          liability_waiver_accepted_at?: string | null
           phone?: string | null
           stripe_account_created_at?: string | null
           stripe_account_enabled?: boolean | null
@@ -1153,15 +1205,19 @@ export type Database = {
           average_rating?: number | null
           bbb_certified?: boolean | null
           bid_notifications?: boolean | null
+          business_classification?: string | null
           business_name?: string
           contact_name?: string
           contractor_types?: Database["public"]["Enums"]["contractor_type"][]
           created_at?: string
           dpa_accepted?: boolean | null
           dpa_accepted_at?: string | null
+          has_workers_comp?: boolean | null
           id?: string
           insurance_expiry?: string | null
           insurance_verified?: boolean | null
+          liability_waiver_accepted?: boolean | null
+          liability_waiver_accepted_at?: string | null
           phone?: string | null
           stripe_account_created_at?: string | null
           stripe_account_enabled?: boolean | null
