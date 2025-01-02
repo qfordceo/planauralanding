@@ -1,38 +1,41 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExternalLink, Info } from "lucide-react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { EntityTypeSelect, EntityType } from "./business-entity/EntityTypeSelect";
+import { Form } from "@/components/ui/form";
+import { EntityTypeSelect } from "./business-entity/EntityTypeSelect";
 import { StateSelect } from "./business-entity/StateSelect";
 import { IdentificationFields } from "./business-entity/IdentificationFields";
 import { TermsAcknowledgmentModal } from "../TermsAcknowledgmentModal";
 
+const formSchema = z.object({
+  entityType: z.string(),
+  registrationState: z.string(),
+  ssn: z.string().optional(),
+  ein: z.string().optional(),
+  filingNumber: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
 interface BusinessEntityFormProps {
   onComplete: () => void;
-}
-
-interface FormValues {
-  entityType: EntityType;
-  registrationState: string;
-  ssn?: string;
-  ein?: string;
-  filingNumber?: string;
 }
 
 export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
   const [showTerms, setShowTerms] = useState(false);
   
   const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       entityType: "individual",
       registrationState: "TX",
     }
   });
-
-  const entityType = form.watch("entityType");
-  const registrationState = form.watch("registrationState");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,44 +62,48 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
             </AlertDescription>
           </Alert>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <EntityTypeSelect 
-              value={entityType} 
-              onChange={(value) => form.setValue("entityType", value)}
-              form={form}
-            />
-            <StateSelect 
-              value={registrationState} 
-              onChange={(value) => form.setValue("registrationState", value)}
-            />
-            <IdentificationFields 
-              entityType={entityType} 
-              registrationState={registrationState}
-              form={form}
-            />
+          <Form {...form}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <EntityTypeSelect 
+                control={form.control}
+                value={form.watch("entityType")} 
+                onChange={(value) => form.setValue("entityType", value)}
+              />
+              
+              <StateSelect 
+                value={form.watch("registrationState")} 
+                onChange={(value) => form.setValue("registrationState", value)}
+              />
+              
+              <IdentificationFields 
+                entityType={form.watch("entityType")} 
+                registrationState={form.watch("registrationState")}
+                control={form.control}
+              />
 
-            <div className="flex flex-col space-y-4">
-              <Button asChild variant="outline">
-                <a 
-                  href="https://www.sos.state.tx.us/corp/forms_boc.shtml" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Visit Texas Secretary of State
-                </a>
-              </Button>
-              <Button type="submit">Continue</Button>
-            </div>
-          </form>
+              <div className="flex flex-col space-y-4">
+                <Button asChild variant="outline">
+                  <a 
+                    href="https://www.sos.state.tx.us/corp/forms_boc.shtml" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Visit Texas Secretary of State
+                  </a>
+                </Button>
+                <Button type="submit">Continue</Button>
+              </div>
+            </form>
+          </Form>
         </div>
 
         <TermsAcknowledgmentModal
           open={showTerms}
           onOpenChange={setShowTerms}
           onAccept={handleTermsAccept}
-          isSoleProprietor={entityType === "individual"}
+          isSoleProprietor={form.watch("entityType") === "individual"}
         />
       </CardContent>
     </Card>

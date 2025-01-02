@@ -1,32 +1,35 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
+import { Control } from "react-hook-form";
 
 export type EntityType = "individual" | "llc" | "corporation" | "partnership" | "lp" | "llp";
 
 interface EntityTypeSelectProps {
   value: EntityType;
   onChange: (value: EntityType) => void;
-  form: UseFormReturn<any>;
+  control: Control<any>;
 }
 
-export function EntityTypeSelect({ value, onChange, form }: EntityTypeSelectProps) {
+export function EntityTypeSelect({ value, onChange, control }: EntityTypeSelectProps) {
   const isSoleProprietor = value === "individual";
 
   return (
     <div className="space-y-4">
       <FormField
-        control={form.control}
+        control={control}
         name="entityType"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Business Entity Type</FormLabel>
-            <Select onValueChange={(val) => {
-              onChange(val as EntityType);
-              field.onChange(val);
-            }} value={value}>
+            <Select 
+              onValueChange={(val) => {
+                onChange(val as EntityType);
+                field.onChange(val);
+              }} 
+              value={value}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your business type" />
