@@ -13,6 +13,7 @@ interface BusinessEntityFormProps {
 
 export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
   const [entityType, setEntityType] = useState<string>("");
+  const [registrationState, setRegistrationState] = useState<string>("TX");
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +29,34 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
     { value: "llp", label: "Limited Liability Partnership" }
   ];
 
+  const states = [
+    { value: "AL", label: "Alabama" }, { value: "AK", label: "Alaska" },
+    { value: "AZ", label: "Arizona" }, { value: "AR", label: "Arkansas" },
+    { value: "CA", label: "California" }, { value: "CO", label: "Colorado" },
+    { value: "CT", label: "Connecticut" }, { value: "DE", label: "Delaware" },
+    { value: "FL", label: "Florida" }, { value: "GA", label: "Georgia" },
+    { value: "HI", label: "Hawaii" }, { value: "ID", label: "Idaho" },
+    { value: "IL", label: "Illinois" }, { value: "IN", label: "Indiana" },
+    { value: "IA", label: "Iowa" }, { value: "KS", label: "Kansas" },
+    { value: "KY", label: "Kentucky" }, { value: "LA", label: "Louisiana" },
+    { value: "ME", label: "Maine" }, { value: "MD", label: "Maryland" },
+    { value: "MA", label: "Massachusetts" }, { value: "MI", label: "Michigan" },
+    { value: "MN", label: "Minnesota" }, { value: "MS", label: "Mississippi" },
+    { value: "MO", label: "Missouri" }, { value: "MT", label: "Montana" },
+    { value: "NE", label: "Nebraska" }, { value: "NV", label: "Nevada" },
+    { value: "NH", label: "New Hampshire" }, { value: "NJ", label: "New Jersey" },
+    { value: "NM", label: "New Mexico" }, { value: "NY", label: "New York" },
+    { value: "NC", label: "North Carolina" }, { value: "ND", label: "North Dakota" },
+    { value: "OH", label: "Ohio" }, { value: "OK", label: "Oklahoma" },
+    { value: "OR", label: "Oregon" }, { value: "PA", label: "Pennsylvania" },
+    { value: "RI", label: "Rhode Island" }, { value: "SC", label: "South Carolina" },
+    { value: "SD", label: "South Dakota" }, { value: "TN", label: "Tennessee" },
+    { value: "TX", label: "Texas" }, { value: "UT", label: "Utah" },
+    { value: "VT", label: "Vermont" }, { value: "VA", label: "Virginia" },
+    { value: "WA", label: "Washington" }, { value: "WV", label: "West Virginia" },
+    { value: "WI", label: "Wisconsin" }, { value: "WY", label: "Wyoming" }
+  ];
+
   return (
     <Card>
       <CardHeader>
@@ -38,8 +67,8 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Your business must be registered as a legal entity in Texas. For LLCs and Corporations, 
-              you'll need your filing number from the Texas Secretary of State.
+              Your business can be registered in any state, but must be authorized to operate in Texas. 
+              If registered outside of Texas, you may need to file as a foreign entity with the Texas Secretary of State.
             </AlertDescription>
           </Alert>
 
@@ -64,6 +93,25 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="registrationState">State of Registration</Label>
+              <Select 
+                onValueChange={setRegistrationState} 
+                defaultValue={registrationState}
+              >
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="Select state of registration" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border shadow-lg">
+                  {states.map((state) => (
+                    <SelectItem key={state.value} value={state.value}>
+                      {state.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="ein">EIN Number</Label>
               <Input 
                 id="ein" 
@@ -80,7 +128,9 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
             {entityType && entityType !== "individual" && (
               <div className="space-y-2">
                 <Label htmlFor="filingNumber">
-                  {entityType === "llc" ? "Texas LLC Filing Number" : "Texas Filing Number"}
+                  {registrationState === "TX" 
+                    ? (entityType === "llc" ? "Texas LLC Filing Number" : "Texas Filing Number")
+                    : `${states.find(s => s.value === registrationState)?.label} Filing Number`}
                 </Label>
                 <Input 
                   id="filingNumber" 
@@ -88,7 +138,9 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
                   required 
                 />
                 <p className="text-sm text-muted-foreground">
-                  This is the number assigned by the Texas Secretary of State when your entity was formed
+                  {registrationState === "TX" 
+                    ? "This is the number assigned by the Texas Secretary of State when your entity was formed"
+                    : `This is your entity's filing number from the ${states.find(s => s.value === registrationState)?.label} Secretary of State`}
                 </p>
               </div>
             )}
