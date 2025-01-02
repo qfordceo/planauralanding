@@ -27,7 +27,7 @@ export function EntityTypeSelect({ value, onChange }: EntityTypeSelectProps) {
       <div className="space-y-2">
         <Label htmlFor="entityType">Entity Type</Label>
         <Select 
-          onValueChange={onChange} 
+          onValueChange={(val) => onChange(val as EntityType)} 
           value={value}
         >
           <SelectTrigger className="w-full bg-background">
