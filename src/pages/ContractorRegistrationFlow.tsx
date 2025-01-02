@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -62,6 +62,11 @@ export default function ContractorRegistrationFlow() {
         </div>
 
         <Routes>
+          {/* Add a redirect from the base path to the first step */}
+          <Route
+            index
+            element={<Navigate to={`/contractor-registration/${steps[0].path}`} replace />}
+          />
           <Route
             path="business-entity"
             element={
@@ -95,6 +100,11 @@ export default function ContractorRegistrationFlow() {
             element={
               <TimelineAgreementForm onComplete={() => handleStepComplete("timeline")} />
             }
+          />
+          {/* Add a catch-all redirect to the first step */}
+          <Route
+            path="*"
+            element={<Navigate to={`/contractor-registration/${steps[0].path}`} replace />}
           />
         </Routes>
 
