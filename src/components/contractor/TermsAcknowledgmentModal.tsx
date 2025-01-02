@@ -49,7 +49,7 @@ export function TermsAcknowledgmentModal({
         </DialogHeader>
 
         {isSoleProprietor && (
-          <Alert variant="warning" className="my-4">
+          <Alert variant="destructive" className="my-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               As a sole proprietor, you are personally liable for all business obligations and risks.

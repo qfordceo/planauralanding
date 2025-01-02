@@ -2,6 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
 
 export const states = [
   { value: "AL", label: "Alabama" },
@@ -60,6 +61,7 @@ export const states = [
 interface StateSelectProps {
   value: string;
   onChange: (value: string) => void;
+  form?: UseFormReturn<any>;
 }
 
 export function StateSelect({ value, onChange }: StateSelectProps) {

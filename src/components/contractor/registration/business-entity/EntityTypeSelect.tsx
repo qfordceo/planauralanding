@@ -47,7 +47,7 @@ export function EntityTypeSelect({ value, onChange, form }: EntityTypeSelectProp
       />
 
       {isSoleProprietor && (
-        <Alert variant="warning">
+        <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Operating as a sole proprietor provides no legal separation between personal and business assets.
