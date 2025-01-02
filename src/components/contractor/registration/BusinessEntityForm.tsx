@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExternalLink, Info } from "lucide-react";
 import { useState } from "react";
-import { EntityTypeSelect } from "./business-entity/EntityTypeSelect";
+import { EntityTypeSelect, EntityType } from "./business-entity/EntityTypeSelect";
 import { StateSelect } from "./business-entity/StateSelect";
 import { IdentificationFields } from "./business-entity/IdentificationFields";
 
@@ -14,7 +14,7 @@ interface BusinessEntityFormProps {
 }
 
 export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
-  const [entityType, setEntityType] = useState<string>("");
+  const [entityType, setEntityType] = useState<EntityType>("individual");
   const [registrationState, setRegistrationState] = useState<string>("TX");
   
   const handleSubmit = (e: React.FormEvent) => {
