@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Shield } from "lucide-react";
 
 export default function ContractorResourceHub() {
   const resources = [
@@ -21,6 +21,13 @@ export default function ContractorResourceHub() {
       description: "Steps to become BBB Accredited",
       link: "https://www.bbb.org/get-accredited",
       cost: "Varies by region and revenue"
+    },
+    {
+      title: "Workers' Compensation Insurance",
+      description: "Information about workers' compensation coverage in Texas",
+      link: "https://www.tdi.texas.gov/wc/index.html",
+      cost: "Varies by coverage and provider",
+      icon: Shield
     }
   ];
 
