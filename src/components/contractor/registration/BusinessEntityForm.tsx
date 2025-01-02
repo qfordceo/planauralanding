@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExternalLink, Info } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { EntityTypeSelect, EntityType } from "./business-entity/EntityTypeSelect";
 import { StateSelect } from "./business-entity/StateSelect";
 import { IdentificationFields } from "./business-entity/IdentificationFields";
 import { TermsAcknowledgmentModal } from "../TermsAcknowledgmentModal";
-import { useForm } from "react-hook-form";
 
 interface BusinessEntityFormProps {
   onComplete: () => void;
@@ -68,7 +68,6 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
             <StateSelect 
               value={registrationState} 
               onChange={(value) => form.setValue("registrationState", value)}
-              form={form}
             />
             <IdentificationFields 
               entityType={entityType} 

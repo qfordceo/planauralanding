@@ -1,11 +1,12 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ExternalLink, Info } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import type { EntityType } from "./EntityTypeSelect";
 import { states } from "./StateSelect";
+import { SSNField } from "./SSNField";
+import { EINField } from "./EINField";
+import { FilingNumberField } from "./FilingNumberField";
 
 interface IdentificationFieldsProps {
   entityType: EntityType;
@@ -13,82 +14,33 @@ interface IdentificationFieldsProps {
   form: UseFormReturn<any>;
 }
 
-export function IdentificationFields({ entityType, registrationState, form }: IdentificationFieldsProps) {
+export function IdentificationFields({ 
+  entityType, 
+  registrationState, 
+  form 
+}: IdentificationFieldsProps) {
   const isIndividual = entityType === "individual";
   const stateName = states.find(s => s.value === registrationState)?.label;
   const showEINField = !isIndividual || entityType === "individual";
 
   return (
     <div className="space-y-4">
-      {isIndividual && (
-        <div className="space-y-2">
-          <Label htmlFor="ssn" className="flex items-center gap-2">
-            Social Security Number
-            <span className="text-sm text-muted-foreground">(Required for sole proprietors)</span>
-          </Label>
-          <Input 
-            id="ssn"
-            type="password"
-            placeholder="XXX-XX-XXXX"
-            required={isIndividual}
-            {...form.register("ssn")}
-          />
-          <p className="text-sm text-muted-foreground">
-            Your SSN is required for tax purposes and verification. We recommend obtaining an EIN for enhanced privacy.
-          </p>
-          <Button asChild variant="outline" className="w-full mt-2">
-            <a 
-              href="https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Apply for an EIN (Free via IRS)
-            </a>
-          </Button>
-        </div>
-      )}
+      {isIndividual && <SSNField form={form} required={isIndividual} />}
       
       {showEINField && (
-        <div className="space-y-2">
-          <Label htmlFor="ein" className="flex items-center gap-2">
-            EIN Number
-            {isIndividual && <span className="text-sm text-muted-foreground">(Recommended)</span>}
-          </Label>
-          <Input 
-            id="ein"
-            placeholder="XX-XXXXXXX"
-            required={!isIndividual}
-            {...form.register("ein")}
-          />
-          {isIndividual && (
-            <p className="text-sm text-muted-foreground">
-              While not required for sole proprietors, an EIN provides better privacy and professionalism.
-            </p>
-          )}
-        </div>
+        <EINField 
+          form={form} 
+          required={!isIndividual} 
+          showHelperText={isIndividual} 
+        />
       )}
       
-      {!isIndividual && (
-        <div className="space-y-2">
-          <Label htmlFor="filingNumber">
-            {registrationState === "TX" 
-              ? `Texas ${entityType.toUpperCase()} Filing Number`
-              : `${stateName} Filing Number`}
-          </Label>
-          <Input 
-            id="filingNumber" 
-            placeholder="Enter your filing number" 
-            required 
-            {...form.register("filingNumber")}
-          />
-          <p className="text-sm text-muted-foreground">
-            {registrationState === "TX" 
-              ? "This is the number assigned by the Texas Secretary of State when your entity was formed"
-              : `This is your entity's filing number from the ${stateName} Secretary of State`}
-          </p>
-        </div>
+      {!isIndividual && stateName && (
+        <FilingNumberField 
+          form={form} 
+          stateName={stateName} 
+          stateCode={registrationState} 
+        />
       )}
 
       {isIndividual && (
