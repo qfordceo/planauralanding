@@ -13,17 +13,26 @@ interface BusinessEntityFormProps {
   onComplete: () => void;
 }
 
+interface FormValues {
+  entityType: EntityType;
+  registrationState: string;
+  ssn?: string;
+  ein?: string;
+  filingNumber?: string;
+}
+
 export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
-  const [entityType, setEntityType] = useState<EntityType>("individual");
-  const [registrationState, setRegistrationState] = useState<string>("TX");
   const [showTerms, setShowTerms] = useState(false);
   
-  const form = useForm({
+  const form = useForm<FormValues>({
     defaultValues: {
       entityType: "individual",
       registrationState: "TX",
     }
   });
+
+  const entityType = form.watch("entityType");
+  const registrationState = form.watch("registrationState");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,12 +62,12 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <EntityTypeSelect 
               value={entityType} 
-              onChange={setEntityType}
+              onChange={(value) => form.setValue("entityType", value)}
               form={form}
             />
             <StateSelect 
               value={registrationState} 
-              onChange={setRegistrationState}
+              onChange={(value) => form.setValue("registrationState", value)}
               form={form}
             />
             <IdentificationFields 

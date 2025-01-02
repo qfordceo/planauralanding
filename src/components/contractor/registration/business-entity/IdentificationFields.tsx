@@ -3,15 +3,17 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UseFormReturn } from "react-hook-form";
 import type { EntityType } from "./EntityTypeSelect";
 import { states } from "./StateSelect";
 
 interface IdentificationFieldsProps {
   entityType: EntityType;
   registrationState: string;
+  form: UseFormReturn<any>;
 }
 
-export function IdentificationFields({ entityType, registrationState }: IdentificationFieldsProps) {
+export function IdentificationFields({ entityType, registrationState, form }: IdentificationFieldsProps) {
   const isIndividual = entityType === "individual";
   const stateName = states.find(s => s.value === registrationState)?.label;
   const showEINField = !isIndividual || entityType === "individual";
@@ -29,6 +31,7 @@ export function IdentificationFields({ entityType, registrationState }: Identifi
             type="password"
             placeholder="XXX-XX-XXXX"
             required={isIndividual}
+            {...form.register("ssn")}
           />
           <p className="text-sm text-muted-foreground">
             Your SSN is required for tax purposes and verification. We recommend obtaining an EIN for enhanced privacy.
@@ -57,6 +60,7 @@ export function IdentificationFields({ entityType, registrationState }: Identifi
             id="ein"
             placeholder="XX-XXXXXXX"
             required={!isIndividual}
+            {...form.register("ein")}
           />
           {isIndividual && (
             <p className="text-sm text-muted-foreground">
@@ -77,6 +81,7 @@ export function IdentificationFields({ entityType, registrationState }: Identifi
             id="filingNumber" 
             placeholder="Enter your filing number" 
             required 
+            {...form.register("filingNumber")}
           />
           <p className="text-sm text-muted-foreground">
             {registrationState === "TX" 
