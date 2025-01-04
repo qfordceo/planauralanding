@@ -968,7 +968,7 @@ export type Database = {
           created_at: string
           id: string
           last_reminder_sent: string | null
-          step_name: string
+          step_name: Database["public"]["Enums"]["onboarding_step_type"]
           updated_at: string
         }
         Insert: {
@@ -978,7 +978,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_reminder_sent?: string | null
-          step_name: string
+          step_name: Database["public"]["Enums"]["onboarding_step_type"]
           updated_at?: string
         }
         Update: {
@@ -988,7 +988,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_reminder_sent?: string | null
-          step_name?: string
+          step_name?: Database["public"]["Enums"]["onboarding_step_type"]
           updated_at?: string
         }
         Relationships: [
@@ -1279,8 +1279,13 @@ export type Database = {
           content: string
           created_at: string
           description: string | null
+          difficulty_level: string | null
+          estimated_reading_time: number | null
           external_links: Json | null
           id: string
+          related_resources: string[] | null
+          resource_type: string | null
+          tags: string[] | null
           title: string
           updated_at: string
           view_count: number | null
@@ -1290,8 +1295,13 @@ export type Database = {
           content: string
           created_at?: string
           description?: string | null
+          difficulty_level?: string | null
+          estimated_reading_time?: number | null
           external_links?: Json | null
           id?: string
+          related_resources?: string[] | null
+          resource_type?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string
           view_count?: number | null
@@ -1301,8 +1311,13 @@ export type Database = {
           content?: string
           created_at?: string
           description?: string | null
+          difficulty_level?: string | null
+          estimated_reading_time?: number | null
           external_links?: Json | null
           id?: string
+          related_resources?: string[] | null
+          resource_type?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
           view_count?: number | null
@@ -2240,6 +2255,16 @@ export type Database = {
         | "painting"
         | "landscaping"
         | "general"
+      onboarding_step_type:
+        | "business_entity"
+        | "ein_registration"
+        | "insurance_verification"
+        | "license_verification"
+        | "bbb_verification"
+        | "w9_submission"
+        | "liability_waiver"
+        | "portfolio_setup"
+        | "banking_setup"
       resource_category:
         | "safety_guidelines"
         | "legal_templates"
