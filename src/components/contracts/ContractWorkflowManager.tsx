@@ -1,100 +1,24 @@
-import React, { useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import React from "react";
 import { ContractWorkflow } from "./ContractWorkflow";
 import { ProjectDetails } from "../projects/ProjectDetails";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useContractWorkflow } from "./workflow/useContractWorkflow";
+import { ContractStageIndicator } from "./workflow/ContractStageIndicator";
+import { ContractSigningStatus } from "./workflow/ContractSigningStatus";
 
 interface ContractWorkflowManagerProps {
   projectId: string;
 }
 
 export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerProps) {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  const { data: contract, isLoading } = useQuery({
-    queryKey: ["project-contract", projectId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("project_contracts")
-        .select(`
-          *,
-          project:project_id(
-            title,
-            description,
-            user_id
-          )
-        `)
-        .eq("project_id", projectId)
-        .single();
-
-      if (error && error.code !== "PGRST116") throw error;
-      return data;
-    },
-  });
-
-  const activatePortalMutation = useMutation({
-    mutationFn: async () => {
-      // Update project status to active
-      const { error: projectError } = await supabase
-        .from("projects")
-        .update({ status: "active" })
-        .eq("id", projectId);
-
-      if (projectError) throw projectError;
-
-      // Create initial project milestones
-      const { error: milestonesError } = await supabase
-        .from("project_milestones")
-        .insert([
-          {
-            build_estimate_id: projectId,
-            title: "Project Kickoff",
-            description: "Initial meeting and project setup",
-            status: "pending"
-          },
-          {
-            build_estimate_id: projectId,
-            title: "Foundation Work",
-            description: "Preparation and foundation laying",
-            status: "pending"
-          }
-        ]);
-
-      if (milestonesError) throw milestonesError;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project-contract"] });
-      toast({
-        title: "Project Activated",
-        description: "Your project portal has been activated successfully.",
-      });
-      navigate(`/project/${projectId}`);
-    },
-    onError: (error) => {
-      console.error("Error activating portal:", error);
-      toast({
-        title: "Error",
-        description: "Failed to activate project portal. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  useEffect(() => {
-    if (contract?.status === "signed" && 
-        contract?.workflow_stage === "completed" &&
-        contract?.signed_by_client_at &&
-        contract?.signed_by_contractor_at) {
-      activatePortalMutation.mutate();
-    }
-  }, [contract?.status, contract?.workflow_stage, contract?.signed_by_client_at, contract?.signed_by_contractor_at]);
+  const {
+    contract,
+    isLoading,
+    createContract,
+    isCreatingContract
+  } = useContractWorkflow(projectId);
 
   if (isLoading) {
     return (
@@ -112,7 +36,11 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
         </CardHeader>
         <CardContent>
           <p className="mb-4">No contract has been created for this project yet.</p>
-          <Button onClick={() => window.location.reload()}>
+          <Button 
+            onClick={() => createContract()}
+            disabled={isCreatingContract}
+          >
+            {isCreatingContract && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Contract
           </Button>
         </CardContent>
@@ -125,9 +53,13 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
   }
 
   return (
-    <ContractWorkflow
-      projectId={projectId}
-      onComplete={() => window.location.reload()}
-    />
+    <div className="space-y-6">
+      <ContractStageIndicator currentStage={contract.workflow_stage} />
+      <ContractSigningStatus contract={contract} />
+      <ContractWorkflow
+        projectId={projectId}
+        onComplete={() => window.location.reload()}
+      />
+    </div>
   );
 }
