@@ -156,13 +156,5 @@ export default function Index() {
   }
 
   // Client view without active project
-  return (
-    <div className="container mx-auto py-8">
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <h1 className="text-2xl font-bold">Welcome to Home Construction Manager</h1>
-        <p className="text-muted-foreground">Get started by creating a new project</p>
-        <Button onClick={createProject}>Create New Project</Button>
-      </div>
-    </div>
-  );
+  return <ClientDashboard />;
 }
