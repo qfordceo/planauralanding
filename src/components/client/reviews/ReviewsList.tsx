@@ -27,7 +27,7 @@ export function ReviewsList({ contractorId }: ReviewsListProps) {
           rating,
           review_text,
           created_at,
-          client:client_id (
+          client:profiles!contractor_reviews_client_id_fkey (
             email
           )
         `)
@@ -36,13 +36,7 @@ export function ReviewsList({ contractorId }: ReviewsListProps) {
 
       if (reviewsError) throw reviewsError;
       
-      // Transform the data to match the Review interface
-      return (reviewsData || []).map(review => ({
-        ...review,
-        client: {
-          email: review.client?.email || null
-        }
-      })) as Review[];
+      return reviewsData as Review[];
     },
   });
 
