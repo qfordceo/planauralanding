@@ -1,6 +1,7 @@
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useAdminData } from "@/hooks/useAdminData";
 import { AdminMetrics } from "./dashboard/AdminMetrics";
+import { ProjectOversight } from "./dashboard/ProjectOversight";
 import { AdminTabs } from "./dashboard/AdminTabs";
 import { Loader2 } from "lucide-react";
 
@@ -32,7 +33,11 @@ export function AdminDashboard() {
     <div className="container mx-auto p-6 space-y-6">
       <ErrorBoundary>
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <AdminMetrics stats={data.stats} />
+        <AdminMetrics />
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold mb-4">Project Oversight</h2>
+          <ProjectOversight />
+        </div>
         <AdminTabs />
       </ErrorBoundary>
     </div>
