@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronRight, X } from "lucide-react";
 import { ProjectDetails } from "./ProjectDetails";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Project {
   id: string;
@@ -20,6 +22,31 @@ interface ProjectListProps {
 
 export function ProjectList({ projects }: ProjectListProps) {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const { data: tasks } = useQuery({
+    queryKey: ['project-tasks', selectedProject],
+    queryFn: async () => {
+      if (!selectedProject) return null;
+      const { data, error } = await supabase
+        .from('project_tasks')
+        .select(`
+          id,
+          title,
+          status,
+          category,
+          start_date,
+          due_date,
+          completed_date,
+          inspection_required,
+          inspection_status
+        `)
+        .eq('project_id', selectedProject)
+        .order('start_date', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedProject
+  });
 
   if (selectedProject) {
     return (
@@ -32,7 +59,7 @@ export function ProjectList({ projects }: ProjectListProps) {
           <X className="h-4 w-4 mr-2" />
           Close Project
         </Button>
-        <ProjectDetails projectId={selectedProject} />
+        <ProjectDetails projectId={selectedProject} tasks={tasks} />
       </div>
     );
   }

@@ -7,9 +7,10 @@ import { Loader2 } from "lucide-react";
 
 interface ProjectDetailsProps {
   projectId: string;
+  tasks?: any[];
 }
 
-export function ProjectDetails({ projectId }: ProjectDetailsProps) {
+export function ProjectDetails({ projectId, tasks }: ProjectDetailsProps) {
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => {
@@ -62,11 +63,10 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
         </TabsList>
 
         <TabsContent value="timeline" className="mt-6">
-          <ProjectTimeline projectId={projectId} />
+          <ProjectTimeline projectId={projectId} tasks={tasks} />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-6">
-          {/* Task management component will be implemented next */}
           <Card>
             <CardHeader>
               <CardTitle>Tasks</CardTitle>
@@ -78,7 +78,6 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
         </TabsContent>
 
         <TabsContent value="disputes" className="mt-6">
-          {/* Dispute management component will be implemented next */}
           <Card>
             <CardHeader>
               <CardTitle>Disputes</CardTitle>
@@ -90,7 +89,6 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
         </TabsContent>
 
         <TabsContent value="documents" className="mt-6">
-          {/* Document management component will be implemented next */}
           <Card>
             <CardHeader>
               <CardTitle>Documents</CardTitle>

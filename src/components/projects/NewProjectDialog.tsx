@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface NewProjectDialogProps {
   open: boolean;
@@ -20,13 +21,13 @@ export function NewProjectDialog({ open, onOpenChange, userId }: NewProjectDialo
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { mutate: createProject, isPending } = useMutation({
+  const createProject = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase
         .from('projects')
         .insert([
           { 
-            title, 
+            title,
             description,
             user_id: userId,
             status: 'open'
@@ -40,15 +41,16 @@ export function NewProjectDialog({ open, onOpenChange, userId }: NewProjectDialo
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      onOpenChange(false);
+      setTitle("");
+      setDescription("");
       toast({
         title: "Success",
         description: "Project created successfully",
       });
-      onOpenChange(false);
-      setTitle("");
-      setDescription("");
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error creating project:', error);
       toast({
         title: "Error",
         description: "Failed to create project",
@@ -57,23 +59,20 @@ export function NewProjectDialog({ open, onOpenChange, userId }: NewProjectDialo
     },
   });
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createProject.mutate();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
         </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            createProject();
-          }}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium">
-              Project Title
-            </label>
+            <Label htmlFor="title">Project Title</Label>
             <Input
               id="title"
               value={title}
@@ -83,18 +82,15 @@ export function NewProjectDialog({ open, onOpenChange, userId }: NewProjectDialo
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium">
-              Description
-            </label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter project description"
-              rows={4}
             />
           </div>
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -102,8 +98,13 @@ export function NewProjectDialog({ open, onOpenChange, userId }: NewProjectDialo
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={createProject.isPending || !title}
+            >
+              {createProject.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Create Project
             </Button>
           </div>

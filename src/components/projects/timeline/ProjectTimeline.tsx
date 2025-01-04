@@ -20,9 +20,10 @@ interface Task {
 
 interface ProjectTimelineProps {
   projectId: string;
+  tasks?: Task[] | null;
 }
 
-export function ProjectTimeline({ projectId }: ProjectTimelineProps) {
+export function ProjectTimeline({ projectId, tasks: initialTasks }: ProjectTimelineProps) {
   const { data: tasks, isLoading } = useQuery({
     queryKey: ['project-tasks', projectId],
     queryFn: async () => {
@@ -45,6 +46,8 @@ export function ProjectTimeline({ projectId }: ProjectTimelineProps) {
       if (error) throw error;
       return data as Task[];
     },
+    initialData: initialTasks,
+    enabled: !initialTasks
   });
 
   const getStatusColor = (status: string) => {
@@ -98,7 +101,7 @@ export function ProjectTimeline({ projectId }: ProjectTimelineProps) {
           <div className="space-y-8">
             {tasks?.map((task, index) => (
               <div key={task.id} className="relative">
-                {index !== tasks.length - 1 && (
+                {index !== (tasks.length - 1) && (
                   <div className="absolute left-6 top-10 h-full w-0.5 bg-gray-200" />
                 )}
                 <div className="flex gap-4">
