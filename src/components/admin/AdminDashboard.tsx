@@ -4,9 +4,9 @@ import { useAdminData } from "@/hooks/useAdminData"
 import { Loader2 } from "lucide-react"
 
 // Lazy load dashboard components
-const AdminMetrics = lazy(() => import("./dashboard/AdminMetrics"))
-const ProjectOversight = lazy(() => import("./dashboard/ProjectOversight"))
-const AdminTabs = lazy(() => import("./dashboard/AdminTabs"))
+const AdminMetrics = lazy(() => import("./dashboard/AdminMetrics").then(module => ({ default: module.AdminMetrics })))
+const ProjectOversight = lazy(() => import("./dashboard/ProjectOversight").then(module => ({ default: module.ProjectOversight })))
+const AdminTabs = lazy(() => import("./dashboard/AdminTabs").then(module => ({ default: module.AdminTabs })))
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-[200px]">
@@ -61,3 +61,5 @@ export function AdminDashboard() {
     </div>
   )
 }
+
+export default AdminDashboard

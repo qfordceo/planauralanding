@@ -9,16 +9,16 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Loader2 } from "lucide-react"
 
 // Lazy load all tab components
-const WaitlistTable = lazy(() => import("@/components/admin/WaitlistTable"))
-const CommissionsTable = lazy(() => import("@/components/admin/CommissionsTable"))
-const ContractorAvailability = lazy(() => import("@/components/admin/ContractorAvailability"))
-const ClientBuildsTable = lazy(() => import("@/components/admin/ClientBuildsTable"))
-const PurchasesTable = lazy(() => import("@/components/admin/PurchasesTable"))
-const PreApprovalTable = lazy(() => import("@/components/admin/PreApprovalTable"))
-const ComplianceTable = lazy(() => import("@/components/admin/ComplianceTable"))
-const StripeDashboard = lazy(() => import("@/components/admin/StripeDashboard"))
-const WaiverTable = lazy(() => import("@/components/admin/WaiverTable"))
-const DocumentRenewalTable = lazy(() => import("@/components/admin/DocumentRenewalTable"))
+const WaitlistTable = lazy(() => import("@/components/admin/WaitlistTable").then(module => ({ default: module.WaitlistTable })))
+const CommissionsTable = lazy(() => import("@/components/admin/CommissionsTable").then(module => ({ default: module.CommissionsTable })))
+const ContractorAvailability = lazy(() => import("@/components/admin/ContractorAvailability").then(module => ({ default: module.ContractorAvailability })))
+const ClientBuildsTable = lazy(() => import("@/components/admin/ClientBuildsTable").then(module => ({ default: module.ClientBuildsTable })))
+const PurchasesTable = lazy(() => import("@/components/admin/PurchasesTable").then(module => ({ default: module.PurchasesTable })))
+const PreApprovalTable = lazy(() => import("@/components/admin/PreApprovalTable").then(module => ({ default: module.PreApprovalTable })))
+const ComplianceTable = lazy(() => import("@/components/admin/ComplianceTable").then(module => ({ default: module.ComplianceTable })))
+const StripeDashboard = lazy(() => import("@/components/admin/StripeDashboard").then(module => ({ default: module.StripeDashboard })))
+const WaiverTable = lazy(() => import("@/components/admin/WaiverTable").then(module => ({ default: module.WaiverTable })))
+const DocumentRenewalTable = lazy(() => import("@/components/admin/DocumentRenewalTable").then(module => ({ default: module.DocumentRenewalTable })))
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center p-8">
@@ -96,3 +96,5 @@ export function AdminTabs() {
     </Tabs>
   )
 }
+
+export default AdminTabs

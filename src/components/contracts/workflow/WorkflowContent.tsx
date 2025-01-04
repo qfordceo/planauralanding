@@ -6,6 +6,7 @@ import { ContractReview } from "../steps/ContractReview";
 import { ContractSignature } from "../ContractSignature";
 import { ContractSetupState } from "./ContractSetupState";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WorkflowContentProps {
   projectId: string;
@@ -75,3 +76,5 @@ export function WorkflowContent({ projectId, contract }: WorkflowContentProps) {
       return <ContractSetupState />;
   }
 }
+
+export default WorkflowContent;
