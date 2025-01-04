@@ -27,7 +27,7 @@ export function ContractWorkflow({ projectId, onComplete }: ContractWorkflowProp
         .eq("project_id", projectId)
         .single();
 
-      if (error) throw error;
+      if (error && error.code !== "PGRST116") throw error;
       return data;
     },
   });
