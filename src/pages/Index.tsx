@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ContractWorkflowManager } from "@/components/contracts/ContractWorkflowManager";
+import { ProjectLaunchFlow } from "@/components/projects/launch/ProjectLaunchFlow";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,8 +18,17 @@ export default function Index() {
 
       const { data, error } = await supabase
         .from('projects')
-        .select('*')
+        .select(`
+          *,
+          contractor_bids!inner (
+            id,
+            contractor_id,
+            bid_amount,
+            status
+          )
+        `)
         .eq('user_id', user.id)
+        .eq('contractor_bids.status', 'accepted')
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -84,7 +94,14 @@ export default function Index() {
           <Button onClick={createProject}>Create New Project</Button>
         </div>
       ) : (
-        <ContractWorkflowManager projectId={projectId} />
+        activeProject?.contractor_bids ? (
+          <ProjectLaunchFlow 
+            projectId={projectId} 
+            acceptedBid={activeProject.contractor_bids[0]} 
+          />
+        ) : (
+          <ContractWorkflowManager projectId={projectId} />
+        )
       )}
     </div>
   );

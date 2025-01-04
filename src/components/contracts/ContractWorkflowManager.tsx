@@ -1,15 +1,20 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ContractWorkflow } from "./ContractWorkflow";
 import { ProjectDetails } from "../projects/ProjectDetails";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface ContractWorkflowManagerProps {
   projectId: string;
 }
 
 export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerProps) {
-  const { data: contract } = useQuery({
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const { data: contract, isLoading } = useQuery({
     queryKey: ["project-contract", projectId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -22,6 +27,59 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
       return data;
     },
   });
+
+  const activatePortalMutation = useMutation({
+    mutationFn: async () => {
+      // Update project status to active
+      const { error: projectError } = await supabase
+        .from("projects")
+        .update({ status: "active" })
+        .eq("id", projectId);
+
+      if (projectError) throw projectError;
+
+      // Create initial project milestones
+      const { error: milestonesError } = await supabase
+        .from("project_milestones")
+        .insert([
+          {
+            build_estimate_id: projectId,
+            title: "Project Kickoff",
+            description: "Initial meeting and project setup",
+            status: "pending"
+          },
+          {
+            build_estimate_id: projectId,
+            title: "Foundation Work",
+            description: "Preparation and foundation laying",
+            status: "pending"
+          }
+        ]);
+
+      if (milestonesError) throw milestonesError;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Project Activated",
+        description: "Your project portal has been activated successfully.",
+      });
+      navigate(`/project/${projectId}`);
+    },
+    onError: (error) => {
+      console.error("Error activating portal:", error);
+      toast({
+        title: "Error",
+        description: "Failed to activate project portal. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (contract?.status === "signed" && !isLoading) {
+      activatePortalMutation.mutate();
+    }
+  }, [contract?.status, isLoading]);
 
   if (contract?.status === "signed") {
     return <ProjectDetails projectId={projectId} />;
