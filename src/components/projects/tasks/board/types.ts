@@ -29,4 +29,5 @@ export interface TaskColumnProps {
 
 export interface TaskCardProps {
   task: Task;
+  isDragging?: boolean;
 }

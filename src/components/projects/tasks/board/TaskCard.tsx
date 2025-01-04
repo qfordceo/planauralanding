@@ -4,10 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { TaskCardProps } from "./types";
+import { cn } from "@/lib/utils";
 
 export function TaskCard({ task }: TaskCardProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
+    data: task,
   });
 
   const style = transform ? {
@@ -39,7 +41,10 @@ export function TaskCard({ task }: TaskCardProps) {
       {...attributes}
       {...listeners}
       style={style}
-      className="p-3 mb-2 cursor-move hover:shadow-md transition-shadow"
+      className={cn(
+        "p-3 mb-2 cursor-move hover:shadow-md transition-shadow",
+        isDragging && "opacity-50"
+      )}
     >
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
