@@ -78,7 +78,6 @@ export function ContractWorkflow({ projectId, onComplete }: ContractWorkflowProp
           <ScrollArea className="h-[400px] w-full rounded-md border p-4">
             {contract?.content && (
               <div className="prose max-w-none">
-                {/* Render contract content sections */}
                 {Object.entries(contract.content).map(([section, content]) => (
                   <div key={section} className="mb-6">
                     <h3 className="text-lg font-semibold mb-2">{section}</h3>
