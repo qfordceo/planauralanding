@@ -11,3 +11,11 @@ export interface AdminData {
   } | null;
   stats: AdminStats;
 }
+
+export interface AdminMetricsProps {
+  stats: AdminStats;
+}
+
+export interface AdminTabProps {
+  children: React.ReactNode;
+}
