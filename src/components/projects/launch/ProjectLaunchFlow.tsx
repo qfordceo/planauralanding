@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ interface ProjectLaunchFlowProps {
 export function ProjectLaunchFlow({ projectId, acceptedBid }: ProjectLaunchFlowProps) {
   const [contractCreated, setContractCreated] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: existingContract, isLoading: checkingContract } = useQuery({
     queryKey: ['project-contract', projectId],
@@ -63,6 +64,7 @@ export function ProjectLaunchFlow({ projectId, acceptedBid }: ProjectLaunchFlowP
     }
 
     setContractCreated(true);
+    await queryClient.invalidateQueries({ queryKey: ['project-contract'] });
     toast({
       title: "Success",
       description: "Contract created successfully. Please review and sign.",

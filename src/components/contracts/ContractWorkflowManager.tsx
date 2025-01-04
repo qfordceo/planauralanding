@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ContractWorkflow } from "./ContractWorkflow";
 import { ProjectDetails } from "../projects/ProjectDetails";
@@ -13,6 +13,7 @@ interface ContractWorkflowManagerProps {
 export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: contract, isLoading } = useQuery({
     queryKey: ["project-contract", projectId],
@@ -59,6 +60,7 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
       if (milestonesError) throw milestonesError;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project-contract"] });
       toast({
         title: "Project Activated",
         description: "Your project portal has been activated successfully.",
@@ -76,10 +78,10 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
   });
 
   useEffect(() => {
-    if (contract?.status === "signed" && !isLoading) {
+    if (contract?.status === "signed") {
       activatePortalMutation.mutate();
     }
-  }, [contract?.status, isLoading]);
+  }, [contract?.status]);
 
   if (contract?.status === "signed") {
     return <ProjectDetails projectId={projectId} />;
