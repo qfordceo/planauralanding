@@ -3,12 +3,51 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ContractWorkflowManager } from "@/components/contracts/ContractWorkflowManager";
 import { ProjectLaunchFlow } from "@/components/projects/launch/ProjectLaunchFlow";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { ContractorDashboard } from "@/components/contractor/ContractorDashboard";
+import { ClientDashboard } from "@/components/client/ClientDashboard";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 export default function Index() {
   const [projectId, setProjectId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: contractor, isLoading: contractorLoading } = useQuery({
+    queryKey: ['contractor'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('contractors')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+    enabled: !profile?.is_admin,
+  });
 
   const { data: activeProject } = useQuery({
     queryKey: ['active-project'],
@@ -40,6 +79,7 @@ export default function Index() {
 
       return data;
     },
+    enabled: !profile?.is_admin && !contractor,
   });
 
   const createProject = async () => {
@@ -85,24 +125,44 @@ export default function Index() {
     }
   }, [activeProject]);
 
+  if (profileLoading || contractorLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Admin view
+  if (profile?.is_admin) {
+    return <AdminDashboard />;
+  }
+
+  // Contractor view
+  if (contractor) {
+    return <ContractorDashboard contractor={contractor} />;
+  }
+
+  // Client view with active project
+  if (projectId) {
+    return activeProject?.contractor_bids ? (
+      <ProjectLaunchFlow 
+        projectId={projectId} 
+        acceptedBid={activeProject.contractor_bids[0]} 
+      />
+    ) : (
+      <ContractWorkflowManager projectId={projectId} />
+    );
+  }
+
+  // Client view without active project
   return (
     <div className="container mx-auto py-8">
-      {!projectId ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-          <h1 className="text-2xl font-bold">Welcome to Home Construction Manager</h1>
-          <p className="text-muted-foreground">Get started by creating a new project</p>
-          <Button onClick={createProject}>Create New Project</Button>
-        </div>
-      ) : (
-        activeProject?.contractor_bids ? (
-          <ProjectLaunchFlow 
-            projectId={projectId} 
-            acceptedBid={activeProject.contractor_bids[0]} 
-          />
-        ) : (
-          <ContractWorkflowManager projectId={projectId} />
-        )
-      )}
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <h1 className="text-2xl font-bold">Welcome to Home Construction Manager</h1>
+        <p className="text-muted-foreground">Get started by creating a new project</p>
+        <Button onClick={createProject}>Create New Project</Button>
+      </div>
     </div>
   );
 }
