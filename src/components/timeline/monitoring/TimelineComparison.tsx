@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query"
-import { supabase } from "@/integrations/supabase/client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import {
   BarChart,
   Bar,
@@ -10,11 +10,11 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from "recharts"
-import { differenceInDays, format } from "date-fns"
+} from "recharts";
+import { differenceInDays, format } from "date-fns";
 
 interface TimelineComparisonProps {
-  projectId: string
+  projectId: string;
 }
 
 export function TimelineComparison({ projectId }: TimelineComparisonProps) {
@@ -32,43 +32,43 @@ export function TimelineComparison({ projectId }: TimelineComparisonProps) {
           client_approval_date
         `)
         .eq('build_estimate_id', projectId)
-        .order('due_date', { ascending: true })
+        .order('due_date', { ascending: true });
 
-      if (milestonesError) throw milestonesError
+      if (milestonesError) throw milestonesError;
 
       const { data: agreement, error: agreementError } = await supabase
         .from('timeline_agreements')
         .select('agreed_completion_date')
         .eq('project_id', projectId)
-        .single()
+        .single();
 
-      if (agreementError) throw agreementError
+      if (agreementError) throw agreementError;
 
       return {
         milestones,
         agreedCompletionDate: agreement?.agreed_completion_date
-      }
+      };
     }
-  })
+  });
 
-  if (!timelineData?.milestones) return null
+  if (!timelineData?.milestones) return null;
 
-  const completedMilestones = timelineData.milestones.filter(m => m.status === 'completed')
-  const progressPercentage = (completedMilestones.length / timelineData.milestones.length) * 100
+  const completedMilestones = timelineData.milestones.filter(m => m.status === 'completed');
+  const progressPercentage = (completedMilestones.length / timelineData.milestones.length) * 100;
 
   const chartData = timelineData.milestones.map(milestone => {
     const plannedDuration = milestone.due_date ? 
-      differenceInDays(new Date(milestone.due_date), new Date(timelineData.milestones[0].due_date)) : 0
+      differenceInDays(new Date(milestone.due_date), new Date(timelineData.milestones[0].due_date)) : 0;
     
     const actualDuration = milestone.contractor_submission_date ?
-      differenceInDays(new Date(milestone.contractor_submission_date), new Date(timelineData.milestones[0].due_date)) : plannedDuration
+      differenceInDays(new Date(milestone.contractor_submission_date), new Date(timelineData.milestones[0].due_date)) : plannedDuration;
 
     return {
       name: milestone.title,
       planned: plannedDuration,
       actual: actualDuration,
-    }
-  })
+    };
+  });
 
   return (
     <Card className="w-full">
@@ -107,5 +107,5 @@ export function TimelineComparison({ projectId }: TimelineComparisonProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

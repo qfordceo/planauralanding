@@ -1,10 +1,19 @@
+import { useDraggable } from "@dnd-kit/core";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { TaskCardProps } from "./types";
 
-export function TaskCard({ task, onDragStart }: TaskCardProps) {
+export function TaskCard({ task }: TaskCardProps) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: task.id,
+  });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+  } : undefined;
+
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       land_preparation: 'bg-green-100 text-green-800',
@@ -26,8 +35,10 @@ export function TaskCard({ task, onDragStart }: TaskCardProps) {
 
   return (
     <Card
-      draggable
-      onDragStart={onDragStart}
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={style}
       className="p-3 mb-2 cursor-move hover:shadow-md transition-shadow"
     >
       <div className="space-y-2">

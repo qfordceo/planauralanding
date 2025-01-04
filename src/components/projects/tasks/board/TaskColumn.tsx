@@ -1,20 +1,21 @@
-import * as React from "react";
+import { useDroppable } from "@dnd-kit/core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TaskColumnProps } from "./types";
 import { TaskCard } from "./TaskCard";
+import { TaskColumnProps } from "./types";
 
 export function TaskColumn({
   title,
   status,
   tasks,
-  onDragOver,
-  onDrop,
 }: TaskColumnProps) {
+  const { setNodeRef } = useDroppable({
+    id: status,
+  });
+
   return (
     <div
+      ref={setNodeRef}
       className="flex flex-col gap-2"
-      onDragOver={onDragOver}
-      onDrop={onDrop}
     >
       <Card className="bg-muted">
         <CardHeader className="py-2">
@@ -27,12 +28,9 @@ export function TaskColumn({
         </CardHeader>
         <CardContent className="space-y-2">
           {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
+            <TaskCard 
+              key={task.id} 
               task={task}
-              onDragStart={(e) => {
-                e.dataTransfer.setData("taskId", task.id);
-              }}
             />
           ))}
         </CardContent>

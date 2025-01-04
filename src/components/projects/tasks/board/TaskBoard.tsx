@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { TaskColumn } from "./TaskColumn";
 import { NewTaskDialog } from "./NewTaskDialog";
 import { useState } from "react";
+import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
 import { Task, TaskStatus } from "./types";
 
 interface TaskBoardProps {
@@ -60,6 +61,10 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
+      toast({
+        title: "Task updated",
+        description: "Task status has been updated successfully.",
+      });
     },
     onError: (error) => {
       toast({
@@ -70,14 +75,15 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
     },
   });
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent, newStatus: TaskStatus) => {
-    e.preventDefault();
-    const taskId = e.dataTransfer.getData('taskId');
-    updateTaskStatus.mutate({ taskId, newStatus });
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      const taskId = active.id as string;
+      const newStatus = over.id as TaskStatus;
+      
+      updateTaskStatus.mutate({ taskId, newStatus });
+    }
   };
 
   if (isLoading) {
@@ -99,18 +105,18 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[calc(100vh-12rem)]">
-          <div className="grid grid-cols-5 gap-4">
-            {statusColumns.map(({ status, label }) => (
-              <TaskColumn
-                key={status}
-                title={label}
-                status={status}
-                tasks={tasks?.filter((task) => task.status === status) || []}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, status)}
-              />
-            ))}
-          </div>
+          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <div className="grid grid-cols-5 gap-4">
+              {statusColumns.map(({ status, label }) => (
+                <TaskColumn
+                  key={status}
+                  title={label}
+                  status={status}
+                  tasks={tasks?.filter((task) => task.status === status) || []}
+                />
+              ))}
+            </div>
+          </DndContext>
         </ScrollArea>
       </CardContent>
       <NewTaskDialog
