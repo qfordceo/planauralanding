@@ -1,19 +1,28 @@
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { useAdminData } from "@/hooks/useAdminData";
-import { AdminMetrics } from "./dashboard/AdminMetrics";
-import { ProjectOversight } from "./dashboard/ProjectOversight";
-import { AdminTabs } from "./dashboard/AdminTabs";
-import { Loader2 } from "lucide-react";
+import { Suspense, lazy } from "react"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
+import { useAdminData } from "@/hooks/useAdminData"
+import { Loader2 } from "lucide-react"
+
+// Lazy load dashboard components
+const AdminMetrics = lazy(() => import("./dashboard/AdminMetrics"))
+const ProjectOversight = lazy(() => import("./dashboard/ProjectOversight"))
+const AdminTabs = lazy(() => import("./dashboard/AdminTabs"))
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-[200px]">
+    <Loader2 className="h-8 w-8 animate-spin" />
+  </div>
+)
 
 export function AdminDashboard() {
-  const { data, isLoading, error } = useAdminData();
+  const { data, isLoading, error } = useAdminData()
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    );
+    )
   }
 
   if (error || !data?.profile?.is_admin) {
@@ -26,20 +35,29 @@ export function AdminDashboard() {
           You don't have permission to access this page.
         </p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <ErrorBoundary>
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <AdminMetrics />
+        
+        <Suspense fallback={<LoadingFallback />}>
+          <AdminMetrics />
+        </Suspense>
+
         <div className="mt-8">
           <h2 className="text-2xl font-semibold mb-4">Project Oversight</h2>
-          <ProjectOversight />
+          <Suspense fallback={<LoadingFallback />}>
+            <ProjectOversight />
+          </Suspense>
         </div>
-        <AdminTabs />
+
+        <Suspense fallback={<LoadingFallback />}>
+          <AdminTabs />
+        </Suspense>
       </ErrorBoundary>
     </div>
-  );
+  )
 }
