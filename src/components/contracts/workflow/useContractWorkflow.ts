@@ -27,23 +27,6 @@ export function useContractWorkflow(projectId: string) {
     },
   });
 
-  const { data: userProfile } = useQuery({
-    queryKey: ["user-profile"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No authenticated user");
-      
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const createContractMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase
@@ -87,7 +70,9 @@ export function useContractWorkflow(projectId: string) {
 
   const signContractMutation = useMutation({
     mutationFn: async () => {
-      const isClient = contract?.project.user_id === userProfile?.id;
+      const { data: userProfile } = await supabase.auth.getUser();
+      const isClient = contract?.project.user_id === userProfile?.data.user?.id;
+      
       const updates = {
         ...(isClient ? {
           workflow_stage: "contractor_review",
@@ -142,7 +127,6 @@ export function useContractWorkflow(projectId: string) {
   return {
     contract,
     isLoading,
-    userProfile,
     createContract: createContractMutation.mutate,
     signContract: signContractMutation.mutate,
     isSigningContract: signContractMutation.isPending,
