@@ -7,12 +7,16 @@ import { Loader2, AlertTriangle, Clock } from "lucide-react";
 import { DelayIndicator } from "./DelayIndicator";
 import { ProgressTracker } from "./ProgressTracker";
 import { MilestoneStatus } from "./MilestoneStatus";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface TimelineMonitorProps {
   projectId: string;
 }
 
 export function TimelineMonitor({ projectId }: TimelineMonitorProps) {
+  const { toast } = useToast();
+
   const { data: timelineData, isLoading } = useQuery({
     queryKey: ['project-timeline-monitor', projectId],
     queryFn: async () => {
@@ -46,6 +50,36 @@ export function TimelineMonitor({ projectId }: TimelineMonitorProps) {
     },
     refetchInterval: 300000, // Refresh every 5 minutes
   });
+
+  // Set up real-time notifications for timeline updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('timeline-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_delay_notifications',
+          filter: `project_id=eq.${projectId}`
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const delay = payload.new;
+            toast({
+              title: delay.severity === 'critical' ? 'Critical Delay Detected' : 'Timeline Alert',
+              description: `${delay.delay_days} days delay in project timeline. ${delay.resolution_action || 'Action required.'}`,
+              variant: delay.severity === 'critical' ? 'destructive' : 'default',
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [projectId, toast]);
 
   if (isLoading) {
     return (

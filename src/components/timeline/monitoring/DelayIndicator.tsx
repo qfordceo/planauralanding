@@ -1,6 +1,8 @@
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DelayIndicatorProps {
   milestones: any[];
@@ -23,9 +25,42 @@ export function DelayIndicator({ milestones, agreedCompletionDate }: DelayIndica
     return {
       total: totalDelay,
       critical: criticalDelay,
-      milestones: delayedMilestones
+      milestones: delayedMilestones,
+      overallStatus: criticalDelay > 0 ? 'critical' : totalDelay > 0 ? 'delayed' : 'on_track'
     };
   };
+
+  useEffect(() => {
+    const delay = calculateDelay();
+    
+    // Create delay notifications for critical delays
+    const createDelayNotifications = async () => {
+      if (delay.critical > 0) {
+        for (const milestone of delay.milestones) {
+          const daysOverdue = Math.ceil(
+            (new Date().getTime() - new Date(milestone.due_date).getTime()) / (1000 * 60 * 60 * 24)
+          );
+          
+          if (daysOverdue >= 7) {
+            await supabase
+              .from('project_delay_notifications')
+              .insert({
+                project_id: milestone.build_estimate_id,
+                milestone_id: milestone.id,
+                delay_days: daysOverdue,
+                severity: 'critical',
+                status: 'pending',
+                resolution_action: `Milestone "${milestone.title}" is critically delayed by ${daysOverdue} days. Immediate action required.`
+              })
+              .select()
+              .single();
+          }
+        }
+      }
+    };
+
+    createDelayNotifications();
+  }, [milestones]);
 
   const delay = calculateDelay();
 
