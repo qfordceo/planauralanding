@@ -1753,6 +1753,60 @@ export type Database = {
           },
         ]
       }
+      documentation_guides: {
+        Row: {
+          change_summary: string | null
+          content: Json
+          created_at: string
+          guide_type: string
+          id: string
+          is_published: boolean | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          change_summary?: string | null
+          content: Json
+          created_at?: string
+          guide_type: string
+          id?: string
+          is_published?: boolean | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          change_summary?: string | null
+          content?: Json
+          created_at?: string
+          guide_type?: string
+          id?: string
+          is_published?: boolean | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentation_guides_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentation_guides_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       educational_resources: {
         Row: {
           category: string
