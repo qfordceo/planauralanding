@@ -39,7 +39,6 @@ export function DashboardGrid({
     const getFloorPlanUrl = async () => {
       if (activeBuild?.floor_plan_id) {
         try {
-          // Check if the floor plan exists in the saved_builds table first
           const { data: savedBuild, error: savedBuildError } = await supabase
             .from('saved_builds')
             .select('floor_plans(*)')
@@ -68,7 +67,6 @@ export function DashboardGrid({
             return;
           }
 
-          // Use the image_url from the floor_plans table
           setFloorPlanUrl(savedBuild.floor_plans.image_url);
           console.log('Floor plan URL:', savedBuild.floor_plans.image_url);
         } catch (error) {
@@ -115,7 +113,9 @@ export function DashboardGrid({
         onClick={() => setActiveSection(activeSection === 'timeline' ? null : 'timeline')}
         expanded={activeSection === 'timeline'}
       >
-        {activeSection === 'timeline' && <ProjectTimeline />}
+        {activeSection === 'timeline' && activeBuild && (
+          <ProjectTimeline projectId={activeBuild.id} />
+        )}
       </DashboardCard>
 
       <DashboardCard
