@@ -1,14 +1,31 @@
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { TaskBoardColumn } from "./TaskBoardColumn";
-import { NewTaskDialog } from "../NewTaskDialog";
+import { TaskColumn } from "./TaskColumn";
+import { TaskCard } from "./TaskCard";
+import { NewTaskDialog } from "./NewTaskDialog";
 import { useState } from "react";
-import { Task, TaskStatus } from "../types";
+
+interface TaskBoardProps {
+  projectId: string;
+}
+
+type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'needs_review' | 'completed';
+
+interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  category: string;
+  inspection_required: boolean;
+  inspection_status: string | null;
+  due_date: string | null;
+}
 
 const statusColumns: { status: TaskStatus; label: string }[] = [
   { status: 'not_started', label: 'To Do' },
@@ -18,57 +35,63 @@ const statusColumns: { status: TaskStatus; label: string }[] = [
   { status: 'completed', label: 'Completed' }
 ];
 
-interface TaskBoardProps {
-  projectId: string;
-}
-
 export function TaskBoard({ projectId }: TaskBoardProps) {
   const [showNewTask, setShowNewTask] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const { data: tasks, isLoading } = useQuery({
     queryKey: ['project-tasks', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_tasks')
-        .select('*')
+        .select(`
+          id,
+          title,
+          description,
+          status,
+          category,
+          inspection_required,
+          inspection_status,
+          due_date
+        `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error loading tasks",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+
       return data as Task[];
     },
   });
 
-  const updateTaskStatus = useMutation({
-    mutationFn: async ({ taskId, newStatus }: { taskId: string; newStatus: TaskStatus }) => {
-      const { error } = await supabase
-        .from('project_tasks')
-        .update({ status: newStatus })
-        .eq('id', taskId);
+  const handleDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData('taskId', taskId);
+  };
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
-    },
-    onError: () => {
-      toast({
-        title: "Error updating task status",
-        description: "There was an error updating the task status. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  const handleDrop = async (e: React.DragEvent, newStatus: TaskStatus) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
     
-    if (over && active.id !== over.id) {
-      updateTaskStatus.mutate({
-        taskId: active.id as string,
-        newStatus: over.id as TaskStatus,
+    const { error } = await supabase
+      .from('project_tasks')
+      .update({ status: newStatus })
+      .eq('id', taskId);
+
+    if (error) {
+      toast({
+        title: "Error updating task",
+        description: error.message,
+        variant: "destructive",
       });
     }
   };
@@ -76,7 +99,7 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -91,20 +114,28 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
         </Button>
       </CardHeader>
       <CardContent>
-        <DndContext onDragEnd={handleDragEnd}>
+        <ScrollArea className="h-[calc(100vh-12rem)]">
           <div className="grid grid-cols-5 gap-4">
             {statusColumns.map(({ status, label }) => (
-              <TaskBoardColumn
+              <TaskColumn
                 key={status}
                 title={label}
-                status={status}
-                tasks={tasks?.filter((task) => task.status === status) || []}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => e.preventDefault()}
-              />
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, status)}
+              >
+                {tasks
+                  ?.filter((task) => task.status === status)
+                  .map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onDragStart={(e) => handleDragStart(e, task.id)}
+                    />
+                  ))}
+              </TaskColumn>
             ))}
           </div>
-        </DndContext>
+        </ScrollArea>
       </CardContent>
       <NewTaskDialog
         open={showNewTask}

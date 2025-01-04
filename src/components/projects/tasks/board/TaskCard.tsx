@@ -2,22 +2,24 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { useDraggable } from "@dnd-kit/core";
-import { Task } from "../types";
+
+interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  category: string;
+  inspection_required: boolean;
+  inspection_status: string | null;
+  due_date: string | null;
+}
 
 interface TaskCardProps {
   task: Task;
+  onDragStart: (e: React.DragEvent) => void;
 }
 
-export function TaskCard({ task }: TaskCardProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: task.id,
-  });
-
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
-
+export function TaskCard({ task, onDragStart }: TaskCardProps) {
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       land_preparation: 'bg-green-100 text-green-800',
@@ -39,10 +41,8 @@ export function TaskCard({ task }: TaskCardProps) {
 
   return (
     <Card
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={style}
+      draggable
+      onDragStart={onDragStart}
       className="p-3 mb-2 cursor-move hover:shadow-md transition-shadow"
     >
       <div className="space-y-2">
