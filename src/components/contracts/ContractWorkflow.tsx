@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ContractSetup } from "./steps/ContractSetup";
 import { ContractReview } from "./steps/ContractReview";
 import { ContractSignature } from "./ContractSignature";
+import { Loader2 } from "lucide-react";
 
 interface ContractWorkflowProps {
   projectId: string;
@@ -62,9 +63,11 @@ export function ContractWorkflow({ projectId, onComplete }: ContractWorkflowProp
   });
 
   if (isLoading) {
-    return <div className="flex justify-center p-8">
-      <Loader2 className="h-8 w-8 animate-spin" />
-    </div>;
+    return (
+      <div className="flex justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   if (!contract) {
