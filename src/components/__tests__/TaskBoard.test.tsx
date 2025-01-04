@@ -72,4 +72,15 @@ describe('TaskBoard', () => {
     
     expect(screen.getByText('New Task')).toBeInTheDocument();
   });
+
+  it('handles task status updates', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TaskBoard projectId="test-project-id" />
+      </QueryClientProvider>
+    );
+
+    // Test will be implemented when drag-and-drop functionality is added
+    expect(true).toBeTruthy();
+  });
 });

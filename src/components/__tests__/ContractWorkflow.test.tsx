@@ -5,6 +5,38 @@ import { vi } from 'vitest';
 
 const queryClient = new QueryClient();
 
+const mockContract = {
+  id: '123',
+  project_id: 'test-project',
+  status: 'draft',
+  workflow_stage: 'setup',
+  content: {
+    terms: 'Test terms',
+    scope: 'Test scope',
+    payment_schedule: 'Test schedule'
+  }
+};
+
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: mockContract, error: null })
+        }),
+        insert: () => ({
+          select: () => ({
+            single: () => Promise.resolve({ data: mockContract, error: null })
+          })
+        }),
+        update: () => ({
+          eq: () => Promise.resolve({ data: mockContract, error: null })
+        })
+      })
+    })
+  }
+}));
+
 describe('ContractWorkflow', () => {
   const mockOnComplete = vi.fn();
 
@@ -37,7 +69,22 @@ describe('ContractWorkflow', () => {
     });
   });
 
-  it('handles contract signing flow correctly', async () => {
+  it('shows signature step after review', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ContractWorkflow projectId="test-id" onComplete={mockOnComplete} />
+      </QueryClientProvider>
+    );
+
+    const reviewButton = screen.getByText(/I Have Reviewed the Terms/i);
+    fireEvent.click(reviewButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Sign Contract/i)).toBeInTheDocument();
+    });
+  });
+
+  it('calls onComplete after contract is signed', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <ContractWorkflow projectId="test-id" onComplete={mockOnComplete} />
@@ -54,7 +101,12 @@ describe('ContractWorkflow', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/Sign Contract/i)).toBeInTheDocument();
+      const signButton = screen.getByText(/Sign Contract/i);
+      fireEvent.click(signButton);
+    });
+
+    await waitFor(() => {
+      expect(mockOnComplete).toHaveBeenCalled();
     });
   });
 });
