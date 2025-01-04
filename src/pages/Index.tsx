@@ -82,43 +82,6 @@ export default function Index() {
     enabled: !profile?.is_admin && !contractor,
   });
 
-  const createProject = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to create a project",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('projects')
-      .insert({
-        title: 'New Construction Project',
-        description: 'A new home construction project',
-        user_id: user.id,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create project. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setProjectId(data.id);
-    toast({
-      title: "Success",
-      description: "Project created successfully",
-    });
-  };
-
   useEffect(() => {
     if (activeProject?.id) {
       setProjectId(activeProject.id);
