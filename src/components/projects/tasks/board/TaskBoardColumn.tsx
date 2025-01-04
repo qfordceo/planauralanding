@@ -22,6 +22,10 @@ export function TaskBoardColumn({
     id: status,
   });
 
+  const handleDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData('taskId', taskId);
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -40,7 +44,11 @@ export function TaskBoardColumn({
         </CardHeader>
         <CardContent className="space-y-2">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard 
+              key={task.id} 
+              task={task} 
+              onDragStart={(e) => handleDragStart(e, task.id)}
+            />
           ))}
         </CardContent>
       </Card>
