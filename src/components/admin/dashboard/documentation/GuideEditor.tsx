@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { GuideForm } from "./guide-editor/GuideForm";
 import { useGuideData } from "./guide-editor/useGuideData";
 import { type Guide } from "./guide-editor/types";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GuideEditorProps {
   guideId: string | null;
