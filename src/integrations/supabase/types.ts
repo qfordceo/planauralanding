@@ -3002,6 +3002,12 @@ export type Database = {
       }
     }
     Enums: {
+      contract_status:
+        | "draft"
+        | "pending_client"
+        | "pending_contractor"
+        | "signed"
+        | "rejected"
       contractor_type:
         | "electrical"
         | "plumbing"
