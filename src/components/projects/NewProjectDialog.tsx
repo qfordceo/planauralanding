@@ -20,7 +20,7 @@ export function NewProjectDialog({ open, onOpenChange, userId }: NewProjectDialo
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { mutate: createProject, isLoading } = useMutation({
+  const { mutate: createProject, isPending } = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase
         .from('projects')
@@ -102,8 +102,8 @@ export function NewProjectDialog({ open, onOpenChange, userId }: NewProjectDialo
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" disabled={isPending}>
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Project
             </Button>
           </div>
