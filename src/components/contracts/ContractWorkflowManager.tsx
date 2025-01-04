@@ -1,25 +1,25 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ContractWorkflowProvider } from "./workflow/ContractWorkflowContext";
-import { ContractStageIndicator } from "./workflow/ContractStageIndicator";
-import { ContractSigningStatus } from "./workflow/ContractSigningStatus";
-import { ContractWorkflow } from "./ContractWorkflow";
-import { ProjectDetails } from "../projects/ProjectDetails";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { WorkflowProvider, useWorkflow } from "./workflow/WorkflowContext";
+import { SetupStage } from "./workflow/stages/SetupStage";
+import { ContractReview } from "./steps/ContractReview";
+import { ContractSignature } from "./ContractSignature";
 import { useToast } from "@/hooks/use-toast";
-import { WorkflowErrorBoundary } from "./workflow/ErrorBoundary";
 import { LoadingOverlay } from "./workflow/LoadingOverlay";
 import { ContractSetupState } from "./workflow/ContractSetupState";
 import { useWorkflowValidation } from "./workflow/useWorkflowValidation";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContractWorkflowManagerProps {
   projectId: string;
 }
 
-export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerProps) {
+function WorkflowContent({ projectId }: ContractWorkflowManagerProps) {
+  const { state, dispatch } = useWorkflow();
+  const { validateStageTransition } = useWorkflowValidation();
   const { toast } = useToast();
-  const { validateStageTransition, errors } = useWorkflowValidation();
 
-  const { data: contract, isLoading, error } = useQuery({
+  const { data: contract, isLoading } = useQuery({
     queryKey: ['project-contract', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -40,80 +40,82 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
     },
   });
 
-  const activateProjectPortal = async () => {
+  if (isLoading || state.isLoading) {
+    return <LoadingOverlay />;
+  }
+
+  if (!contract) {
+    return <ContractSetupState />;
+  }
+
+  const handleStageTransition = async (currentStage: string, nextStage: string) => {
     try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ status: 'active' })
-        .eq('id', projectId);
+      if (validateStageTransition(currentStage, nextStage)) {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        
+        const { error } = await supabase
+          .from('project_contracts')
+          .update({ workflow_stage: nextStage })
+          .eq('id', contract.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Project Portal Activated",
-        description: "You can now access all project features",
-      });
+        dispatch({ type: 'SET_STAGE', payload: nextStage as any });
+        toast({
+          title: "Success",
+          description: "Contract stage updated successfully",
+        });
+      }
     } catch (error) {
-      console.error('Error activating project portal:', error);
+      console.error('Error transitioning stage:', error);
       toast({
         title: "Error",
-        description: "Failed to activate project portal. Please try again.",
+        description: "Failed to update contract stage",
         variant: "destructive",
       });
-      throw error;
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  if (error) {
-    throw error;
+  switch (state.currentStage) {
+    case 'setup':
+      return <SetupStage projectId={projectId} />;
+    case 'client_review':
+      return (
+        <ContractReview
+          contract={contract}
+          onReviewComplete={() => handleStageTransition('client_review', 'contractor_review')}
+        />
+      );
+    case 'contractor_review':
+      return (
+        <ContractReview
+          contract={contract}
+          onReviewComplete={() => handleStageTransition('contractor_review', 'completed')}
+        />
+      );
+    case 'completed':
+      return (
+        <ContractSignature
+          contract={contract}
+          onSign={() => {
+            dispatch({ type: 'SET_CONTRACT', payload: { ...contract, status: 'signed' } });
+            window.location.reload();
+          }}
+        />
+      );
+    default:
+      return <ContractSetupState />;
   }
+}
 
+export function ContractWorkflowManager(props: ContractWorkflowManagerProps) {
   return (
-    <WorkflowErrorBoundary>
-      <div className="relative space-y-6">
-        {isLoading && <LoadingOverlay />}
-        
-        {!isLoading && !contract && <ContractSetupState />}
-
-        {!isLoading && contract && (
-          <ContractWorkflowProvider>
-            {errors.length > 0 && (
-              <div className="bg-destructive/10 text-destructive p-4 rounded-md mb-4">
-                {errors.map((error, index) => (
-                  <p key={index}>{error.message}</p>
-                ))}
-              </div>
-            )}
-
-            {contract.status === "signed" && contract.workflow_stage === "completed" ? (
-              <ProjectDetails projectId={projectId} />
-            ) : (
-              <>
-                <ContractStageIndicator currentStage={contract.workflow_stage} />
-                <ContractSigningStatus contract={contract} />
-                <ContractWorkflow
-                  projectId={projectId}
-                  onComplete={async () => {
-                    try {
-                      if (validateStageTransition(contract.workflow_stage, 'completed')) {
-                        await activateProjectPortal();
-                        window.location.reload();
-                      }
-                    } catch (error) {
-                      console.error('Error completing workflow:', error);
-                      toast({
-                        title: "Error",
-                        description: "Failed to complete the contract workflow",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                />
-              </>
-            )}
-          </ContractWorkflowProvider>
-        )}
-      </div>
-    </WorkflowErrorBoundary>
+    <ErrorBoundary>
+      <WorkflowProvider>
+        <WorkflowContent {...props} />
+      </WorkflowProvider>
+    </ErrorBoundary>
   );
 }
