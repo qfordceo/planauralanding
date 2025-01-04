@@ -7,15 +7,14 @@ import { ContractWorkflow } from "../contracts/ContractWorkflow";
 import { MilestoneTracker } from "../milestones/MilestoneTracker";
 import { DisputeResolution } from "../disputes/DisputeResolution";
 import { TimelineEnforcement } from "../timeline/TimelineEnforcement";
-import { ProjectTaskBoard } from "./tasks/ProjectTaskBoard";
+import { TaskBoard } from "./tasks/board/TaskBoard";
 import { Loader2 } from "lucide-react";
 
 interface ProjectDetailsProps {
   projectId: string;
-  tasks?: any[];
 }
 
-export function ProjectDetails({ projectId, tasks }: ProjectDetailsProps) {
+export function ProjectDetails({ projectId }: ProjectDetailsProps) {
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => {
@@ -65,11 +64,11 @@ export function ProjectDetails({ projectId, tasks }: ProjectDetailsProps) {
         </TabsList>
 
         <TabsContent value="tasks" className="mt-6">
-          <ProjectTaskBoard projectId={projectId} />
+          <TaskBoard projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="timeline" className="mt-6">
-          <ProjectTimeline projectId={projectId} tasks={tasks} />
+          <ProjectTimeline projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="milestones" className="mt-6">

@@ -1,88 +1,85 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { TaskCategory } from "./types";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 
 interface NewTaskDialogProps {
+  projectId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projectId: string;
 }
 
-const categories = [
-  'land_preparation',
-  'permits_and_approvals',
-  'utilities',
-  'foundation',
-  'framing',
-  'plumbing',
-  'electrical',
-  'hvac',
-  'roofing',
-  'exterior',
-  'interior',
-  'landscaping',
-  'inspections'
-];
-
-export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<string>("");
-  const [inspectionRequired, setInspectionRequired] = useState(false);
-  const [dueDate, setDueDate] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const queryClient = useQueryClient();
+export function NewTaskDialog({ projectId, open, onOpenChange }: NewTaskDialogProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "" as TaskCategory,
+    due_date: "",
+    inspection_required: false,
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
+  const createTask = useMutation({
+    mutationFn: async (data: typeof formData) => {
       const { error } = await supabase
         .from('project_tasks')
-        .insert({
-          project_id: projectId,
-          title,
-          description,
-          category,
-          inspection_required: inspectionRequired,
-          due_date: dueDate || null,
-          status: 'not_started'
-        });
+        .insert([
+          {
+            project_id: projectId,
+            ...data,
+            status: 'not_started',
+          },
+        ]);
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
+      onOpenChange(false);
+      setFormData({
+        title: "",
+        description: "",
+        category: "" as TaskCategory,
+        due_date: "",
+        inspection_required: false,
+      });
       toast({
         title: "Task created",
         description: "The task has been created successfully.",
       });
-
-      queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
-      onOpenChange(false);
-      setTitle("");
-      setDescription("");
-      setCategory("");
-      setInspectionRequired(false);
-      setDueDate("");
-    } catch (error: any) {
+    },
+    onError: () => {
       toast({
         title: "Error creating task",
-        description: error.message,
+        description: "There was an error creating the task. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createTask.mutate(formData);
   };
 
   return (
@@ -92,61 +89,66 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
           <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select value={category} onValueChange={setCategory} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat.replace('_', ' ')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="dueDate">Due Date</Label>
-            <Input
-              id="dueDate"
-              type="datetime-local"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-            />
-          </div>
-
+          <Input
+            placeholder="Task Title"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
+            required
+          />
+          <Textarea
+            placeholder="Description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+          />
+          <Select
+            value={formData.category}
+            onValueChange={(value) =>
+              setFormData({ ...formData, category: value as TaskCategory })
+            }
+            required
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="land_preparation">Land Preparation</SelectItem>
+              <SelectItem value="permits_and_approvals">Permits & Approvals</SelectItem>
+              <SelectItem value="utilities">Utilities</SelectItem>
+              <SelectItem value="foundation">Foundation</SelectItem>
+              <SelectItem value="framing">Framing</SelectItem>
+              <SelectItem value="plumbing">Plumbing</SelectItem>
+              <SelectItem value="electrical">Electrical</SelectItem>
+              <SelectItem value="hvac">HVAC</SelectItem>
+              <SelectItem value="roofing">Roofing</SelectItem>
+              <SelectItem value="exterior">Exterior</SelectItem>
+              <SelectItem value="interior">Interior</SelectItem>
+              <SelectItem value="landscaping">Landscaping</SelectItem>
+              <SelectItem value="inspections">Inspections</SelectItem>
+            </SelectContent>
+          </Select>
+          <Input
+            type="datetime-local"
+            value={formData.due_date}
+            onChange={(e) =>
+              setFormData({ ...formData, due_date: e.target.value })
+            }
+            required
+          />
           <div className="flex items-center space-x-2">
             <Switch
               id="inspection"
-              checked={inspectionRequired}
-              onCheckedChange={setInspectionRequired}
+              checked={formData.inspection_required}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, inspection_required: checked })
+              }
             />
             <Label htmlFor="inspection">Requires Inspection</Label>
           </div>
-
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -154,9 +156,7 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              Create Task
-            </Button>
+            <Button type="submit">Create Task</Button>
           </div>
         </form>
       </DialogContent>
