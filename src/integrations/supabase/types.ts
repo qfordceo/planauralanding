@@ -334,6 +334,50 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_verification_logs: {
+        Row: {
+          contractor_id: string | null
+          created_at: string
+          id: string
+          last_verified_at: string
+          next_verification_date: string | null
+          updated_at: string
+          verification_data: Json | null
+          verification_status: string
+          verification_type: string
+        }
+        Insert: {
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          last_verified_at?: string
+          next_verification_date?: string | null
+          updated_at?: string
+          verification_data?: Json | null
+          verification_status: string
+          verification_type: string
+        }
+        Update: {
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          last_verified_at?: string
+          next_verification_date?: string | null
+          updated_at?: string
+          verification_data?: Json | null
+          verification_status?: string
+          verification_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_verification_logs_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_appointments: {
         Row: {
           appointment_date: string
@@ -423,6 +467,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contractor_availability_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_badges: {
+        Row: {
+          active: boolean | null
+          badge_type: string
+          contractor_id: string | null
+          created_at: string | null
+          criteria_met: Json | null
+          earned_at: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          badge_type: string
+          contractor_id?: string | null
+          created_at?: string | null
+          criteria_met?: Json | null
+          earned_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          badge_type?: string
+          contractor_id?: string | null
+          created_at?: string | null
+          criteria_met?: Json | null
+          earned_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_badges_contractor_id_fkey"
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "contractors"
@@ -875,6 +960,47 @@ export type Database = {
           },
         ]
       }
+      contractor_onboarding_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          contractor_id: string
+          created_at: string
+          id: string
+          last_reminder_sent: string | null
+          step_name: string
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          contractor_id: string
+          created_at?: string
+          id?: string
+          last_reminder_sent?: string | null
+          step_name: string
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          contractor_id?: string
+          created_at?: string
+          id?: string
+          last_reminder_sent?: string | null
+          step_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_onboarding_progress_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_payment_milestones: {
         Row: {
           amount: number
@@ -1095,6 +1221,94 @@ export type Database = {
           },
         ]
       }
+      contractor_resource_feedback: {
+        Row: {
+          created_at: string | null
+          feedback_text: string | null
+          id: string
+          rating: number | null
+          resource_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feedback_text?: string | null
+          id?: string
+          rating?: number | null
+          resource_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feedback_text?: string | null
+          id?: string
+          rating?: number | null
+          resource_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_resource_feedback_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_resources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_resource_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_resource_feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractor_resources: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          description: string | null
+          external_links: Json | null
+          id: string
+          title: string
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          description?: string | null
+          external_links?: Json | null
+          id?: string
+          title: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string | null
+          external_links?: Json | null
+          id?: string
+          title?: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       contractor_reviews: {
         Row: {
           client_id: string | null
@@ -1166,6 +1380,7 @@ export type Database = {
           insurance_verified: boolean | null
           liability_waiver_accepted: boolean | null
           liability_waiver_accepted_at: string | null
+          notification_preferences: Json | null
           phone: string | null
           stripe_account_created_at: string | null
           stripe_account_enabled: boolean | null
@@ -1192,6 +1407,7 @@ export type Database = {
           insurance_verified?: boolean | null
           liability_waiver_accepted?: boolean | null
           liability_waiver_accepted_at?: string | null
+          notification_preferences?: Json | null
           phone?: string | null
           stripe_account_created_at?: string | null
           stripe_account_enabled?: boolean | null
@@ -1218,6 +1434,7 @@ export type Database = {
           insurance_verified?: boolean | null
           liability_waiver_accepted?: boolean | null
           liability_waiver_accepted_at?: string | null
+          notification_preferences?: Json | null
           phone?: string | null
           stripe_account_created_at?: string | null
           stripe_account_enabled?: boolean | null
@@ -1225,6 +1442,60 @@ export type Database = {
           stripe_account_requirements?: Json | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      educational_resources: {
+        Row: {
+          category: string
+          content: string
+          content_type: string | null
+          created_at: string | null
+          description: string | null
+          difficulty_level: string | null
+          estimated_reading_time: number | null
+          external_links: Json | null
+          id: string
+          related_resources: string[] | null
+          resource_type: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          category: string
+          content: string
+          content_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          estimated_reading_time?: number | null
+          external_links?: Json | null
+          id?: string
+          related_resources?: string[] | null
+          resource_type: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          content_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          estimated_reading_time?: number | null
+          external_links?: Json | null
+          id?: string
+          related_resources?: string[] | null
+          resource_type?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
         }
         Relationships: []
       }
@@ -1375,6 +1646,45 @@ export type Database = {
         }
         Relationships: []
       }
+      insurance_providers: {
+        Row: {
+          average_rating: number | null
+          contact_info: Json | null
+          coverage_types: string[]
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          review_count: number | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          average_rating?: number | null
+          contact_info?: Json | null
+          coverage_types: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          review_count?: number | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          average_rating?: number | null
+          contact_info?: Json | null
+          coverage_types?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          review_count?: number | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       land_listings: {
         Row: {
           acres: number | null
@@ -1428,6 +1738,54 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      license_verification_logs: {
+        Row: {
+          contractor_id: string | null
+          id: string
+          license_number: string
+          next_verification_date: string | null
+          status: string
+          verification_result: Json
+          verification_source: string
+          verified_at: string
+        }
+        Insert: {
+          contractor_id?: string | null
+          id?: string
+          license_number: string
+          next_verification_date?: string | null
+          status?: string
+          verification_result: Json
+          verification_source: string
+          verified_at?: string
+        }
+        Update: {
+          contractor_id?: string | null
+          id?: string
+          license_number?: string
+          next_verification_date?: string | null
+          status?: string
+          verification_result?: Json
+          verification_source?: string
+          verified_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_verification_logs_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_verification_logs_contractor_id_fkey1"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       material_orders: {
         Row: {
@@ -1841,6 +2199,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      check_and_award_badges: {
+        Args: {
+          contractor_id: string
+        }
+        Returns: undefined
+      }
       cleanup_rate_limits: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1848,6 +2212,12 @@ export type Database = {
       get_admin_users: {
         Args: Record<PropertyKey, never>
         Returns: unknown[]
+      }
+      increment_resource_view_count: {
+        Args: {
+          resource_id: string
+        }
+        Returns: undefined
       }
       is_admin: {
         Args: Record<PropertyKey, never>
@@ -1870,6 +2240,15 @@ export type Database = {
         | "painting"
         | "landscaping"
         | "general"
+      resource_category:
+        | "safety_guidelines"
+        | "legal_templates"
+        | "best_practices"
+        | "training_materials"
+        | "industry_updates"
+        | "tools_equipment"
+        | "business_management"
+        | "marketing_tips"
     }
     CompositeTypes: {
       [_ in never]: never

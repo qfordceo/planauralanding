@@ -3,8 +3,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
 import { Control } from "react-hook-form";
-
-export type EntityType = "individual" | "llc" | "corporation" | "partnership" | "lp" | "llp";
+import { EntityType } from "@/types/contractor";
 
 interface EntityTypeSelectProps {
   value: EntityType;

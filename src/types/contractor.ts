@@ -1,3 +1,5 @@
+import { Control, UseFormReturn } from "react-hook-form";
+
 export type ContractorType = 
   | "electrical"
   | "plumbing"
@@ -10,29 +12,13 @@ export type ContractorType =
   | "landscaping"
   | "general";
 
-export interface Contractor {
-  id: string;
-  user_id: string | null;
-  business_name: string;
-  contact_name: string;
-  phone: string | null;
-  address: string | null;
-  contractor_types: ContractorType[];
-  bbb_certified: boolean | null;
-  insurance_verified: boolean | null;
-  insurance_expiry: string | null;
-  created_at: string;
-  updated_at: string;
-  dpa_accepted: boolean | null;
-  dpa_accepted_at: string | null;
-}
-
-export interface ContractorFormData {
-  business_name: string;
-  contact_name: string;
-  phone: string;
-  contractor_types: ContractorType[];
-}
+export type EntityType = 
+  | "individual" 
+  | "llc" 
+  | "corporation" 
+  | "partnership" 
+  | "lp" 
+  | "llp";
 
 export interface ContractorDayException {
   id: string;
@@ -40,4 +26,21 @@ export interface ContractorDayException {
   exception_date: string;
   is_available: boolean | null;
   created_at: string;
+}
+
+export interface SSNFieldProps {
+  form: UseFormReturn<any>;
+  required: boolean;
+}
+
+export interface EINFieldProps {
+  form: UseFormReturn<any>;
+  required: boolean;
+  showHelperText?: boolean;
+}
+
+export interface FilingNumberFieldProps {
+  form: UseFormReturn<any>;
+  stateName: string;
+  stateCode: string;
 }

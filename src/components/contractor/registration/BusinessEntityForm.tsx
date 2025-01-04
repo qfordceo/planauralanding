@@ -11,9 +11,10 @@ import { EntityTypeSelect } from "./business-entity/EntityTypeSelect";
 import { StateSelect } from "./business-entity/StateSelect";
 import { IdentificationFields } from "./business-entity/IdentificationFields";
 import { TermsAcknowledgmentModal } from "../TermsAcknowledgmentModal";
+import { EntityType } from "@/types/contractor";
 
 const formSchema = z.object({
-  entityType: z.string(),
+  entityType: z.custom<EntityType>(),
   registrationState: z.string(),
   ssn: z.string().optional(),
   ein: z.string().optional(),
@@ -32,7 +33,7 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      entityType: "individual",
+      entityType: "individual" as EntityType,
       registrationState: "TX",
     }
   });
@@ -67,7 +68,7 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
               <EntityTypeSelect 
                 control={form.control}
                 value={form.watch("entityType")} 
-                onChange={(value) => form.setValue("entityType", value)}
+                onChange={(value: EntityType) => form.setValue("entityType", value)}
               />
               
               <StateSelect 
@@ -78,7 +79,7 @@ export function BusinessEntityForm({ onComplete }: BusinessEntityFormProps) {
               <IdentificationFields 
                 entityType={form.watch("entityType")} 
                 registrationState={form.watch("registrationState")}
-                control={form.control}
+                form={form}
               />
 
               <div className="flex flex-col space-y-4">

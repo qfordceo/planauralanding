@@ -1,8 +1,8 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Info } from "lucide-react";
-import { Control } from "react-hook-form";
-import type { EntityType } from "./EntityTypeSelect";
+import { UseFormReturn } from "react-hook-form";
+import { EntityType } from "@/types/contractor";
 import { SSNField } from "./SSNField";
 import { EINField } from "./EINField";
 import { FilingNumberField } from "./FilingNumberField";
@@ -10,13 +10,13 @@ import { FilingNumberField } from "./FilingNumberField";
 interface IdentificationFieldsProps {
   entityType: EntityType;
   registrationState: string;
-  control: Control<any>;
+  form: UseFormReturn<any>;
 }
 
 export function IdentificationFields({ 
   entityType, 
   registrationState,
-  control
+  form
 }: IdentificationFieldsProps) {
   const isIndividual = entityType === "individual";
   const stateName = registrationState === "TX" ? "Texas" : registrationState;
@@ -24,11 +24,11 @@ export function IdentificationFields({
 
   return (
     <div className="space-y-4">
-      {isIndividual && <SSNField control={control} required={isIndividual} />}
+      {isIndividual && <SSNField form={form} required={isIndividual} />}
       
       {showEINField && (
         <EINField 
-          control={control}
+          form={form}
           required={!isIndividual} 
           showHelperText={isIndividual} 
         />
@@ -36,7 +36,7 @@ export function IdentificationFields({
       
       {!isIndividual && stateName && (
         <FilingNumberField 
-          control={control}
+          form={form}
           stateName={stateName} 
           stateCode={registrationState} 
         />
