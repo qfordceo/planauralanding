@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ interface DisputeResolutionProps {
 export function DisputeResolution({ projectId }: DisputeResolutionProps) {
   const { toast } = useToast();
   const [newDispute, setNewDispute] = useState("");
+  const queryClient = useQueryClient();
 
   const { data: disputes, isLoading } = useQuery({
     queryKey: ['disputes', projectId],
@@ -36,8 +37,8 @@ export function DisputeResolution({ projectId }: DisputeResolutionProps) {
     }
   });
 
-  const handleSubmitDispute = async () => {
-    try {
+  const createDisputeMutation = useMutation({
+    mutationFn: async () => {
       const { error } = await supabase
         .from('project_disputes')
         .insert({
@@ -47,20 +48,23 @@ export function DisputeResolution({ projectId }: DisputeResolutionProps) {
         });
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
       setNewDispute("");
+      queryClient.invalidateQueries({ queryKey: ['disputes', projectId] });
       toast({
         title: "Dispute submitted successfully",
         description: "A mediator will review your case shortly.",
       });
-    } catch (error) {
+    },
+    onError: () => {
       toast({
         title: "Error submitting dispute",
         description: "Please try again later.",
         variant: "destructive",
       });
     }
-  };
+  });
 
   if (isLoading) {
     return (
@@ -88,9 +92,12 @@ export function DisputeResolution({ projectId }: DisputeResolutionProps) {
               className="min-h-[100px]"
             />
             <Button 
-              onClick={handleSubmitDispute}
-              disabled={!newDispute.trim()}
+              onClick={() => createDisputeMutation.mutate()}
+              disabled={!newDispute.trim() || createDisputeMutation.isPending}
             >
+              {createDisputeMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Submit Dispute
             </Button>
           </div>

@@ -18,6 +18,14 @@ export function ProjectList() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [showNewProject, setShowNewProject] = useState(false);
 
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    },
+  });
+
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
@@ -95,6 +103,7 @@ export function ProjectList() {
       <NewProjectDialog
         open={showNewProject}
         onOpenChange={setShowNewProject}
+        userId={user?.id || ''}
       />
     </div>
   );

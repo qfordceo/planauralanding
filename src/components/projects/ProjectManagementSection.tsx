@@ -5,14 +5,35 @@ import { Plus } from "lucide-react";
 import { ProjectList } from "./ProjectList";
 import { useState } from "react";
 import { NewProjectDialog } from "./NewProjectDialog";
+import { supabase } from "@/integrations/supabase/client";
 
-interface ProjectManagementSectionProps {
-  userId: string;
-  projects: any[];
-}
-
-export function ProjectManagementSection({ userId, projects }: ProjectManagementSectionProps) {
+export function ProjectManagementSection() {
   const [showNewProject, setShowNewProject] = useState(false);
+  
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    },
+  });
+
+  const { data: projects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id
+  });
   
   return (
     <div className="mb-16">
@@ -30,13 +51,13 @@ export function ProjectManagementSection({ userId, projects }: ProjectManagement
           <p className="text-sm mt-2">Click the New Project button to get started.</p>
         </Card>
       ) : (
-        <ProjectList projects={projects} />
+        <ProjectList />
       )}
 
       <NewProjectDialog 
         open={showNewProject} 
         onOpenChange={setShowNewProject}
-        userId={userId}
+        userId={user?.id || ''}
       />
     </div>
   );
