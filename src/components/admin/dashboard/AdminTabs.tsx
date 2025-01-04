@@ -15,13 +15,14 @@ import { StripeDashboard } from "@/components/admin/StripeDashboard"
 export function AdminTabs() {
   return (
     <Tabs defaultValue="waitlist" className="space-y-4">
-      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 w-full">
+      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 w-full">
         <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
         <TabsTrigger value="commissions">Commissions</TabsTrigger>
         <TabsTrigger value="availability">Contractor Availability</TabsTrigger>
         <TabsTrigger value="builds">Saved Builds</TabsTrigger>
         <TabsTrigger value="purchases">Floor Plan Purchases</TabsTrigger>
         <TabsTrigger value="preapproval">Pre-approvals</TabsTrigger>
+        <TabsTrigger value="compliance">Compliance</TabsTrigger>
         <TabsTrigger value="stripe">Stripe Dashboard</TabsTrigger>
       </TabsList>
 
@@ -47,6 +48,14 @@ export function AdminTabs() {
       
       <TabsContent value="preapproval" className="space-y-4">
         <PreApprovalTable />
+      </TabsContent>
+
+      <TabsContent value="compliance" className="space-y-4">
+        <div className="grid gap-4">
+          <ComplianceTable />
+          <WaiverTable />
+          <DocumentRenewalTable />
+        </div>
       </TabsContent>
 
       <TabsContent value="stripe" className="space-y-4">

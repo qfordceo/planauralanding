@@ -10,6 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { formatPrice } from "@/lib/utils"
+import { Shield } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { AdminVerification } from "../contractor/compliance/AdminVerification"
 
 export function ClientBuildsTable() {
   const { data: savedBuilds, isLoading } = useQuery({
@@ -39,6 +42,7 @@ export function ClientBuildsTable() {
             <TableHead>Floor Plan</TableHead>
             <TableHead>Total Cost</TableHead>
             <TableHead>Created At</TableHead>
+            <TableHead>Compliance Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -48,6 +52,12 @@ export function ClientBuildsTable() {
               <TableCell>{build.floor_plans?.name}</TableCell>
               <TableCell>{formatPrice(build.total_cost || 0)}</TableCell>
               <TableCell>{new Date(build.created_at).toLocaleDateString()}</TableCell>
+              <TableCell>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Shield className="h-4 w-4" />
+                  Verify
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

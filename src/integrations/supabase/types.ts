@@ -878,10 +878,15 @@ export type Database = {
       contractor_liability_waivers: {
         Row: {
           accepted_at: string | null
+          confirmation_data: Json | null
+          confirmation_type: string | null
           contractor_id: string | null
           created_at: string | null
+          dispute_history: Json | null
           id: string
           ip_address: string | null
+          last_confirmed_at: string | null
+          signature_data: Json | null
           updated_at: string | null
           user_agent: string | null
           waiver_type: string
@@ -889,10 +894,15 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          confirmation_data?: Json | null
+          confirmation_type?: string | null
           contractor_id?: string | null
           created_at?: string | null
+          dispute_history?: Json | null
           id?: string
           ip_address?: string | null
+          last_confirmed_at?: string | null
+          signature_data?: Json | null
           updated_at?: string | null
           user_agent?: string | null
           waiver_type: string
@@ -900,10 +910,15 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          confirmation_data?: Json | null
+          confirmation_type?: string | null
           contractor_id?: string | null
           created_at?: string | null
+          dispute_history?: Json | null
           id?: string
           ip_address?: string | null
+          last_confirmed_at?: string | null
+          signature_data?: Json | null
           updated_at?: string | null
           user_agent?: string | null
           waiver_type?: string
