@@ -36,7 +36,12 @@ export function ReviewsList({ contractorId }: ReviewsListProps) {
 
       if (reviewsError) throw reviewsError;
       
-      return reviewsData as Review[];
+      return (reviewsData || []).map(review => ({
+        ...review,
+        client: {
+          email: review.client?.[0]?.email || null
+        }
+      })) as Review[];
     },
   });
 

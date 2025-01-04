@@ -1,26 +1,17 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Package } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { MaterialsList } from "./MaterialsList";
 import { MaterialsCostSummary } from "./MaterialsCostSummary";
 import { useMaterialSuggestions } from "./hooks/useMaterialSuggestions";
-import { MaterialCategory, MaterialsCardProps } from "./types";
+import { MaterialsCardProps } from "./types";
 
 export function MaterialsCard({ floorPlanId, onSelectionComplete }: MaterialsCardProps) {
-  const { toast } = useToast();
   const { 
     isLoading, 
     materialCategories, 
     fetchMaterialSuggestions 
-  } = useMaterialSuggestions(floorPlanId, toast);
-
-  useEffect(() => {
-    if (floorPlanId) {
-      fetchMaterialSuggestions();
-    }
-  }, [floorPlanId, fetchMaterialSuggestions]);
+  } = useMaterialSuggestions(floorPlanId);
 
   return (
     <Card>
