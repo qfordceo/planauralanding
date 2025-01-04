@@ -7,6 +7,8 @@ interface PerformanceBadgeProps {
   earned?: boolean;
 }
 
+export type { BadgeType };
+
 export function PerformanceBadge({ type, earned = false }: PerformanceBadgeProps) {
   const config = badgeConfigs[type];
   
