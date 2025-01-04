@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { ContractWorkflow } from '../ContractWorkflow';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
