@@ -60,12 +60,12 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
         description: "Failed to activate project portal. Please try again.",
         variant: "destructive",
       });
-      throw error; // Re-throw to be caught by error boundary
+      throw error;
     }
   };
 
   if (error) {
-    throw error; // Will be caught by error boundary
+    throw error;
   }
 
   return (
@@ -85,7 +85,6 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
               </div>
             )}
 
-            {/* Show project details if contract is completed */}
             {contract.status === "signed" && contract.workflow_stage === "completed" ? (
               <ProjectDetails projectId={projectId} />
             ) : (
