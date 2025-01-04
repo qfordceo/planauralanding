@@ -70,8 +70,8 @@ export function useContractWorkflow(projectId: string) {
 
   const signContractMutation = useMutation({
     mutationFn: async () => {
-      const { data: userProfile } = await supabase.auth.getUser();
-      const isClient = contract?.project.user_id === userProfile?.data.user?.id;
+      const { data: userResponse } = await supabase.auth.getUser();
+      const isClient = contract?.project.user_id === userResponse.user?.id;
       
       const updates = {
         ...(isClient ? {
