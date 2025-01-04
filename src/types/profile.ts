@@ -1,22 +1,15 @@
-export type PreApprovalStatus = 'pending' | 'approved' | 'rejected' | 'cash';
-
 export interface Profile {
   id: string;
   email: string | null;
-  phone: string | null;
-  address: string | null;
-  preapproval_status: PreApprovalStatus | null;
-  preapproval_amount: number | null;
+  preferred_contact_method: 'email' | 'sms';
+  timezone: string;
+  account_status: 'active' | 'inactive' | 'suspended';
+  last_active_at: string | null;
   created_at: string;
   updated_at: string;
-  is_admin: boolean;
-  sustainability_preferences?: Json;
+  notification_preferences?: NotificationPreferences;
 }
 
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export interface ProfileUpdate extends Partial<Profile> {
+  id: string;
+}

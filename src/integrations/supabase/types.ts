@@ -2240,45 +2240,57 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string | null
           address: string | null
           created_at: string
           email: string | null
           id: string
           is_admin: boolean | null
+          last_active_at: string | null
           notification_preferences: Json | null
           phone: string | null
           preapproval_amount: number | null
           preapproval_status: string | null
+          preferred_contact_method: string | null
           sustainability_preferences: Json | null
           terms_accepted: boolean | null
+          timezone: string | null
           updated_at: string
         }
         Insert: {
+          account_status?: string | null
           address?: string | null
           created_at?: string
           email?: string | null
           id: string
           is_admin?: boolean | null
+          last_active_at?: string | null
           notification_preferences?: Json | null
           phone?: string | null
           preapproval_amount?: number | null
           preapproval_status?: string | null
+          preferred_contact_method?: string | null
           sustainability_preferences?: Json | null
           terms_accepted?: boolean | null
+          timezone?: string | null
           updated_at?: string
         }
         Update: {
+          account_status?: string | null
           address?: string | null
           created_at?: string
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          last_active_at?: string | null
           notification_preferences?: Json | null
           phone?: string | null
           preapproval_amount?: number | null
           preapproval_status?: string | null
+          preferred_contact_method?: string | null
           sustainability_preferences?: Json | null
           terms_accepted?: boolean | null
+          timezone?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -2344,6 +2356,7 @@ export type Database = {
       }
       project_contracts: {
         Row: {
+          approval_chain: Json | null
           client_signature_data: Json | null
           content: Json
           contract_type: string
@@ -2353,16 +2366,20 @@ export type Database = {
           id: string
           last_action_at: string | null
           last_notification_sent: string | null
+          last_reviewed_at: string | null
           project_id: string | null
+          review_comments: string | null
           signed_by_client_at: string | null
           signed_by_contractor_at: string | null
           signing_history: Json | null
           signing_status: string
           status: string
           updated_at: string
+          version_history: Json | null
           workflow_stage: string | null
         }
         Insert: {
+          approval_chain?: Json | null
           client_signature_data?: Json | null
           content?: Json
           contract_type: string
@@ -2372,16 +2389,20 @@ export type Database = {
           id?: string
           last_action_at?: string | null
           last_notification_sent?: string | null
+          last_reviewed_at?: string | null
           project_id?: string | null
+          review_comments?: string | null
           signed_by_client_at?: string | null
           signed_by_contractor_at?: string | null
           signing_history?: Json | null
           signing_status?: string
           status?: string
           updated_at?: string
+          version_history?: Json | null
           workflow_stage?: string | null
         }
         Update: {
+          approval_chain?: Json | null
           client_signature_data?: Json | null
           content?: Json
           contract_type?: string
@@ -2391,13 +2412,16 @@ export type Database = {
           id?: string
           last_action_at?: string | null
           last_notification_sent?: string | null
+          last_reviewed_at?: string | null
           project_id?: string | null
+          review_comments?: string | null
           signed_by_client_at?: string | null
           signed_by_contractor_at?: string | null
           signing_history?: Json | null
           signing_status?: string
           status?: string
           updated_at?: string
+          version_history?: Json | null
           workflow_stage?: string | null
         }
         Relationships: [
@@ -3128,6 +3152,60 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_notification_preferences: {
+        Row: {
+          contract_updates: boolean | null
+          created_at: string
+          email_enabled: boolean | null
+          id: string
+          marketing_updates: boolean | null
+          payment_updates: boolean | null
+          project_updates: boolean | null
+          sms_enabled: boolean | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          contract_updates?: boolean | null
+          created_at?: string
+          email_enabled?: boolean | null
+          id?: string
+          marketing_updates?: boolean | null
+          payment_updates?: boolean | null
+          project_updates?: boolean | null
+          sms_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          contract_updates?: boolean | null
+          created_at?: string
+          email_enabled?: boolean | null
+          id?: string
+          marketing_updates?: boolean | null
+          payment_updates?: boolean | null
+          project_updates?: boolean | null
+          sms_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
