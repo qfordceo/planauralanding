@@ -11,6 +11,9 @@ import { ClientBuildsTable } from "@/components/admin/ClientBuildsTable"
 import { PurchasesTable } from "@/components/admin/PurchasesTable"
 import { PreApprovalTable } from "@/components/admin/PreApprovalTable"
 import { StripeDashboard } from "@/components/admin/StripeDashboard"
+import { ComplianceTable } from "@/components/admin/ComplianceTable"
+import { WaiverTable } from "@/components/admin/WaiverTable"
+import { DocumentRenewalTable } from "@/components/admin/DocumentRenewalTable"
 
 export function AdminTabs() {
   return (

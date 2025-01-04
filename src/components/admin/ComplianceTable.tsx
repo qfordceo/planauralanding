@@ -1,5 +1,5 @@
 import React from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import {
   Table,
@@ -10,10 +10,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Shield, ShieldCheck, ShieldAlert } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { AdminVerification } from "../contractor/compliance/AdminVerification"
 
 export function ComplianceTable() {
+  const queryClient = useQueryClient();
+  
   const { data: documents, isLoading } = useQuery({
     queryKey: ['compliance-documents'],
     queryFn: async () => {
@@ -83,7 +84,6 @@ export function ComplianceTable() {
                 <AdminVerification 
                   document={doc} 
                   onVerificationComplete={() => {
-                    // Refetch the data
                     queryClient.invalidateQueries(['compliance-documents'])
                   }} 
                 />
