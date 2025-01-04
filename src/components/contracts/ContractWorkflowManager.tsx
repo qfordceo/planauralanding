@@ -9,6 +9,7 @@ import { ContractSetupState } from "./workflow/ContractSetupState";
 import { useWorkflowValidation } from "./workflow/useWorkflowValidation";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Contract } from "./workflow/types";
 
 interface ContractWorkflowManagerProps {
   projectId: string;
@@ -36,7 +37,7 @@ function WorkflowContent({ projectId }: ContractWorkflowManagerProps) {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Contract;
     },
   });
 
@@ -78,36 +79,37 @@ function WorkflowContent({ projectId }: ContractWorkflowManagerProps) {
     }
   };
 
-  switch (state.currentStage) {
-    case 'setup':
-      return <SetupStage projectId={projectId} />;
-    case 'client_review':
-      return (
-        <ContractReview
-          contract={contract}
-          onReviewComplete={() => handleStageTransition('client_review', 'contractor_review')}
-        />
-      );
-    case 'contractor_review':
-      return (
-        <ContractReview
-          contract={contract}
-          onReviewComplete={() => handleStageTransition('contractor_review', 'completed')}
-        />
-      );
-    case 'completed':
-      return (
-        <ContractSignature
-          contract={contract}
-          onSign={() => {
-            dispatch({ type: 'SET_CONTRACT', payload: { ...contract, status: 'signed' } });
-            window.location.reload();
-          }}
-        />
-      );
-    default:
-      return <ContractSetupState />;
-  }
+  const renderStageContent = () => {
+    switch (state.currentStage) {
+      case 'setup':
+        return <SetupStage projectId={projectId} />;
+      case 'client_review':
+        return (
+          <ContractReview
+            onReviewComplete={() => handleStageTransition('client_review', 'contractor_review')}
+          />
+        );
+      case 'contractor_review':
+        return (
+          <ContractReview
+            onReviewComplete={() => handleStageTransition('contractor_review', 'completed')}
+          />
+        );
+      case 'completed':
+        return (
+          <ContractSignature
+            onSign={() => {
+              dispatch({ type: 'SET_CONTRACT', payload: { ...contract, status: 'signed' } });
+              window.location.reload();
+            }}
+          />
+        );
+      default:
+        return <ContractSetupState />;
+    }
+  };
+
+  return renderStageContent();
 }
 
 export function ContractWorkflowManager(props: ContractWorkflowManagerProps) {
