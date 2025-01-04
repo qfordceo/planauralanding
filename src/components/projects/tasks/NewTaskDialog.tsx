@@ -37,8 +37,9 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<string>("");
   const [inspectionRequired, setInspectionRequired] = useState(false);
+  const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -55,6 +56,7 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
           description,
           category,
           inspection_required: inspectionRequired,
+          due_date: dueDate || null,
           status: 'not_started'
         });
 
@@ -62,7 +64,7 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
 
       toast({
         title: "Task created",
-        description: "The task has been added to the project.",
+        description: "The task has been created successfully.",
       });
 
       queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
@@ -71,10 +73,11 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
       setDescription("");
       setCategory("");
       setInspectionRequired(false);
-    } catch (error) {
+      setDueDate("");
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to create task. Please try again.",
+        title: "Error creating task",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -86,7 +89,7 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -117,11 +120,21 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
               <SelectContent>
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>
-                    {cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {cat.replace('_', ' ')}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dueDate">Due Date</Label>
+            <Input
+              id="dueDate"
+              type="datetime-local"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
           </div>
 
           <div className="flex items-center space-x-2">
@@ -142,7 +155,7 @@ export function NewTaskDialog({ open, onOpenChange, projectId }: NewTaskDialogPr
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Task"}
+              Create Task
             </Button>
           </div>
         </form>
