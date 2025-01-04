@@ -52,7 +52,13 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
         description={project.description} 
       />
 
-      <ContractWorkflow projectId={projectId} />
+      <ContractWorkflow 
+        projectId={projectId} 
+        onComplete={() => {
+          // Refresh the project data after contract completion
+          window.location.reload();
+        }}
+      />
 
       <Tabs defaultValue="tasks" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
