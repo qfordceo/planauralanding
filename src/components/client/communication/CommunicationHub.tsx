@@ -1,12 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { MessageSquare, Search, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import { MessageList } from "./MessageList";
+import { MessageInput } from "./MessageInput";
+import { SearchBar } from "./SearchBar";
 
 interface CommunicationHubProps {
   projectId: string;
@@ -18,7 +17,7 @@ export function CommunicationHub({ projectId }: CommunicationHubProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: messages, isLoading } = useQuery({
+  const { data: messages } = useQuery({
     queryKey: ['project-messages', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -36,7 +35,6 @@ export function CommunicationHub({ projectId }: CommunicationHubProps) {
     }
   });
 
-  // Set up real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('project-messages')
@@ -89,60 +87,20 @@ export function CommunicationHub({ projectId }: CommunicationHubProps) {
     }
   };
 
-  const filteredMessages = messages?.filter(msg => 
-    msg.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    msg.sender?.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Project Communication</CardTitle>
-        <div className="relative">
-          <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search messages..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
-        </div>
+        <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div className="flex gap-4">
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message here..."
-              className="flex-1"
-            />
-            <Button onClick={handleSendMessage} className="flex-shrink-0">
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-4 max-h-[500px] overflow-y-auto">
-            {filteredMessages?.map((msg) => (
-              <div
-                key={msg.id}
-                className="flex items-start gap-3 p-4 border rounded-lg"
-              >
-                <MessageSquare className="h-5 w-5 text-muted-foreground mt-1" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">
-                      {msg.sender?.email || 'Unknown User'}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(msg.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="mt-1">{msg.message}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MessageInput 
+            message={message}
+            onChange={setMessage}
+            onSend={handleSendMessage}
+          />
+          <MessageList messages={messages || []} searchTerm={searchTerm} />
         </div>
       </CardContent>
     </Card>
