@@ -627,8 +627,11 @@ export type Database = {
           id: string
           issue_date: string | null
           issuing_authority: string | null
+          last_verification_attempt: string | null
           updated_at: string | null
           verification_notes: string | null
+          verification_provider: string | null
+          verification_response: Json | null
           verification_status: string | null
           verified_at: string | null
           verified_by: string | null
@@ -643,8 +646,11 @@ export type Database = {
           id?: string
           issue_date?: string | null
           issuing_authority?: string | null
+          last_verification_attempt?: string | null
           updated_at?: string | null
           verification_notes?: string | null
+          verification_provider?: string | null
+          verification_response?: Json | null
           verification_status?: string | null
           verified_at?: string | null
           verified_by?: string | null
@@ -659,8 +665,11 @@ export type Database = {
           id?: string
           issue_date?: string | null
           issuing_authority?: string | null
+          last_verification_attempt?: string | null
           updated_at?: string | null
           verification_notes?: string | null
+          verification_provider?: string | null
+          verification_response?: Json | null
           verification_status?: string | null
           verified_at?: string | null
           verified_by?: string | null
@@ -2154,6 +2163,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      verification_logs: {
+        Row: {
+          created_at: string
+          document_id: string | null
+          id: string
+          verification_data: Json | null
+          verification_provider_id: string | null
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          verification_data?: Json | null
+          verification_provider_id?: string | null
+          verification_status: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          verification_data?: Json | null
+          verification_provider_id?: string | null
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_logs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_compliance_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_logs_verification_provider_id_fkey"
+            columns: ["verification_provider_id"]
+            isOneToOne: false
+            referencedRelation: "verification_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_providers: {
+        Row: {
+          api_config: Json | null
+          api_endpoint: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          provider_name: string
+          provider_type: string
+          updated_at: string
+        }
+        Insert: {
+          api_config?: Json | null
+          api_endpoint?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          provider_name: string
+          provider_type: string
+          updated_at?: string
+        }
+        Update: {
+          api_config?: Json | null
+          api_endpoint?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          provider_name?: string
+          provider_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       visualization_data: {
         Row: {
