@@ -7,9 +7,12 @@ import { ClientDashboard } from "@/components/client/ClientDashboard";
 import { ProjectView } from "@/components/projects/ProjectView";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { RoleGuard } from "@/components/auth/RoleGuard";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function Index() {
   const { toast } = useToast();
+  const { isAdmin, isContractor } = usePermissions();
 
   const { data: userData, isLoading } = useQuery({
     queryKey: ['user-data'],
@@ -73,10 +76,14 @@ export default function Index() {
     <ErrorBoundary>
       {!userData ? (
         <ClientDashboard />
-      ) : userData.profile?.is_admin ? (
-        <AdminDashboard />
-      ) : userData.contractor ? (
-        <ContractorDashboard contractor={userData.contractor} />
+      ) : isAdmin ? (
+        <RoleGuard requireAdmin>
+          <AdminDashboard />
+        </RoleGuard>
+      ) : isContractor ? (
+        <RoleGuard requireContractor>
+          <ContractorDashboard contractor={userData.contractor} />
+        </RoleGuard>
       ) : userData.activeProject ? (
         <ProjectView project={userData.activeProject} />
       ) : (
