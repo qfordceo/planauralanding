@@ -8,10 +8,10 @@ import { RoleGuard } from "@/components/auth/RoleGuard"
 import { usePermissions } from "@/hooks/usePermissions"
 
 // Lazy load main components
-const AdminDashboard = lazy(() => import("@/components/admin/AdminDashboard"))
-const ContractorDashboard = lazy(() => import("@/components/contractor/ContractorDashboard"))
-const ClientDashboard = lazy(() => import("@/components/client/ClientDashboard"))
-const ProjectView = lazy(() => import("@/components/projects/ProjectView"))
+const AdminDashboard = lazy(() => import("@/components/admin/AdminDashboard").then(module => ({ default: module.default })))
+const ContractorDashboard = lazy(() => import("@/components/contractor/ContractorDashboard").then(module => ({ default: module.ContractorDashboard })))
+const ClientDashboard = lazy(() => import("@/components/client/ClientDashboard").then(module => ({ default: module.ClientDashboard })))
+const ProjectView = lazy(() => import("@/components/projects/ProjectView").then(module => ({ default: module.ProjectView })))
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
