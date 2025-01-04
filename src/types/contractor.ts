@@ -3,10 +3,12 @@ import { Database } from "@/integrations/supabase/types";
 export type ContractorType = Database["public"]["Enums"]["contractor_type"];
 
 export type EntityType = 
-  | "sole_proprietorship"
+  | "individual"
   | "llc"
   | "corporation"
-  | "partnership";
+  | "partnership"
+  | "lp"
+  | "llp";
 
 export interface ContractorDayException {
   id: string;
