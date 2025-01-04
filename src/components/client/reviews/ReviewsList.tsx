@@ -35,7 +35,14 @@ export function ReviewsList({ contractorId }: ReviewsListProps) {
         .order('created_at', { ascending: false });
 
       if (reviewsError) throw reviewsError;
-      return reviewsData as Review[];
+      
+      // Transform the data to match the Review interface
+      return (reviewsData || []).map(review => ({
+        ...review,
+        client: {
+          email: review.client?.email || null
+        }
+      })) as Review[];
     },
   });
 

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PerformanceBadge, BadgeType } from "@/components/contractor/badges/PerformanceBadge";
 import { PerformanceStats } from "@/components/contractor/analytics/PerformanceStats";
-import { ContractorReviews } from "@/components/contractor/ContractorReviews";
+import { ReviewsSection } from "@/components/client/reviews/ReviewsSection";
 import { Briefcase, CheckCircle, Clock, MessageCircle } from "lucide-react";
 import { Contractor } from "@/types/contractor";
 import { useQuery } from "@tanstack/react-query";
@@ -14,7 +14,6 @@ interface ContractorProfileCardProps {
 }
 
 export function ContractorProfileCard({ contractor, badges }: ContractorProfileCardProps) {
-  // Fetch performance metrics
   const { data: metrics } = useQuery({
     queryKey: ['contractor-metrics', contractor.id],
     queryFn: async () => {
@@ -75,7 +74,6 @@ export function ContractorProfileCard({ contractor, badges }: ContractorProfileC
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Performance Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
             <Clock className="h-5 w-5 text-muted-foreground" />
@@ -100,7 +98,6 @@ export function ContractorProfileCard({ contractor, badges }: ContractorProfileC
           </div>
         </div>
 
-        {/* Verified Documents */}
         {compliance && compliance.length > 0 && (
           <div>
             <h3 className="text-sm font-medium mb-2">Verified Credentials</h3>
@@ -115,7 +112,6 @@ export function ContractorProfileCard({ contractor, badges }: ContractorProfileC
           </div>
         )}
 
-        {/* Specialties */}
         <div>
           <h3 className="text-sm font-medium mb-2">Specialties</h3>
           <div className="flex flex-wrap gap-2">
@@ -127,7 +123,6 @@ export function ContractorProfileCard({ contractor, badges }: ContractorProfileC
           </div>
         </div>
 
-        {/* Performance Badges */}
         <div>
           <h3 className="text-sm font-medium mb-2">Achievements</h3>
           <div className="flex flex-wrap gap-2">
@@ -144,10 +139,9 @@ export function ContractorProfileCard({ contractor, badges }: ContractorProfileC
         {/* Performance Stats */}
         <PerformanceStats contractorId={contractor.id} />
 
-        {/* Reviews */}
-        <div>
-          <h3 className="text-sm font-medium mb-2">Client Reviews</h3>
-          <ContractorReviews contractorId={contractor.id} />
+        {/* Reviews Section */}
+        <div className="mt-8">
+          <ReviewsSection contractorId={contractor.id} />
         </div>
       </CardContent>
     </Card>
