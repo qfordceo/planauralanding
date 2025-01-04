@@ -1,58 +1,45 @@
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { formatDistanceToNow } from "date-fns";
-import { ChevronRight, X } from "lucide-react";
-import { ProjectDetails } from "./ProjectDetails";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ProjectDetails } from "./ProjectDetails";
+import { NewProjectDialog } from "./NewProjectDialog";
+import { Plus, X } from "lucide-react";
 
-interface Project {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  created_at: string;
-}
-
-interface ProjectListProps {
-  projects: Project[];
-}
-
-export function ProjectList({ projects }: ProjectListProps) {
+export function ProjectList() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const { data: tasks } = useQuery({
-    queryKey: ['project-tasks', selectedProject],
+  const [showNewProject, setShowNewProject] = useState(false);
+
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ['projects'],
     queryFn: async () => {
-      if (!selectedProject) return null;
       const { data, error } = await supabase
-        .from('project_tasks')
-        .select(`
-          id,
-          title,
-          status,
-          category,
-          start_date,
-          due_date,
-          completed_date,
-          inspection_required,
-          inspection_status
-        `)
-        .eq('project_id', selectedProject)
-        .order('start_date', { ascending: true });
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
     },
-    enabled: !!selectedProject
   });
+
+  if (isLoading) {
+    return <div>Loading projects...</div>;
+  }
 
   if (selectedProject) {
     return (
-      <div className="space-y-4">
-        <Button 
-          variant="ghost" 
+      <div className="space-y-6">
+        <Button
+          variant="outline"
           onClick={() => setSelectedProject(null)}
           className="mb-4"
         >
@@ -65,36 +52,50 @@ export function ProjectList({ projects }: ProjectListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {projects.map((project) => (
-        <Card 
-          key={project.id} 
-          className="hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => setSelectedProject(project.id)}
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-semibold">{project.title}</CardTitle>
-            <Badge 
-              variant={project.status === 'open' ? 'default' : 'secondary'}
-            >
-              {project.status}
-            </Badge>
-          </CardHeader>
-          <CardContent>
-            {project.description && (
-              <p className="text-sm text-muted-foreground mb-4">
-                {project.description}
-              </p>
-            )}
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                Created {formatDistanceToNow(new Date(project.created_at))} ago
-              </p>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Projects</h2>
+        <Button onClick={() => setShowNewProject(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          New Project
+        </Button>
+      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Title</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {projects?.map((project) => (
+            <TableRow key={project.id}>
+              <TableCell>{project.title}</TableCell>
+              <TableCell>{project.status}</TableCell>
+              <TableCell>
+                {new Date(project.created_at).toLocaleDateString()}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedProject(project.id)}
+                >
+                  View Details
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <NewProjectDialog
+        open={showNewProject}
+        onOpenChange={setShowNewProject}
+      />
     </div>
   );
 }
