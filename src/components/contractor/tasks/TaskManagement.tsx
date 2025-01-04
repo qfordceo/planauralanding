@@ -2,26 +2,10 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Flag, Plus, CheckCircle2 } from "lucide-react";
-
-interface Task {
-  id: string;
-  title: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
-  assigned_contractor_id?: string;
-  created_at?: string;
-}
+import { TaskForm } from "./components/TaskForm";
+import { TaskItem } from "./components/TaskItem";
+import type { Task } from "./types";
 
 export function TaskManagement({ contractorId }: { contractorId: string }) {
   const { toast } = useToast();
@@ -104,77 +88,37 @@ export function TaskManagement({ contractorId }: { contractorId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Task Management
-          <Button
-            onClick={() =>
-              createTask.mutate({
-                title: newTask,
-                priority,
-                status: 'pending',
-                assigned_contractor_id: contractorId,
-              })
-            }
-            disabled={!newTask}
-            size="sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
-        </CardTitle>
+        <CardTitle>Task Management</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4 mb-6">
-          <Input
-            placeholder="New task title..."
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-            className="flex-1"
-          />
-          <Select
-            value={priority}
-            onValueChange={(value: "low" | "medium" | "high") => setPriority(value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Low Priority</SelectItem>
-              <SelectItem value="medium">Medium Priority</SelectItem>
-              <SelectItem value="high">High Priority</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <TaskForm
+          newTask={newTask}
+          priority={priority}
+          onTaskChange={setNewTask}
+          onPriorityChange={setPriority}
+          onSubmit={() =>
+            createTask.mutate({
+              title: newTask,
+              priority,
+              status: 'pending',
+              assigned_contractor_id: contractorId,
+            })
+          }
+        />
 
         <div className="space-y-4">
           {tasks?.map((task) => (
-            <div
+            <TaskItem
               key={task.id}
-              className="flex items-center justify-between p-4 border rounded-lg"
-            >
-              <div className="flex items-center gap-2">
-                <Flag className={`h-4 w-4 ${getPriorityColor(task.priority)}`} />
-                <span>{task.title}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {task.status === 'completed' ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      updateTaskStatus.mutate({
-                        id: task.id,
-                        status: 'completed',
-                      })
-                    }
-                  >
-                    Mark Complete
-                  </Button>
-                )}
-              </div>
-            </div>
+              task={task}
+              onComplete={(id) =>
+                updateTaskStatus.mutate({
+                  id,
+                  status: 'completed',
+                })
+              }
+              getPriorityColor={getPriorityColor}
+            />
           ))}
         </div>
       </CardContent>
