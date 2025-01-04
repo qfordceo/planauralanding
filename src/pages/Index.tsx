@@ -6,7 +6,6 @@ import { ProjectLaunchFlow } from "@/components/projects/launch/ProjectLaunchFlo
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { ContractorDashboard } from "@/components/contractor/ContractorDashboard";
 import { ClientDashboard } from "@/components/client/ClientDashboard";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -14,6 +13,7 @@ export default function Index() {
   const [projectId, setProjectId] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Get user profile and role
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
@@ -31,6 +31,7 @@ export default function Index() {
     },
   });
 
+  // Get contractor profile if exists
   const { data: contractor, isLoading: contractorLoading } = useQuery({
     queryKey: ['contractor'],
     queryFn: async () => {
@@ -49,6 +50,7 @@ export default function Index() {
     enabled: !profile?.is_admin,
   });
 
+  // Get active project with accepted bid
   const { data: activeProject } = useQuery({
     queryKey: ['active-project'],
     queryFn: async () => {
@@ -59,11 +61,17 @@ export default function Index() {
         .from('projects')
         .select(`
           *,
-          contractor_bids!inner (
+          contractor_bids!inner(
             id,
             contractor_id,
             bid_amount,
             status
+          ),
+          project_contracts(
+            id,
+            status,
+            signed_by_client_at,
+            signed_by_contractor_at
           )
         `)
         .eq('user_id', user.id)
@@ -82,11 +90,37 @@ export default function Index() {
     enabled: !profile?.is_admin && !contractor,
   });
 
+  // Set active project ID and handle portal activation
   useEffect(() => {
     if (activeProject?.id) {
       setProjectId(activeProject.id);
+
+      // Check if contract is signed by both parties
+      const contract = activeProject.project_contracts?.[0];
+      if (contract?.signed_by_client_at && contract?.signed_by_contractor_at && contract.status !== 'active') {
+        // Activate the project portal
+        supabase
+          .from('project_contracts')
+          .update({ status: 'active' })
+          .eq('id', contract.id)
+          .then(({ error }) => {
+            if (error) {
+              console.error('Error activating project portal:', error);
+              toast({
+                title: "Error",
+                description: "Failed to activate project portal",
+                variant: "destructive",
+              });
+            } else {
+              toast({
+                title: "Success",
+                description: "Project portal has been activated",
+              });
+            }
+          });
+      }
     }
-  }, [activeProject]);
+  }, [activeProject, toast]);
 
   if (profileLoading || contractorLoading) {
     return (
@@ -108,16 +142,26 @@ export default function Index() {
 
   // Client view with active project
   if (projectId) {
-    return activeProject?.contractor_bids ? (
-      <ProjectLaunchFlow 
-        projectId={projectId} 
-        acceptedBid={activeProject.contractor_bids[0]} 
-      />
-    ) : (
-      <ContractWorkflowManager projectId={projectId} />
-    );
+    // Show contract workflow if contract exists but isn't fully signed
+    const contract = activeProject?.project_contracts?.[0];
+    if (contract && (!contract.signed_by_client_at || !contract.signed_by_contractor_at)) {
+      return <ContractWorkflowManager projectId={projectId} />;
+    }
+
+    // Show project launch flow if bid is accepted but no contract exists
+    if (activeProject?.contractor_bids && !contract) {
+      return (
+        <ProjectLaunchFlow 
+          projectId={projectId} 
+          acceptedBid={activeProject.contractor_bids[0]} 
+        />
+      );
+    }
+
+    // Show client dashboard for active projects
+    return <ClientDashboard />;
   }
 
-  // Client view without active project
+  // Default client view without active project
   return <ClientDashboard />;
 }

@@ -5,6 +5,9 @@ import { ContractWorkflow } from "./ContractWorkflow";
 import { ProjectDetails } from "../projects/ProjectDetails";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface ContractWorkflowManagerProps {
   projectId: string;
@@ -20,7 +23,14 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
     queryFn: async () => {
       const { data, error } = await supabase
         .from("project_contracts")
-        .select("*")
+        .select(`
+          *,
+          project:project_id(
+            title,
+            description,
+            user_id
+          )
+        `)
         .eq("project_id", projectId)
         .single();
 
@@ -83,7 +93,31 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
     }
   }, [contract?.status]);
 
-  if (contract?.status === "signed") {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!contract) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Contract Setup Required</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">No contract has been created for this project yet.</p>
+          <Button onClick={() => window.location.reload()}>
+            Create Contract
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (contract.status === "signed") {
     return <ProjectDetails projectId={projectId} />;
   }
 
