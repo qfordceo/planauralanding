@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import { ContractTerms } from "./ContractTerms";
+import { ContractSetup } from "./steps/ContractSetup";
+import { ContractReview } from "./steps/ContractReview";
 import { ContractSignature } from "./ContractSignature";
 
 interface ContractWorkflowProps {
@@ -63,75 +61,24 @@ export function ContractWorkflow({ projectId, onComplete }: ContractWorkflowProp
     },
   });
 
-  const signContractMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("project_contracts")
-        .update({
-          status: "signed",
-          signed_by_client_at: new Date().toISOString(),
-        })
-        .eq("id", contract?.id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Contract Signed",
-        description: "You can now proceed to the project management portal",
-      });
-      onComplete();
-    },
-  });
-
   if (isLoading) {
-    return (
-      <div className="flex justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <div className="flex justify-center p-8">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>;
   }
 
   if (!contract) {
     return (
-      <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Contract Setup</h2>
-        <p className="text-muted-foreground mb-4">
-          To begin the project, we need to create and sign a contract.
-        </p>
-        <Button
-          onClick={() => createContractMutation.mutate()}
-          disabled={createContractMutation.isPending}
-        >
-          {createContractMutation.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
-          Create Contract
-        </Button>
-      </Card>
+      <ContractSetup
+        isLoading={createContractMutation.isPending}
+        onCreateContract={() => createContractMutation.mutate()}
+      />
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Contract Review & Signature</h2>
-        <div className="space-y-6">
-          <ContractTerms />
-          
-          {!hasReviewed && (
-            <Button onClick={() => setHasReviewed(true)}>
-              I Have Reviewed the Terms
-            </Button>
-          )}
+  if (!hasReviewed) {
+    return <ContractReview onReviewComplete={() => setHasReviewed(true)} />;
+  }
 
-          {hasReviewed && (
-            <ContractSignature
-              onSign={() => signContractMutation.mutate()}
-            />
-          )}
-        </div>
-      </Card>
-    </div>
-  );
+  return <ContractSignature onSign={onComplete} />;
 }

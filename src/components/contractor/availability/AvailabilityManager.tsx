@@ -1,38 +1,39 @@
-import { useState } from "react"
-import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { WeeklyScheduleEditor } from "./WeeklyScheduleEditor"
-import { ViewSelector } from "./ViewSelector"
-import { AvailabilityCalendar } from "./AvailabilityCalendar"
-import { useAvailabilityData } from "./hooks/useAvailabilityData"
-import { useAvailabilityMutations } from "./hooks/useAvailabilityMutations"
-import { DayView } from "./DayView"
-import { WeekView } from "./WeekView"
-
-type ViewMode = "month" | "week" | "day"
+import { format } from "date-fns";
+import { useAvailabilityData } from "./hooks/useAvailabilityData";
+import { useAvailabilityMutations } from "./hooks/useAvailabilityMutations";
+import { useAvailabilityState } from "./hooks/useAvailabilityState";
+import { AvailabilityHeader } from "./components/AvailabilityHeader";
+import { WeeklyScheduleEditor } from "./WeeklyScheduleEditor";
+import { DayView } from "./DayView";
+import { WeekView } from "./WeekView";
+import { AvailabilityCalendar } from "./AvailabilityCalendar";
 
 export function AvailabilityManager({ contractorId }: { contractorId: string }) {
-  const [viewMode, setViewMode] = useState<ViewMode>("month")
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [isEditingSchedule, setIsEditingSchedule] = useState(false)
+  const {
+    viewMode,
+    setViewMode,
+    selectedDate,
+    setSelectedDate,
+    isEditingSchedule,
+    setIsEditingSchedule,
+  } = useAvailabilityState();
   
-  const { weeklyAvailability, dayExceptions, isLoading } = useAvailabilityData(contractorId)
-  const { updateAvailabilityMutation, updateDayExceptionMutation } = useAvailabilityMutations(contractorId)
+  const { weeklyAvailability, dayExceptions, isLoading } = useAvailabilityData(contractorId);
+  const { updateAvailabilityMutation, updateDayExceptionMutation } = useAvailabilityMutations(contractorId);
 
   const handleDayClick = (date: Date) => {
-    const formattedDate = format(date, "yyyy-MM-dd")
+    const formattedDate = format(date, "yyyy-MM-dd");
     const existingException = dayExceptions?.find(
       ex => ex.exception_date === formattedDate
-    )
+    );
     updateDayExceptionMutation.mutate({
       date: formattedDate,
       isAvailable: !!existingException,
-    })
-  }
+    });
+  };
 
   if (isLoading) {
-    return <div>Loading availability...</div>
+    return <div>Loading availability...</div>;
   }
 
   const renderView = () => {
@@ -45,7 +46,7 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
             dayExceptions={dayExceptions}
             contractorId={contractorId}
           />
-        )
+        );
       case "week":
         return (
           <WeekView 
@@ -54,36 +55,28 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
             dayExceptions={dayExceptions}
             contractorId={contractorId}
           />
-        )
+        );
       default:
         return (
           <AvailabilityCalendar
             selectedDate={selectedDate}
             onDateSelect={(date) => {
-              setSelectedDate(date)
-              handleDayClick(date)
+              setSelectedDate(date);
+              handleDayClick(date);
             }}
             dayExceptions={dayExceptions}
           />
-        )
+        );
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <ViewSelector
-          currentView={viewMode}
-          onViewChange={setViewMode}
-        />
-        <Button
-          variant="outline"
-          onClick={() => setIsEditingSchedule(true)}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          Set Weekly Schedule
-        </Button>
-      </div>
+      <AvailabilityHeader
+        viewMode={viewMode}
+        onViewChange={setViewMode}
+        onEditSchedule={() => setIsEditingSchedule(true)}
+      />
 
       {renderView()}
 
@@ -95,12 +88,12 @@ export function AvailabilityManager({ contractorId }: { contractorId: string }) 
         <WeeklyScheduleEditor
           availability={weeklyAvailability}
           onSave={async (scheduleData) => {
-            await updateAvailabilityMutation.mutateAsync(scheduleData)
-            setIsEditingSchedule(false)
+            await updateAvailabilityMutation.mutateAsync(scheduleData);
+            setIsEditingSchedule(false);
           }}
           onCancel={() => setIsEditingSchedule(false)}
         />
       )}
     </div>
-  )
+  );
 }
