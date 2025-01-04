@@ -12,14 +12,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Flag, Plus, CheckCircle2, AlertCircle } from "lucide-react";
+import { Flag, Plus, CheckCircle2 } from "lucide-react";
 
 interface Task {
   id: string;
   title: string;
   status: 'pending' | 'in_progress' | 'completed';
   priority: 'low' | 'medium' | 'high';
-  assigned_to?: string;
+  assigned_contractor_id?: string;
+  created_at?: string;
 }
 
 export function TaskManagement({ contractorId }: { contractorId: string }) {
