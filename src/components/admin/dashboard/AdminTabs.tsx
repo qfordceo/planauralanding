@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tabs"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Loader2 } from "lucide-react"
+import { AdminDocumentation } from "./AdminDocumentation"
 
 // Lazy load all tab components
 const WaitlistTable = lazy(() => import("@/components/admin/WaitlistTable").then(module => ({ default: module.WaitlistTable })))
@@ -29,7 +30,7 @@ const LoadingFallback = () => (
 export function AdminTabs() {
   return (
     <Tabs defaultValue="waitlist" className="space-y-4">
-      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 w-full">
+      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 w-full">
         <TabsTrigger value="waitlist">Waitlist</TabsTrigger>
         <TabsTrigger value="commissions">Commissions</TabsTrigger>
         <TabsTrigger value="availability">Contractor Availability</TabsTrigger>
@@ -38,6 +39,7 @@ export function AdminTabs() {
         <TabsTrigger value="preapproval">Pre-approvals</TabsTrigger>
         <TabsTrigger value="compliance">Compliance</TabsTrigger>
         <TabsTrigger value="stripe">Stripe Dashboard</TabsTrigger>
+        <TabsTrigger value="docs">Documentation</TabsTrigger>
       </TabsList>
 
       <ErrorBoundary>
@@ -46,31 +48,31 @@ export function AdminTabs() {
             <WaitlistTable />
           </Suspense>
         </TabsContent>
-        
+
         <TabsContent value="commissions" className="space-y-4">
           <Suspense fallback={<LoadingFallback />}>
             <CommissionsTable />
           </Suspense>
         </TabsContent>
-        
+
         <TabsContent value="availability" className="space-y-4">
           <Suspense fallback={<LoadingFallback />}>
             <ContractorAvailability />
           </Suspense>
         </TabsContent>
-        
+
         <TabsContent value="builds" className="space-y-4">
           <Suspense fallback={<LoadingFallback />}>
             <ClientBuildsTable />
           </Suspense>
         </TabsContent>
-        
+
         <TabsContent value="purchases" className="space-y-4">
           <Suspense fallback={<LoadingFallback />}>
             <PurchasesTable />
           </Suspense>
         </TabsContent>
-        
+
         <TabsContent value="preapproval" className="space-y-4">
           <Suspense fallback={<LoadingFallback />}>
             <PreApprovalTable />
@@ -90,6 +92,12 @@ export function AdminTabs() {
         <TabsContent value="stripe" className="space-y-4">
           <Suspense fallback={<LoadingFallback />}>
             <StripeDashboard />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="docs" className="space-y-4">
+          <Suspense fallback={<LoadingFallback />}>
+            <AdminDocumentation />
           </Suspense>
         </TabsContent>
       </ErrorBoundary>
