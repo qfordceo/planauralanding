@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, Construction, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCircle, Clock, Construction, AlertCircle, Search, Filter } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MilestoneUpdate } from "@/components/milestones/MilestoneUpdate";
@@ -23,6 +25,8 @@ interface ProjectTimelineProps {
 
 export function ProjectTimeline({ projectId }: ProjectTimelineProps) {
   const [selectedMilestone, setSelectedMilestone] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -83,6 +87,16 @@ export function ProjectTimeline({ projectId }: ProjectTimelineProps) {
     }
   };
 
+  const filteredMilestones = milestones?.filter(milestone => {
+    const matchesSearch = 
+      milestone.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      milestone.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || milestone.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
   if (isLoading) {
     return <div>Loading timeline...</div>;
   }
@@ -94,10 +108,33 @@ export function ProjectTimeline({ projectId }: ProjectTimelineProps) {
           <Construction className="h-5 w-5" />
           Building Progress
         </CardTitle>
+        <div className="flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search milestones..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="needs_review">Needs Review</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {milestones?.map((step, index) => (
+          {filteredMilestones?.map((step, index) => (
             <div key={step.id} className="flex gap-4">
               <div className="flex flex-col items-center">
                 {getStatusIcon(step.status)}
