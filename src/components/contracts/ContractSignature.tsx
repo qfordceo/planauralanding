@@ -1,12 +1,14 @@
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Loader2 } from "lucide-react"
 
 interface ContractSignatureProps {
-  onSign: () => void
+  onSign: () => void;
+  isLoading?: boolean;
 }
 
-export function ContractSignature({ onSign }: ContractSignatureProps) {
+export function ContractSignature({ onSign, isLoading }: ContractSignatureProps) {
   const [agreed, setAgreed] = useState(false)
 
   return (
@@ -24,7 +26,11 @@ export function ContractSignature({ onSign }: ContractSignatureProps) {
           I have read and agree to the terms of this contract
         </label>
       </div>
-      <Button onClick={onSign} disabled={!agreed}>
+      <Button 
+        onClick={onSign} 
+        disabled={!agreed || isLoading}
+      >
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Sign Contract
       </Button>
     </div>

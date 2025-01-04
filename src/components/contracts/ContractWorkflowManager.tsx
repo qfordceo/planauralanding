@@ -88,10 +88,13 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
   });
 
   useEffect(() => {
-    if (contract?.status === "signed") {
+    if (contract?.status === "signed" && 
+        contract?.workflow_stage === "completed" &&
+        contract?.signed_by_client_at &&
+        contract?.signed_by_contractor_at) {
       activatePortalMutation.mutate();
     }
-  }, [contract?.status]);
+  }, [contract?.status, contract?.workflow_stage, contract?.signed_by_client_at, contract?.signed_by_contractor_at]);
 
   if (isLoading) {
     return (
@@ -117,7 +120,7 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
     );
   }
 
-  if (contract.status === "signed") {
+  if (contract.status === "signed" && contract.workflow_stage === "completed") {
     return <ProjectDetails projectId={projectId} />;
   }
 

@@ -417,6 +417,58 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_signing_notifications: {
+        Row: {
+          contract_id: string | null
+          email_status: string | null
+          id: string
+          metadata: Json | null
+          notification_type: string
+          recipient_id: string | null
+          sent_at: string | null
+        }
+        Insert: {
+          contract_id?: string | null
+          email_status?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type: string
+          recipient_id?: string | null
+          sent_at?: string | null
+        }
+        Update: {
+          contract_id?: string | null
+          email_status?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type?: string
+          recipient_id?: string | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signing_notifications_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "project_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_signing_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_signing_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_appointments: {
         Row: {
           appointment_date: string
@@ -2116,37 +2168,49 @@ export type Database = {
       }
       project_contracts: {
         Row: {
+          client_signature_data: Json | null
           content: Json
           contract_type: string
+          contractor_signature_data: Json | null
           created_at: string
           id: string
+          last_notification_sent: string | null
           project_id: string | null
           signed_by_client_at: string | null
           signed_by_contractor_at: string | null
           status: string
           updated_at: string
+          workflow_stage: string | null
         }
         Insert: {
+          client_signature_data?: Json | null
           content?: Json
           contract_type: string
+          contractor_signature_data?: Json | null
           created_at?: string
           id?: string
+          last_notification_sent?: string | null
           project_id?: string | null
           signed_by_client_at?: string | null
           signed_by_contractor_at?: string | null
           status?: string
           updated_at?: string
+          workflow_stage?: string | null
         }
         Update: {
+          client_signature_data?: Json | null
           content?: Json
           contract_type?: string
+          contractor_signature_data?: Json | null
           created_at?: string
           id?: string
+          last_notification_sent?: string | null
           project_id?: string | null
           signed_by_client_at?: string | null
           signed_by_contractor_at?: string | null
           status?: string
           updated_at?: string
+          workflow_stage?: string | null
         }
         Relationships: [
           {
