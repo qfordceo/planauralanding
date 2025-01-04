@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Users, FileCheck } from "lucide-react";
+import { AdminStats } from "@/types/admin";
+import { ClipboardList, Shield } from "lucide-react";
 
 interface OverviewSectionProps {
   totalProjects: number;
@@ -8,28 +9,24 @@ interface OverviewSectionProps {
 
 export function OverviewSection({ totalProjects, pendingApprovals }: OverviewSectionProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Total Projects
-          </CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+          <ClipboardList className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{totalProjects}</p>
+          <div className="text-2xl font-bold">{totalProjects}</div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileCheck className="h-5 w-5" />
-            Pending Approvals
-          </CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+          <Shield className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{pendingApprovals}</p>
+          <div className="text-2xl font-bold">{pendingApprovals}</div>
         </CardContent>
       </Card>
     </div>
