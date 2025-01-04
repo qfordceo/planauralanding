@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, FileText, MessageSquare } from "lucide-react";
-import { ProjectTimeline } from "@/components/timeline/monitoring/ProjectTimeline";
+import { ProjectTimeline } from "@/components/client/build-cost/ProjectTimeline";
 import { DocumentRepository } from "./documents/DocumentRepository";
 import { CommunicationHub } from "./communication/CommunicationHub";
 import { BuildCostCard } from "./BuildCostCard";
