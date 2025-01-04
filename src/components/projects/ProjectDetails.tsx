@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectTimeline } from "./timeline/ProjectTimeline";
+import { ProjectOverview } from "./tabs/ProjectOverview";
+import { ProjectTasksTab } from "./tabs/ProjectTasksTab";
+import { ProjectDisputesTab } from "./tabs/ProjectDisputesTab";
+import { ProjectDocumentsTab } from "./tabs/ProjectDocumentsTab";
 import { Loader2 } from "lucide-react";
 
 interface ProjectDetailsProps {
@@ -35,24 +38,18 @@ export function ProjectDetails({ projectId, tasks }: ProjectDetailsProps) {
 
   if (!project) {
     return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          Project not found
-        </CardContent>
-      </Card>
+      <div className="text-center py-8 text-muted-foreground">
+        Project not found
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{project.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">{project.description}</p>
-        </CardContent>
-      </Card>
+      <ProjectOverview 
+        title={project.title} 
+        description={project.description} 
+      />
 
       <Tabs defaultValue="timeline">
         <TabsList>
@@ -67,36 +64,15 @@ export function ProjectDetails({ projectId, tasks }: ProjectDetailsProps) {
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              Coming soon: Task management interface
-            </CardContent>
-          </Card>
+          <ProjectTasksTab />
         </TabsContent>
 
         <TabsContent value="disputes" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Disputes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              Coming soon: Dispute resolution interface
-            </CardContent>
-          </Card>
+          <ProjectDisputesTab />
         </TabsContent>
 
         <TabsContent value="documents" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Documents</CardTitle>
-            </CardHeader>
-            <CardContent>
-              Coming soon: Document management interface
-            </CardContent>
-          </Card>
+          <ProjectDocumentsTab />
         </TabsContent>
       </Tabs>
     </div>
