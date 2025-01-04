@@ -1,18 +1,23 @@
 import { createContext, useContext, useReducer, ReactNode } from 'react';
 
+type WorkflowStage = 'draft' | 'client_review' | 'contractor_review' | 'completed';
+type SigningStatus = 'pending' | 'client_signed' | 'contractor_signed' | 'completed';
+
 interface ContractState {
-  currentStep: number;
-  contractData: any;
-  signingStatus: {
-    clientSigned: boolean;
-    contractorSigned: boolean;
-  };
+  currentStage: WorkflowStage;
+  signingStatus: SigningStatus;
+  lastAction: Date | null;
+  signingHistory: Array<{
+    action: string;
+    timestamp: Date;
+    actor: string;
+  }>;
 }
 
 type Action =
-  | { type: 'SET_STEP'; payload: number }
-  | { type: 'UPDATE_CONTRACT'; payload: any }
-  | { type: 'UPDATE_SIGNING_STATUS'; payload: { clientSigned: boolean; contractorSigned: boolean } };
+  | { type: 'SET_STAGE'; payload: WorkflowStage }
+  | { type: 'UPDATE_SIGNING_STATUS'; payload: SigningStatus }
+  | { type: 'ADD_SIGNING_HISTORY'; payload: { action: string; actor: string } };
 
 const ContractWorkflowContext = createContext<{
   state: ContractState;
@@ -21,12 +26,31 @@ const ContractWorkflowContext = createContext<{
 
 function contractReducer(state: ContractState, action: Action): ContractState {
   switch (action.type) {
-    case 'SET_STEP':
-      return { ...state, currentStep: action.payload };
-    case 'UPDATE_CONTRACT':
-      return { ...state, contractData: action.payload };
+    case 'SET_STAGE':
+      return { 
+        ...state, 
+        currentStage: action.payload,
+        lastAction: new Date()
+      };
     case 'UPDATE_SIGNING_STATUS':
-      return { ...state, signingStatus: action.payload };
+      return { 
+        ...state, 
+        signingStatus: action.payload,
+        lastAction: new Date()
+      };
+    case 'ADD_SIGNING_HISTORY':
+      return {
+        ...state,
+        signingHistory: [
+          ...state.signingHistory,
+          {
+            action: action.payload.action,
+            timestamp: new Date(),
+            actor: action.payload.actor
+          }
+        ],
+        lastAction: new Date()
+      };
     default:
       return state;
   }
@@ -34,12 +58,10 @@ function contractReducer(state: ContractState, action: Action): ContractState {
 
 export function ContractWorkflowProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(contractReducer, {
-    currentStep: 0,
-    contractData: null,
-    signingStatus: {
-      clientSigned: false,
-      contractorSigned: false,
-    },
+    currentStage: 'draft',
+    signingStatus: 'pending',
+    lastAction: null,
+    signingHistory: []
   });
 
   return (

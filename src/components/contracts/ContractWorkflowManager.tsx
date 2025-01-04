@@ -8,18 +8,28 @@ import { ProjectDetails } from "../projects/ProjectDetails";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ContractWorkflowManagerProps {
   projectId: string;
 }
 
 export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerProps) {
+  const { toast } = useToast();
+
   const { data: contract, isLoading } = useQuery({
     queryKey: ['project-contract', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_contracts')
-        .select('*')
+        .select(`
+          *,
+          project:project_id (
+            title,
+            description,
+            user_id
+          )
+        `)
         .eq('project_id', projectId)
         .single();
 
@@ -27,6 +37,29 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
       return data;
     },
   });
+
+  const activateProjectPortal = async () => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: 'active' })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Project Portal Activated",
+        description: "You can now access all project features",
+      });
+    } catch (error) {
+      console.error('Error activating project portal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to activate project portal",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -49,6 +82,7 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
     );
   }
 
+  // If contract is signed and completed, show project details
   if (contract.status === "signed" && contract.workflow_stage === "completed") {
     return <ProjectDetails projectId={projectId} />;
   }
@@ -60,7 +94,10 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
         <ContractSigningStatus contract={contract} />
         <ContractWorkflow
           projectId={projectId}
-          onComplete={() => window.location.reload()}
+          onComplete={async () => {
+            await activateProjectPortal();
+            window.location.reload();
+          }}
         />
       </div>
     </ContractWorkflowProvider>

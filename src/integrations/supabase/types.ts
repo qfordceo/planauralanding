@@ -3267,12 +3267,22 @@ export type Database = {
       }
     }
     Enums: {
+      contract_signing_status:
+        | "pending"
+        | "client_signed"
+        | "contractor_signed"
+        | "completed"
       contract_status:
         | "draft"
         | "pending_client"
         | "pending_contractor"
         | "signed"
         | "rejected"
+      contract_workflow_stage:
+        | "draft"
+        | "client_review"
+        | "contractor_review"
+        | "completed"
       contractor_type:
         | "electrical"
         | "plumbing"
