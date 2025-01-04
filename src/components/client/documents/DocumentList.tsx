@@ -10,6 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { ALLOWED_FILE_TYPES } from "@/constants/fileTypes";
 
 interface Document {
   id: string;
@@ -24,16 +26,6 @@ interface DocumentListProps {
   isLoading: boolean;
   onDownloadVersion: (documentId: string, version: number) => void;
 }
-
-const ALLOWED_FILE_TYPES = {
-  'application/pdf': { icon: FileText, label: 'PDF' },
-  'image/jpeg': { icon: FileImage, label: 'Image' },
-  'image/png': { icon: FileImage, label: 'Image' },
-  'application/zip': { icon: File, label: 'Archive' },
-  'application/x-zip-compressed': { icon: File, label: 'Archive' },
-  'application/msword': { icon: FileText, label: 'Document' },
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { icon: FileText, label: 'Document' },
-};
 
 export function DocumentList({ documents, searchTerm, isLoading, onDownloadVersion }: DocumentListProps) {
   const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
