@@ -1,169 +1,125 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-
-interface Dispute {
-  id: string;
-  description: string;
-  status: string;
-  created_at: string;
-  mediation_status: string;
-  raised_by: { email: string };
-  against: { email: string };
-  mediator: { email: string } | null;
-  mediation_sessions: {
-    id: string;
-    scheduled_date: string;
-    status: string;
-  }[];
-}
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface DisputeListProps {
-  disputes: Dispute[];
+  disputes: any[];
+  onScheduleMediation: (params: { disputeId: string, date: string }) => void;
+  onAcceptResolution: (params: { sessionId: string, isClient: boolean }) => void;
 }
 
-export function DisputeList({ disputes }: DisputeListProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedDispute, setSelectedDispute] = useState<string | null>(null);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  const scheduleMediationMutation = useMutation({
-    mutationFn: async ({ disputeId, date }: { disputeId: string; date: Date }) => {
-      const { error } = await supabase
-        .from('dispute_mediation_sessions')
-        .insert({
-          dispute_id: disputeId,
-          scheduled_date: date.toISOString(),
-          status: 'scheduled'
-        });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['disputes'] });
-      toast({
-        title: "Mediation scheduled",
-        description: "The mediation session has been scheduled successfully.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error scheduling mediation",
-        description: "Failed to schedule mediation session. Please try again.",
-        variant: "destructive",
-      });
+export function DisputeList({ 
+  disputes,
+  onScheduleMediation,
+  onAcceptResolution
+}: DisputeListProps) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'resolved':
+        return 'bg-green-100 text-green-800';
+      case 'escalated':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-  });
-
-  const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      open: "bg-yellow-100 text-yellow-800",
-      "in_mediation": "bg-blue-100 text-blue-800",
-      resolved: "bg-green-100 text-green-800",
-      escalated: "bg-red-100 text-red-800"
-    };
-
-    return colors[status] || "bg-gray-100 text-gray-800";
   };
 
   return (
     <div className="space-y-4">
       {disputes.map((dispute) => (
         <Card key={dispute.id} className="p-4">
-          <div className="flex justify-between items-start">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">
-                  Raised by {dispute.raised_by.email}
-                </Badge>
-                <Badge variant="outline">
-                  Against {dispute.against.email}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {format(new Date(dispute.created_at), 'PPP')}
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <Badge className={getStatusColor(dispute.status)}>
+                {dispute.status}
+              </Badge>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Raised by: {dispute.raised_by?.email}
               </p>
-              <p className="mt-2">{dispute.description}</p>
-              {dispute.mediator && (
-                <p className="text-sm text-muted-foreground">
-                  Mediator: {dispute.mediator.email}
-                </p>
-              )}
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <span className={`text-sm font-medium capitalize px-2 py-1 rounded-full ${getStatusBadge(dispute.status)}`}>
-                {dispute.status.replace('_', ' ')}
-              </span>
-              {dispute.status === 'open' && (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedDispute(dispute.id)}
-                    >
-                      Schedule Mediation
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Schedule Mediation Session</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={setSelectedDate}
-                        className="rounded-md border"
-                      />
-                    </div>
-                    <Button
-                      onClick={() => {
-                        if (selectedDate && selectedDispute) {
-                          scheduleMediationMutation.mutate({
-                            disputeId: selectedDispute,
-                            date: selectedDate
-                          });
-                        }
-                      }}
-                      disabled={!selectedDate}
-                    >
-                      Confirm Mediation
-                    </Button>
-                  </DialogContent>
-                </Dialog>
-              )}
+            <div className="text-sm text-muted-foreground">
+              {format(new Date(dispute.created_at), 'PPP')}
             </div>
           </div>
-          {dispute.mediation_sessions && dispute.mediation_sessions.length > 0 && (
-            <div className="mt-4 pt-4 border-t">
-              <h4 className="text-sm font-semibold mb-2">Mediation Sessions</h4>
-              <div className="space-y-2">
-                {dispute.mediation_sessions.map((session) => (
-                  <div key={session.id} className="flex justify-between items-center text-sm">
-                    <span>{format(new Date(session.scheduled_date), 'PPP p')}</span>
-                    <Badge>{session.status}</Badge>
-                  </div>
-                ))}
+
+          <p className="mb-4">{dispute.description}</p>
+
+          {dispute.mediation_sessions?.map((session: any) => (
+            <div key={session.id} className="mt-4 p-3 bg-muted rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-sm">
+                    Mediation: {format(new Date(session.scheduled_date), 'PPP')}
+                  </span>
+                </div>
+                <Badge variant={session.status === 'completed' ? 'default' : 'secondary'}>
+                  {session.status}
+                </Badge>
               </div>
+
+              {session.resolution_proposal && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium">Proposed Resolution:</p>
+                  <p className="text-sm text-muted-foreground">
+                    {session.resolution_proposal}
+                  </p>
+                  <div className="mt-2 flex gap-2">
+                    {!session.client_accepted && (
+                      <Button
+                        size="sm"
+                        onClick={() => onAcceptResolution({
+                          sessionId: session.id,
+                          isClient: true
+                        })}
+                      >
+                        Accept as Client
+                      </Button>
+                    )}
+                    {!session.contractor_accepted && (
+                      <Button
+                        size="sm"
+                        onClick={() => onAcceptResolution({
+                          sessionId: session.id,
+                          isClient: false
+                        })}
+                      >
+                        Accept as Contractor
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+          ))}
+
+          {dispute.status === 'open' && !dispute.mediation_sessions?.length && (
+            <Button
+              size="sm"
+              onClick={() => {
+                const date = new Date();
+                date.setDate(date.getDate() + 7);
+                onScheduleMediation({
+                  disputeId: dispute.id,
+                  date: date.toISOString()
+                });
+              }}
+            >
+              Schedule Mediation
+            </Button>
           )}
         </Card>
       ))}
+
+      {disputes.length === 0 && (
+        <p className="text-center text-muted-foreground py-8">
+          No disputes found
+        </p>
+      )}
     </div>
   );
 }
