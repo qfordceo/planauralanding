@@ -25,11 +25,8 @@ export interface TaskColumnProps {
   title: string;
   status: TaskStatus;
   tasks: Task[];
-  onDragOver: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent) => void;
 }
 
 export interface TaskCardProps {
   task: Task;
-  onDragStart: (e: React.DragEvent) => void;
 }
