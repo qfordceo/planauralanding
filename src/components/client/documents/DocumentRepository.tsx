@@ -6,15 +6,16 @@ import { useState } from "react";
 import { DocumentList } from "./DocumentList";
 import { SearchBar } from "../communication/SearchBar";
 import { UploadButton } from "./UploadButton";
+import { File, FileText, FileImage } from "lucide-react";
 
 const ALLOWED_FILE_TYPES = {
   'application/pdf': { icon: FileText, label: 'PDF' },
-  'image/jpeg': { icon: Image, label: 'Image' },
-  'image/png': { icon: Image, label: 'Image' },
-  'application/zip': { icon: FileArchive, label: 'Archive' },
-  'application/x-zip-compressed': { icon: FileArchive, label: 'Archive' },
-  'application/msword': { icon: File, label: 'Document' },
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { icon: File, label: 'Document' },
+  'image/jpeg': { icon: FileImage, label: 'Image' },
+  'image/png': { icon: FileImage, label: 'Image' },
+  'application/zip': { icon: File, label: 'Archive' },
+  'application/x-zip-compressed': { icon: File, label: 'Archive' },
+  'application/msword': { icon: FileText, label: 'Document' },
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { icon: FileText, label: 'Document' },
 };
 
 interface DocumentRepositoryProps {
@@ -25,7 +26,7 @@ export function DocumentRepository({ projectId }: DocumentRepositoryProps) {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: documents } = useQuery({
+  const { data: documents, isLoading } = useQuery({
     queryKey: ['project-documents', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -89,7 +90,11 @@ export function DocumentRepository({ projectId }: DocumentRepositoryProps) {
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </CardHeader>
       <CardContent>
-        <DocumentList documents={documents || []} searchTerm={searchTerm} />
+        <DocumentList 
+          documents={documents || []} 
+          searchTerm={searchTerm} 
+          isLoading={isLoading}
+        />
       </CardContent>
     </Card>
   );
