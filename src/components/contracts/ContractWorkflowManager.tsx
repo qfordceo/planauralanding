@@ -1,24 +1,32 @@
-import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ContractWorkflowProvider } from "./workflow/ContractWorkflowContext";
+import { ContractStageIndicator } from "./workflow/ContractStageIndicator";
+import { ContractSigningStatus } from "./workflow/ContractSigningStatus";
 import { ContractWorkflow } from "./ContractWorkflow";
 import { ProjectDetails } from "../projects/ProjectDetails";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { useContractWorkflow } from "./workflow/useContractWorkflow";
-import { ContractStageIndicator } from "./workflow/ContractStageIndicator";
-import { ContractSigningStatus } from "./workflow/ContractSigningStatus";
 
 interface ContractWorkflowManagerProps {
   projectId: string;
 }
 
 export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerProps) {
-  const {
-    contract,
-    isLoading,
-    createContract,
-    isCreatingContract
-  } = useContractWorkflow(projectId);
+  const { data: contract, isLoading } = useQuery({
+    queryKey: ['project-contract', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_contracts')
+        .select('*')
+        .eq('project_id', projectId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   if (isLoading) {
     return (
@@ -36,13 +44,6 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
         </CardHeader>
         <CardContent>
           <p className="mb-4">No contract has been created for this project yet.</p>
-          <Button 
-            onClick={() => createContract()}
-            disabled={isCreatingContract}
-          >
-            {isCreatingContract && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Contract
-          </Button>
         </CardContent>
       </Card>
     );
@@ -53,13 +54,15 @@ export function ContractWorkflowManager({ projectId }: ContractWorkflowManagerPr
   }
 
   return (
-    <div className="space-y-6">
-      <ContractStageIndicator currentStage={contract.workflow_stage} />
-      <ContractSigningStatus contract={contract} />
-      <ContractWorkflow
-        projectId={projectId}
-        onComplete={() => window.location.reload()}
-      />
-    </div>
+    <ContractWorkflowProvider>
+      <div className="space-y-6">
+        <ContractStageIndicator currentStage={contract.workflow_stage} />
+        <ContractSigningStatus contract={contract} />
+        <ContractWorkflow
+          projectId={projectId}
+          onComplete={() => window.location.reload()}
+        />
+      </div>
+    </ContractWorkflowProvider>
   );
 }

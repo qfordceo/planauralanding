@@ -2131,6 +2131,7 @@ export type Database = {
           email: string | null
           id: string
           is_admin: boolean | null
+          notification_preferences: Json | null
           phone: string | null
           preapproval_amount: number | null
           preapproval_status: string | null
@@ -2144,6 +2145,7 @@ export type Database = {
           email?: string | null
           id: string
           is_admin?: boolean | null
+          notification_preferences?: Json | null
           phone?: string | null
           preapproval_amount?: number | null
           preapproval_status?: string | null
@@ -2157,6 +2159,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          notification_preferences?: Json | null
           phone?: string | null
           preapproval_amount?: number | null
           preapproval_status?: string | null
@@ -2166,6 +2169,58 @@ export type Database = {
         }
         Relationships: []
       }
+      project_activity_logs: {
+        Row: {
+          activity_data: Json | null
+          activity_type: string
+          actor_id: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          project_id: string | null
+        }
+        Insert: {
+          activity_data?: Json | null
+          activity_type: string
+          actor_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          project_id?: string | null
+        }
+        Update: {
+          activity_data?: Json | null
+          activity_type?: string
+          actor_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          project_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_activity_logs_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_activity_logs_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_activity_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_contracts: {
         Row: {
           client_signature_data: Json | null
@@ -2174,10 +2229,13 @@ export type Database = {
           contractor_signature_data: Json | null
           created_at: string
           id: string
+          last_action_at: string | null
           last_notification_sent: string | null
           project_id: string | null
           signed_by_client_at: string | null
           signed_by_contractor_at: string | null
+          signing_history: Json | null
+          signing_status: string
           status: string
           updated_at: string
           workflow_stage: string | null
@@ -2189,10 +2247,13 @@ export type Database = {
           contractor_signature_data?: Json | null
           created_at?: string
           id?: string
+          last_action_at?: string | null
           last_notification_sent?: string | null
           project_id?: string | null
           signed_by_client_at?: string | null
           signed_by_contractor_at?: string | null
+          signing_history?: Json | null
+          signing_status?: string
           status?: string
           updated_at?: string
           workflow_stage?: string | null
@@ -2204,10 +2265,13 @@ export type Database = {
           contractor_signature_data?: Json | null
           created_at?: string
           id?: string
+          last_action_at?: string | null
           last_notification_sent?: string | null
           project_id?: string | null
           signed_by_client_at?: string | null
           signed_by_contractor_at?: string | null
+          signing_history?: Json | null
+          signing_status?: string
           status?: string
           updated_at?: string
           workflow_stage?: string | null
