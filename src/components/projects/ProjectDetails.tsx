@@ -7,6 +7,7 @@ import { ContractWorkflow } from "../contracts/ContractWorkflow";
 import { MilestoneTracker } from "../milestones/MilestoneTracker";
 import { DisputeResolution } from "../disputes/DisputeResolution";
 import { TimelineEnforcement } from "../timeline/TimelineEnforcement";
+import { ProjectTaskBoard } from "./tasks/ProjectTaskBoard";
 import { Loader2 } from "lucide-react";
 
 interface ProjectDetailsProps {
@@ -54,13 +55,18 @@ export function ProjectDetails({ projectId, tasks }: ProjectDetailsProps) {
 
       <ContractWorkflow projectId={projectId} />
 
-      <Tabs defaultValue="timeline" className="w-full">
+      <Tabs defaultValue="tasks" className="w-full">
         <TabsList>
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="disputes">Disputes</TabsTrigger>
           <TabsTrigger value="enforcement">Timeline Enforcement</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="tasks" className="mt-6">
+          <ProjectTaskBoard projectId={projectId} />
+        </TabsContent>
 
         <TabsContent value="timeline" className="mt-6">
           <ProjectTimeline projectId={projectId} tasks={tasks} />

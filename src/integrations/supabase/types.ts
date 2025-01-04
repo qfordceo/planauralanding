@@ -2898,6 +2898,12 @@ export type Database = {
         | "painting"
         | "landscaping"
         | "general"
+      inspection_status:
+        | "not_required"
+        | "scheduled"
+        | "passed"
+        | "failed"
+        | "rescheduled"
       onboarding_step_type:
         | "business_entity"
         | "ein_registration"
