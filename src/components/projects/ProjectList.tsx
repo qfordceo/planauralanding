@@ -59,7 +59,7 @@ export function ProjectList({ projects }: ProjectListProps) {
           <X className="h-4 w-4 mr-2" />
           Close Project
         </Button>
-        <ProjectDetails projectId={selectedProject} tasks={tasks} />
+        <ProjectDetails projectId={selectedProject} />
       </div>
     );
   }
