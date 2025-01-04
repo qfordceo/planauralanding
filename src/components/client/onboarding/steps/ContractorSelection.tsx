@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Star } from "lucide-react";
 import { PerformanceBadge } from "@/components/contractor/badges/PerformanceBadge";
+import { ContractWorkflow } from "@/components/contracts/ContractWorkflow";
 
 interface ContractorSelectionProps {
   onNext: () => void;
@@ -14,6 +15,7 @@ interface ContractorSelectionProps {
 
 export function ContractorSelection({ onNext, onBack }: ContractorSelectionProps) {
   const [selectedContractor, setSelectedContractor] = useState<string | null>(null);
+  const [showContract, setShowContract] = useState(false);
 
   const { data: contractors, isLoading } = useQuery({
     queryKey: ['contractors'],
@@ -33,6 +35,15 @@ export function ContractorSelection({ onNext, onBack }: ContractorSelectionProps
       return data;
     }
   });
+
+  if (showContract) {
+    return (
+      <ContractWorkflow 
+        projectId={selectedContractor!} 
+        onComplete={onNext}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -99,10 +110,10 @@ export function ContractorSelection({ onNext, onBack }: ContractorSelectionProps
           Back to Materials
         </Button>
         <Button 
-          onClick={onNext}
+          onClick={() => setShowContract(true)}
           disabled={!selectedContractor}
         >
-          Complete Selection
+          Continue with Selected Contractor
         </Button>
       </div>
     </div>

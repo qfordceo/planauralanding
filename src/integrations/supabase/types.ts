@@ -378,6 +378,45 @@ export type Database = {
           },
         ]
       }
+      construction_task_templates: {
+        Row: {
+          created_at: string | null
+          dependencies: string[] | null
+          description: string | null
+          estimated_duration: number | null
+          id: string
+          is_optional: boolean | null
+          phase: string
+          required_inspections: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          estimated_duration?: number | null
+          id?: string
+          is_optional?: boolean | null
+          phase: string
+          required_inspections?: boolean | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          estimated_duration?: number | null
+          id?: string
+          is_optional?: boolean | null
+          phase?: string
+          required_inspections?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       contractor_appointments: {
         Row: {
           appointment_date: string
@@ -1484,6 +1523,70 @@ export type Database = {
         }
         Relationships: []
       }
+      dispute_mediation_sessions: {
+        Row: {
+          client_accepted: boolean | null
+          contractor_accepted: boolean | null
+          created_at: string | null
+          dispute_id: string | null
+          id: string
+          mediator_id: string | null
+          notes: string | null
+          resolution_proposal: string | null
+          scheduled_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_accepted?: boolean | null
+          contractor_accepted?: boolean | null
+          created_at?: string | null
+          dispute_id?: string | null
+          id?: string
+          mediator_id?: string | null
+          notes?: string | null
+          resolution_proposal?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_accepted?: boolean | null
+          contractor_accepted?: boolean | null
+          created_at?: string | null
+          dispute_id?: string | null
+          id?: string
+          mediator_id?: string | null
+          notes?: string | null
+          resolution_proposal?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_mediation_sessions_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "project_disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_mediation_sessions_mediator_id_fkey"
+            columns: ["mediator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_mediation_sessions_mediator_id_fkey"
+            columns: ["mediator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       educational_resources: {
         Row: {
           category: string
@@ -2299,7 +2402,11 @@ export type Database = {
           approved_by: string | null
           assigned_contractor_id: string | null
           build_estimate_id: string | null
+          client_approval_date: string | null
+          client_approved: boolean | null
           completion_evidence: Json | null
+          contractor_submission_date: string | null
+          contractor_submitted: boolean | null
           created_at: string
           description: string | null
           due_date: string | null
@@ -2315,7 +2422,11 @@ export type Database = {
           approved_by?: string | null
           assigned_contractor_id?: string | null
           build_estimate_id?: string | null
+          client_approval_date?: string | null
+          client_approved?: boolean | null
           completion_evidence?: Json | null
+          contractor_submission_date?: string | null
+          contractor_submitted?: boolean | null
           created_at?: string
           description?: string | null
           due_date?: string | null
@@ -2331,7 +2442,11 @@ export type Database = {
           approved_by?: string | null
           assigned_contractor_id?: string | null
           build_estimate_id?: string | null
+          client_approval_date?: string | null
+          client_approved?: boolean | null
           completion_evidence?: Json | null
+          contractor_submission_date?: string | null
+          contractor_submitted?: boolean | null
           created_at?: string
           description?: string | null
           due_date?: string | null

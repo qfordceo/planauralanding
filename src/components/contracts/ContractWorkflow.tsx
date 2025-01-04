@@ -1,19 +1,22 @@
-import React from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { supabase } from "@/integrations/supabase/client"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button } from "@/components/ui/button"
-import { useToast } from "@/hooks/use-toast"
-import { ContractSignature } from "./ContractSignature"
-import { ContractTerms } from "./ContractTerms"
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { ContractTerms } from "./ContractTerms";
+import { ContractSignature } from "./ContractSignature";
 
 interface ContractWorkflowProps {
-  projectId: string
+  projectId: string;
+  onComplete: () => void;
 }
 
-export function ContractWorkflow({ projectId }: ContractWorkflowProps) {
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
+export function ContractWorkflow({ projectId, onComplete }: ContractWorkflowProps) {
+  const [hasReviewed, setHasReviewed] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: contract, isLoading } = useQuery({
     queryKey: ["project-contract", projectId],
@@ -22,12 +25,43 @@ export function ContractWorkflow({ projectId }: ContractWorkflowProps) {
         .from("project_contracts")
         .select("*")
         .eq("project_id", projectId)
-        .single()
+        .single();
 
-      if (error) throw error
-      return data
+      if (error) throw error;
+      return data;
     },
-  })
+  });
+
+  const createContractMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase
+        .from("project_contracts")
+        .insert([
+          {
+            project_id: projectId,
+            contract_type: "construction",
+            status: "draft",
+            content: {
+              terms: "Standard construction contract terms...",
+              scope: "Full home construction as per approved plans...",
+              payment_schedule: "As per milestone completion...",
+            },
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project-contract"] });
+      toast({
+        title: "Contract Created",
+        description: "Please review the contract terms",
+      });
+    },
+  });
 
   const signContractMutation = useMutation({
     mutationFn: async () => {
@@ -37,51 +71,67 @@ export function ContractWorkflow({ projectId }: ContractWorkflowProps) {
           status: "signed",
           signed_by_client_at: new Date().toISOString(),
         })
-        .eq("id", contract?.id)
+        .eq("id", contract?.id);
 
-      if (error) throw error
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project-contract"] })
       toast({
-        title: "Contract signed successfully",
-        description: "The project can now proceed to the next phase.",
-      })
+        title: "Contract Signed",
+        description: "You can now proceed to the project management portal",
+      });
+      onComplete();
     },
-  })
+  });
 
   if (isLoading) {
-    return <div>Loading contract...</div>
+    return (
+      <div className="flex justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!contract) {
+    return (
+      <Card className="p-6">
+        <h2 className="text-2xl font-bold mb-4">Contract Setup</h2>
+        <p className="text-muted-foreground mb-4">
+          To begin the project, we need to create and sign a contract.
+        </p>
+        <Button
+          onClick={() => createContractMutation.mutate()}
+          disabled={createContractMutation.isPending}
+        >
+          {createContractMutation.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : null}
+          Create Contract
+        </Button>
+      </Card>
+    );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-        <div className="flex flex-col space-y-1.5 p-6">
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">
-            Project Contract
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Review and sign the project contract
-          </p>
-        </div>
-        <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-          {contract?.content && (
-            <div className="prose max-w-none">
-              {Object.entries(contract.content).map(([section, content]) => (
-                <div key={section} className="mb-6">
-                  <h3 className="text-lg font-semibold mb-2">{section}</h3>
-                  <p className="text-sm text-muted-foreground">{content as string}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-        <div className="p-6">
+    <div className="space-y-6">
+      <Card className="p-6">
+        <h2 className="text-2xl font-bold mb-4">Contract Review & Signature</h2>
+        <div className="space-y-6">
           <ContractTerms />
-          <ContractSignature onSign={() => signContractMutation.mutate()} />
+          
+          {!hasReviewed && (
+            <Button onClick={() => setHasReviewed(true)}>
+              I Have Reviewed the Terms
+            </Button>
+          )}
+
+          {hasReviewed && (
+            <ContractSignature
+              onSign={() => signContractMutation.mutate()}
+            />
+          )}
         </div>
-      </div>
+      </Card>
     </div>
-  )
+  );
 }
