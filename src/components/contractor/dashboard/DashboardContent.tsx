@@ -1,6 +1,8 @@
 import { Contractor } from "@/types/contractor";
 import { DashboardHeader } from "../DashboardHeader";
 import { DashboardGrid } from "./DashboardGrid";
+import { TaskManagement } from "../tasks/TaskManagement";
+import { MilestoneTracker } from "../milestones/MilestoneTracker";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,12 @@ export function DashboardContent({
           contractor={contractor} 
           onSignOut={() => {}} // You'll need to implement this
         />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <TaskManagement contractorId={contractor.id} />
+          <MilestoneTracker contractorId={contractor.id} />
+        </div>
+
         <DashboardGrid
           contractor={contractor}
           activeSection={activeSection}
