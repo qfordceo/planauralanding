@@ -1,10 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PerformanceBadge, BadgeType } from "@/components/contractor/badges/PerformanceBadge";
+import { PerformanceBadge } from "@/components/contractor/badges/PerformanceBadge";
 import { PerformanceStats } from "@/components/contractor/analytics/PerformanceStats";
 import { ReviewsSection } from "@/components/client/reviews/ReviewsSection";
-import { Briefcase, CheckCircle, Clock, MessageCircle } from "lucide-react";
 import { Contractor } from "@/types/contractor";
+import { ContractorHeader } from "./sections/ContractorHeader";
+import { PerformanceMetrics } from "./sections/PerformanceMetrics";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -39,7 +40,6 @@ export function ContractorProfileCard({ contractor, badges }: ContractorProfileC
     }
   });
 
-  // Fetch compliance documents
   const { data: compliance } = useQuery({
     queryKey: ['contractor-compliance', contractor.id],
     queryFn: async () => {
@@ -56,47 +56,10 @@ export function ContractorProfileCard({ contractor, badges }: ContractorProfileC
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-2xl font-bold">
-              {contractor.business_name}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              {contractor.contact_name}
-            </p>
-          </div>
-          {contractor.insurance_verified && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <CheckCircle className="h-4 w-4" />
-              Insurance Verified
-            </Badge>
-          )}
-        </div>
+        <ContractorHeader contractor={contractor} />
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-            <Clock className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">On-Time Rate</p>
-              <p className="text-2xl font-bold">{metrics?.onTimeRate.toFixed(1)}%</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-            <Briefcase className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Projects Completed</p>
-              <p className="text-2xl font-bold">{metrics?.completedProjects}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-            <MessageCircle className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Response Rate</p>
-              <p className="text-2xl font-bold">94%</p>
-            </div>
-          </div>
-        </div>
+        {metrics && <PerformanceMetrics metrics={metrics} />}
 
         {compliance && compliance.length > 0 && (
           <div>
@@ -136,10 +99,8 @@ export function ContractorProfileCard({ contractor, badges }: ContractorProfileC
           </div>
         </div>
 
-        {/* Performance Stats */}
         <PerformanceStats contractorId={contractor.id} />
 
-        {/* Reviews Section */}
         <div className="mt-8">
           <ReviewsSection contractorId={contractor.id} />
         </div>
