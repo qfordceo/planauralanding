@@ -5,30 +5,45 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DisputeFormProps {
   projectId: string;
 }
 
 export function DisputeForm({ projectId }: DisputeFormProps) {
-  const [newDispute, setNewDispute] = useState("");
+  const [description, setDescription] = useState("");
+  const [disputeType, setDisputeType] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const createDisputeMutation = useMutation({
     mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
       const { error } = await supabase
         .from('project_disputes')
         .insert({
           project_id: projectId,
-          description: newDispute,
-          status: 'open'
+          description,
+          status: 'open',
+          mediation_status: 'not_required',
+          raised_by_id: user.id,
+          resolution_type: disputeType
         });
 
       if (error) throw error;
     },
     onSuccess: () => {
-      setNewDispute("");
+      setDescription("");
+      setDisputeType("");
       queryClient.invalidateQueries({ queryKey: ['disputes', projectId] });
       toast({
         title: "Dispute submitted successfully",
@@ -46,15 +61,31 @@ export function DisputeForm({ projectId }: DisputeFormProps) {
 
   return (
     <div className="space-y-4">
+      <Select
+        value={disputeType}
+        onValueChange={setDisputeType}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select dispute type" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="timeline">Timeline Dispute</SelectItem>
+          <SelectItem value="quality">Quality Issue</SelectItem>
+          <SelectItem value="communication">Communication Problem</SelectItem>
+          <SelectItem value="payment">Payment Dispute</SelectItem>
+          <SelectItem value="scope">Scope of Work</SelectItem>
+        </SelectContent>
+      </Select>
       <Textarea
-        value={newDispute}
-        onChange={(e) => setNewDispute(e.target.value)}
-        placeholder="Describe your dispute..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Describe your dispute in detail..."
         className="min-h-[100px]"
       />
       <Button 
         onClick={() => createDisputeMutation.mutate()}
-        disabled={!newDispute.trim() || createDisputeMutation.isPending}
+        disabled={!description.trim() || !disputeType || createDisputeMutation.isPending}
+        className="w-full"
       >
         {createDisputeMutation.isPending && (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

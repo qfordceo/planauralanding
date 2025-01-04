@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { DisputeForm } from "./DisputeForm";
 import { DisputeList } from "./DisputeList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DisputeResolutionProps {
   projectId: string;
@@ -15,7 +16,13 @@ export function DisputeResolution({ projectId }: DisputeResolutionProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_disputes')
-        .select('*')
+        .select(`
+          *,
+          raised_by:raised_by_id(email),
+          against:against_id(email),
+          mediator:mediator_id(email),
+          mediation_sessions:dispute_mediation_sessions(*)
+        `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
@@ -38,13 +45,24 @@ export function DisputeResolution({ projectId }: DisputeResolutionProps) {
         <CardTitle>Dispute Resolution</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <DisputeForm projectId={projectId} />
-        {disputes && disputes.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4">Active Disputes</h3>
-            <DisputeList disputes={disputes} />
-          </div>
-        )}
+        <Tabs defaultValue="active">
+          <TabsList>
+            <TabsTrigger value="active">Active Disputes</TabsTrigger>
+            <TabsTrigger value="new">New Dispute</TabsTrigger>
+          </TabsList>
+          <TabsContent value="active">
+            {disputes && disputes.length > 0 ? (
+              <DisputeList disputes={disputes} />
+            ) : (
+              <p className="text-muted-foreground text-center py-4">
+                No active disputes
+              </p>
+            )}
+          </TabsContent>
+          <TabsContent value="new">
+            <DisputeForm projectId={projectId} />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
