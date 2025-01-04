@@ -1917,6 +1917,58 @@ export type Database = {
         }
         Relationships: []
       }
+      milestone_updates: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          milestone_id: string | null
+          photos: Json | null
+          update_type: string
+          updater_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          milestone_id?: string | null
+          photos?: Json | null
+          update_type: string
+          updater_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          milestone_id?: string | null
+          photos?: Json | null
+          update_type?: string
+          updater_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_updates_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "project_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestone_updates_updater_id_fkey"
+            columns: ["updater_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestone_updates_updater_id_fkey"
+            columns: ["updater_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -1959,17 +2011,117 @@ export type Database = {
         }
         Relationships: []
       }
+      project_contracts: {
+        Row: {
+          content: Json
+          contract_type: string
+          created_at: string
+          id: string
+          project_id: string | null
+          signed_by_client_at: string | null
+          signed_by_contractor_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          contract_type: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          signed_by_client_at?: string | null
+          signed_by_contractor_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          contract_type?: string
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          signed_by_client_at?: string | null
+          signed_by_contractor_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_delay_notifications: {
+        Row: {
+          created_at: string
+          delay_days: number
+          id: string
+          milestone_id: string | null
+          project_id: string | null
+          resolution_action: string | null
+          severity: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delay_days: number
+          id?: string
+          milestone_id?: string | null
+          project_id?: string | null
+          resolution_action?: string | null
+          severity: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delay_days?: number
+          id?: string
+          milestone_id?: string | null
+          project_id?: string | null
+          resolution_action?: string | null
+          severity?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_delay_notifications_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "project_milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_delay_notifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_disputes: {
         Row: {
           against_id: string | null
           created_at: string
           description: string
           id: string
+          mediation_notes: string | null
+          mediation_status: string | null
           mediator_id: string | null
           project_id: string | null
           raised_by_id: string | null
+          resolution_accepted_by_client: boolean | null
+          resolution_accepted_by_contractor: boolean | null
           resolution_date: string | null
           resolution_notes: string | null
+          resolution_type: string | null
           status: string | null
           task_id: string | null
           updated_at: string
@@ -1979,11 +2131,16 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          mediation_notes?: string | null
+          mediation_status?: string | null
           mediator_id?: string | null
           project_id?: string | null
           raised_by_id?: string | null
+          resolution_accepted_by_client?: boolean | null
+          resolution_accepted_by_contractor?: boolean | null
           resolution_date?: string | null
           resolution_notes?: string | null
+          resolution_type?: string | null
           status?: string | null
           task_id?: string | null
           updated_at?: string
@@ -1993,11 +2150,16 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          mediation_notes?: string | null
+          mediation_status?: string | null
           mediator_id?: string | null
           project_id?: string | null
           raised_by_id?: string | null
+          resolution_accepted_by_client?: boolean | null
+          resolution_accepted_by_contractor?: boolean | null
           resolution_date?: string | null
           resolution_notes?: string | null
+          resolution_type?: string | null
           status?: string | null
           task_id?: string | null
           updated_at?: string
@@ -2132,39 +2294,68 @@ export type Database = {
       }
       project_milestones: {
         Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
           assigned_contractor_id: string | null
           build_estimate_id: string | null
+          completion_evidence: Json | null
           created_at: string
           description: string | null
           due_date: string | null
           id: string
+          photos: Json | null
           status: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           assigned_contractor_id?: string | null
           build_estimate_id?: string | null
+          completion_evidence?: Json | null
           created_at?: string
           description?: string | null
           due_date?: string | null
           id?: string
+          photos?: Json | null
           status?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           assigned_contractor_id?: string | null
           build_estimate_id?: string | null
+          completion_evidence?: Json | null
           created_at?: string
           description?: string | null
           due_date?: string | null
           id?: string
+          photos?: Json | null
           status?: string | null
           title?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "project_milestones_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_milestones_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_milestones_assigned_contractor_id_fkey"
             columns: ["assigned_contractor_id"]
@@ -2471,6 +2662,63 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timeline_agreements: {
+        Row: {
+          agreed_completion_date: string
+          contractor_id: string | null
+          created_at: string
+          delay_threshold_days: number | null
+          id: string
+          notification_frequency: string | null
+          project_id: string | null
+          signed_at: string | null
+          status: string | null
+          terms: Json | null
+          updated_at: string
+        }
+        Insert: {
+          agreed_completion_date: string
+          contractor_id?: string | null
+          created_at?: string
+          delay_threshold_days?: number | null
+          id?: string
+          notification_frequency?: string | null
+          project_id?: string | null
+          signed_at?: string | null
+          status?: string | null
+          terms?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          agreed_completion_date?: string
+          contractor_id?: string | null
+          created_at?: string
+          delay_threshold_days?: number | null
+          id?: string
+          notification_frequency?: string | null
+          project_id?: string | null
+          signed_at?: string | null
+          status?: string | null
+          terms?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_agreements_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timeline_agreements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]

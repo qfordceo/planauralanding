@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectTimeline } from "./timeline/ProjectTimeline";
 import { ProjectOverview } from "./tabs/ProjectOverview";
-import { ProjectTasksTab } from "./tabs/ProjectTasksTab";
-import { ProjectDisputesTab } from "./tabs/ProjectDisputesTab";
-import { ProjectDocumentsTab } from "./tabs/ProjectDocumentsTab";
+import { ContractWorkflow } from "../contracts/ContractWorkflow";
+import { MilestoneTracker } from "../milestones/MilestoneTracker";
+import { DisputeResolution } from "../disputes/DisputeResolution";
+import { TimelineEnforcement } from "../timeline/TimelineEnforcement";
 import { Loader2 } from "lucide-react";
 
 interface ProjectDetailsProps {
@@ -51,28 +52,30 @@ export function ProjectDetails({ projectId, tasks }: ProjectDetailsProps) {
         description={project.description} 
       />
 
-      <Tabs defaultValue="timeline">
+      <ContractWorkflow projectId={projectId} />
+
+      <Tabs defaultValue="timeline" className="w-full">
         <TabsList>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="disputes">Disputes</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="enforcement">Timeline Enforcement</TabsTrigger>
         </TabsList>
 
         <TabsContent value="timeline" className="mt-6">
           <ProjectTimeline projectId={projectId} tasks={tasks} />
         </TabsContent>
 
-        <TabsContent value="tasks" className="mt-6">
-          <ProjectTasksTab />
+        <TabsContent value="milestones" className="mt-6">
+          <MilestoneTracker projectId={projectId} />
         </TabsContent>
 
         <TabsContent value="disputes" className="mt-6">
-          <ProjectDisputesTab />
+          <DisputeResolution projectId={projectId} />
         </TabsContent>
 
-        <TabsContent value="documents" className="mt-6">
-          <ProjectDocumentsTab />
+        <TabsContent value="enforcement" className="mt-6">
+          <TimelineEnforcement projectId={projectId} />
         </TabsContent>
       </Tabs>
     </div>
