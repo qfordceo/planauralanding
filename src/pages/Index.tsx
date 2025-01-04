@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ListingsSection } from "@/components/listings/ListingsSection";
 import { ContractorProfileList } from "@/components/contractor/profile/ContractorProfileList";
 import ListingsModal from "@/components/ListingsModal";
+import { ProjectManagementSection } from "@/components/projects/ProjectManagementSection";
 
 export default function Index() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +26,8 @@ export default function Index() {
 
   return (
     <div className="container mx-auto py-8">
+      {session && <ProjectManagementSection userId={session.user.id} />}
+      
       <ListingsSection session={session} />
 
       <div className="mt-16">

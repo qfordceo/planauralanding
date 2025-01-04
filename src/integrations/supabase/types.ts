@@ -1959,6 +1959,108 @@ export type Database = {
         }
         Relationships: []
       }
+      project_disputes: {
+        Row: {
+          against_id: string | null
+          created_at: string
+          description: string
+          id: string
+          mediator_id: string | null
+          project_id: string | null
+          raised_by_id: string | null
+          resolution_date: string | null
+          resolution_notes: string | null
+          status: string | null
+          task_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          against_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          mediator_id?: string | null
+          project_id?: string | null
+          raised_by_id?: string | null
+          resolution_date?: string | null
+          resolution_notes?: string | null
+          status?: string | null
+          task_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          against_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          mediator_id?: string | null
+          project_id?: string | null
+          raised_by_id?: string | null
+          resolution_date?: string | null
+          resolution_notes?: string | null
+          status?: string | null
+          task_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_disputes_against_id_fkey"
+            columns: ["against_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disputes_against_id_fkey"
+            columns: ["against_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disputes_mediator_id_fkey"
+            columns: ["mediator_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disputes_mediator_id_fkey"
+            columns: ["mediator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disputes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disputes_raised_by_id_fkey"
+            columns: ["raised_by_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disputes_raised_by_id_fkey"
+            columns: ["raised_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disputes_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_messages: {
         Row: {
           created_at: string | null
@@ -2079,6 +2181,133 @@ export type Database = {
           },
         ]
       }
+      project_task_templates: {
+        Row: {
+          category: Database["public"]["Enums"]["task_category"]
+          created_at: string
+          dependencies: string[] | null
+          description: string | null
+          estimated_duration: number | null
+          id: string
+          required_inspections: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["task_category"]
+          created_at?: string
+          dependencies?: string[] | null
+          description?: string | null
+          estimated_duration?: number | null
+          id?: string
+          required_inspections?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["task_category"]
+          created_at?: string
+          dependencies?: string[] | null
+          description?: string | null
+          estimated_duration?: number | null
+          id?: string
+          required_inspections?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      project_tasks: {
+        Row: {
+          assigned_contractor_id: string | null
+          attachments: Json | null
+          category: Database["public"]["Enums"]["task_category"]
+          completed_date: string | null
+          completion_notes: string | null
+          created_at: string
+          dependencies: string[] | null
+          description: string | null
+          due_date: string | null
+          id: string
+          inspection_date: string | null
+          inspection_notes: string | null
+          inspection_required: boolean | null
+          inspection_status: Database["public"]["Enums"]["task_status"] | null
+          project_id: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["task_status"] | null
+          template_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_contractor_id?: string | null
+          attachments?: Json | null
+          category: Database["public"]["Enums"]["task_category"]
+          completed_date?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          dependencies?: string[] | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          inspection_date?: string | null
+          inspection_notes?: string | null
+          inspection_required?: boolean | null
+          inspection_status?: Database["public"]["Enums"]["task_status"] | null
+          project_id?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["task_status"] | null
+          template_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_contractor_id?: string | null
+          attachments?: Json | null
+          category?: Database["public"]["Enums"]["task_category"]
+          completed_date?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          dependencies?: string[] | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          inspection_date?: string | null
+          inspection_notes?: string | null
+          inspection_required?: boolean | null
+          inspection_status?: Database["public"]["Enums"]["task_status"] | null
+          project_id?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["task_status"] | null
+          template_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tasks_assigned_contractor_id_fkey"
+            columns: ["assigned_contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tasks_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "project_task_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
@@ -2087,6 +2316,7 @@ export type Database = {
           status: string | null
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2095,6 +2325,7 @@ export type Database = {
           status?: string | null
           title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2103,8 +2334,24 @@ export type Database = {
           status?: string | null
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_limits: {
         Row: {
@@ -2172,6 +2419,55 @@ export type Database = {
           },
           {
             foreignKeyName: "saved_builds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_updates: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string
+          id: string
+          task_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          task_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          task_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_updates_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "project_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_updates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_updates_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -2373,6 +2669,28 @@ export type Database = {
         | "tools_equipment"
         | "business_management"
         | "marketing_tips"
+      task_category:
+        | "land_preparation"
+        | "permits_and_approvals"
+        | "foundation"
+        | "framing"
+        | "plumbing"
+        | "electrical"
+        | "hvac"
+        | "roofing"
+        | "exterior"
+        | "interior"
+        | "landscaping"
+        | "inspections"
+        | "final_review"
+      task_status:
+        | "not_started"
+        | "in_progress"
+        | "completed"
+        | "blocked"
+        | "not_applicable"
+        | "needs_review"
+        | "approved"
     }
     CompositeTypes: {
       [_ in never]: never
