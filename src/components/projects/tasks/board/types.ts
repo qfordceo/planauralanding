@@ -1,5 +1,20 @@
 export type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'needs_review' | 'completed';
-export type TaskCategory = 'land_preparation' | 'permits_and_approvals' | 'utilities' | 'foundation' | 'framing' | 'plumbing' | 'electrical' | 'hvac' | 'roofing' | 'exterior' | 'interior' | 'landscaping' | 'inspections';
+
+export type TaskCategory = 
+  | 'land_preparation' 
+  | 'permits_and_approvals' 
+  | 'utilities' 
+  | 'foundation' 
+  | 'framing' 
+  | 'plumbing' 
+  | 'electrical' 
+  | 'hvac' 
+  | 'roofing' 
+  | 'exterior' 
+  | 'interior' 
+  | 'landscaping' 
+  | 'inspections';
+
 export type InspectionStatus = 'not_required' | 'scheduled' | 'passed' | 'failed' | 'rescheduled';
 
 export interface Task {
