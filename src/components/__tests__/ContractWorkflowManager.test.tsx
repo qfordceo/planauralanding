@@ -72,4 +72,30 @@ describe('ContractWorkflowManager', () => {
       expect(screen.getByText(/error/i)).toBeInTheDocument();
     });
   });
+
+  it('shows correct workflow stage based on contract status', async () => {
+    const customMockContract = {
+      ...mockContract,
+      workflow_stage: 'client_review'
+    };
+
+    const mockSupabase = vi.mocked(supabase);
+    mockSupabase.from = vi.fn().mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: customMockContract, error: null })
+        })
+      })
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ContractWorkflowManager projectId="test-project" />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Contract Review/i)).toBeInTheDocument();
+    });
+  });
 });
