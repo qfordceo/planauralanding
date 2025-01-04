@@ -2,6 +2,19 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ContractWorkflowManager } from '../contracts/ContractWorkflowManager';
 import { vi } from 'vitest';
+import { supabase } from '@/integrations/supabase/client';
+
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: mockContract, error: null })
+        })
+      })
+    })
+  }
+}));
 
 const queryClient = new QueryClient();
 
@@ -15,18 +28,6 @@ const mockContract = {
     payment_schedule: 'Test schedule'
   }
 };
-
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: () => Promise.resolve({ data: mockContract, error: null })
-        })
-      })
-    })
-  }
-}));
 
 describe('ContractWorkflowManager', () => {
   it('renders loading state initially', () => {
@@ -52,13 +53,14 @@ describe('ContractWorkflowManager', () => {
   });
 
   it('handles errors gracefully', async () => {
-    vi.mocked(supabase.from).mockImplementationOnce(() => ({
+    const mockSupabase = vi.mocked(supabase);
+    mockSupabase.from = vi.fn().mockReturnValue({
       select: () => ({
         eq: () => ({
           single: () => Promise.resolve({ data: null, error: new Error('Test error') })
         })
       })
-    }));
+    });
 
     render(
       <QueryClientProvider client={queryClient}>

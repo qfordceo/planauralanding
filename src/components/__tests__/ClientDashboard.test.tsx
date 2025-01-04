@@ -2,21 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ClientDashboard } from '../client/ClientDashboard';
 import { vi } from 'vitest';
-
-const queryClient = new QueryClient();
-
-const mockActiveProject = {
-  id: 'test-project',
-  title: 'Test Project',
-  description: 'Test Description',
-  status: 'active',
-  project_contracts: [
-    {
-      id: 'test-contract',
-      status: 'draft'
-    }
-  ]
-};
+import { supabase } from '@/integrations/supabase/client';
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -34,6 +20,21 @@ vi.mock('@/integrations/supabase/client', () => ({
     })
   }
 }));
+
+const queryClient = new QueryClient();
+
+const mockActiveProject = {
+  id: 'test-project',
+  title: 'Test Project',
+  description: 'Test Description',
+  status: 'active',
+  project_contracts: [
+    {
+      id: 'test-contract',
+      status: 'draft'
+    }
+  ]
+};
 
 describe('ClientDashboard', () => {
   it('renders timeline for active project', async () => {
@@ -73,7 +74,8 @@ describe('ClientDashboard', () => {
   });
 
   it('shows welcome message when no active project', async () => {
-    vi.mocked(supabase.from).mockImplementationOnce(() => ({
+    const mockSupabase = vi.mocked(supabase);
+    mockSupabase.from = vi.fn().mockReturnValue({
       select: () => ({
         eq: () => ({
           eq: () => ({
@@ -81,7 +83,7 @@ describe('ClientDashboard', () => {
           })
         })
       })
-    }));
+    });
 
     render(
       <QueryClientProvider client={queryClient}>
