@@ -1701,6 +1701,58 @@ export type Database = {
           },
         ]
       }
+      document_versions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          document_id: string
+          file_path: string
+          id: string
+          metadata: Json | null
+          version_number: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          document_id: string
+          file_path: string
+          id?: string
+          metadata?: Json | null
+          version_number: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          document_id?: string
+          file_path?: string
+          id?: string
+          metadata?: Json | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "project_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       educational_resources: {
         Row: {
           category: string
@@ -2297,6 +2349,7 @@ export type Database = {
           contract_type: string
           contractor_signature_data: Json | null
           created_at: string
+          current_version: number | null
           id: string
           last_action_at: string | null
           last_notification_sent: string | null
@@ -2315,6 +2368,7 @@ export type Database = {
           contract_type: string
           contractor_signature_data?: Json | null
           created_at?: string
+          current_version?: number | null
           id?: string
           last_action_at?: string | null
           last_notification_sent?: string | null
@@ -2333,6 +2387,7 @@ export type Database = {
           contract_type?: string
           contractor_signature_data?: Json | null
           created_at?: string
+          current_version?: number | null
           id?: string
           last_action_at?: string | null
           last_notification_sent?: string | null
