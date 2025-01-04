@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Package, Calculator } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,9 +29,10 @@ interface MaterialItem {
 
 interface MaterialsCardProps {
   floorPlanId: string;
+  onSelectionComplete?: () => void;
 }
 
-export function MaterialsCard({ floorPlanId }: MaterialsCardProps) {
+export function MaterialsCard({ floorPlanId, onSelectionComplete }: MaterialsCardProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [materialCategories, setMaterialCategories] = useState<MaterialCategory[]>([]);
@@ -87,6 +88,17 @@ export function MaterialsCard({ floorPlanId }: MaterialsCardProps) {
       title: "Product Selected",
       description: `${product.name} has been saved to your selections.`,
     });
+
+    // If all categories have at least one selection, call onSelectionComplete
+    const hasSelectionsInAllCategories = materialCategories.every(category =>
+      category.items.some(item => 
+        selectedMaterials[`${category.name}-${item.name}`]?.selectedProduct
+      )
+    );
+
+    if (hasSelectionsInAllCategories && onSelectionComplete) {
+      onSelectionComplete();
+    }
   };
 
   const getTotalEstimatedCost = () => {

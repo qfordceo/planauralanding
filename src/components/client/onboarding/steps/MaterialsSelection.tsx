@@ -10,6 +10,10 @@ interface MaterialsSelectionProps {
 export function MaterialsSelection({ onNext, onBack }: MaterialsSelectionProps) {
   const [materialsSelected, setMaterialsSelected] = useState(false);
 
+  const handleSelectionComplete = () => {
+    setMaterialsSelected(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -23,7 +27,7 @@ export function MaterialsSelection({ onNext, onBack }: MaterialsSelectionProps) 
 
       <MaterialsCard 
         floorPlanId="placeholder-id" 
-        onSelectionComplete={() => setMaterialsSelected(true)}
+        onSelectionComplete={handleSelectionComplete}
       />
 
       <div className="flex justify-between mt-8">
