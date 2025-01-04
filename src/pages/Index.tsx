@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import ListingsModal from "@/components/ListingsModal"
 import { ListingCard } from "@/components/listings/ListingCard"
+import { ContractorProfileList } from "@/components/contractor/profile/ContractorProfileList"
 import { useListings } from "@/hooks/useListings"
 import { Session } from "@supabase/supabase-js"
 
@@ -148,10 +149,15 @@ export default function Index() {
         </div>
       )}
 
+      <div className="mt-16">
+        <h2 className="text-3xl font-bold mb-8">Our Trusted Contractors</h2>
+        <ContractorProfileList />
+      </div>
+
       <ListingsModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
       />
     </div>
-  )
+  );
 }
