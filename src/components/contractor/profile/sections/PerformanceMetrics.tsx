@@ -1,5 +1,5 @@
 import { Clock, Briefcase, MessageCircle } from "lucide-react";
-import { ContractorMetrics } from "@/types/contractor";
+import type { ContractorMetrics } from "@/types/contractor";
 
 interface PerformanceMetricsProps {
   metrics: ContractorMetrics;

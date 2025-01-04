@@ -8,6 +8,8 @@ import { ContractorHeader } from "./sections/ContractorHeader";
 import { PerformanceMetrics } from "./sections/PerformanceMetrics";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { CheckCircle } from "lucide-react";
+import type { BadgeType } from "@/types/contractor";
 
 interface ContractorProfileCardProps {
   contractor: Contractor;

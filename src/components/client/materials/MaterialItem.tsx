@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/utils";
 import { useLocalStorage } from "@/hooks/use-local-storage";
-import { MaterialItem as MaterialItemType } from "./types";
+import type { MaterialItem as MaterialItemType } from "@/types/materials";
 
 interface MaterialItemProps {
   item: MaterialItemType;

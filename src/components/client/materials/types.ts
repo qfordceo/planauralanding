@@ -13,3 +13,5 @@ export interface MaterialsListProps {
   materialCategories: MaterialCategory[];
   onSelectionComplete?: () => void;
 }
+
+export type { MaterialCategory };
