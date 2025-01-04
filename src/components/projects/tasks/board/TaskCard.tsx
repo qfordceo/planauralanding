@@ -1,23 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, AlertCircle } from "lucide-react";
+import { AlertCircle, Calendar } from "lucide-react";
 import { format } from "date-fns";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  category: string;
-  inspection_required: boolean;
-  inspection_status: string | null;
-  due_date: string | null;
-}
-
-interface TaskCardProps {
-  task: Task;
-  onDragStart: (e: React.DragEvent) => void;
-}
+import { TaskCardProps } from "./types";
 
 export function TaskCard({ task, onDragStart }: TaskCardProps) {
   const getCategoryColor = (category: string) => {

@@ -18,9 +18,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { TaskCategory } from "./types";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { TaskCategory } from "./types";
 
 interface NewTaskDialogProps {
   projectId: string;
@@ -68,7 +68,7 @@ export function NewTaskDialog({ projectId, open, onOpenChange }: NewTaskDialogPr
         description: "The task has been created successfully.",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error creating task",
         description: "There was an error creating the task. Please try again.",

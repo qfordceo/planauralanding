@@ -1,30 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Plus, AlertCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TaskColumn } from "./TaskColumn";
-import { TaskCard } from "./TaskCard";
 import { NewTaskDialog } from "./NewTaskDialog";
 import { useState } from "react";
+import { Task, TaskStatus } from "./types";
 
 interface TaskBoardProps {
   projectId: string;
-}
-
-type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'needs_review' | 'completed';
-
-interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  status: TaskStatus;
-  category: string;
-  inspection_required: boolean;
-  inspection_status: string | null;
-  due_date: string | null;
 }
 
 const statusColumns: { status: TaskStatus; label: string }[] = [
@@ -38,22 +25,14 @@ const statusColumns: { status: TaskStatus; label: string }[] = [
 export function TaskBoard({ projectId }: TaskBoardProps) {
   const [showNewTask, setShowNewTask] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: tasks, isLoading } = useQuery({
     queryKey: ['project-tasks', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_tasks')
-        .select(`
-          id,
-          title,
-          description,
-          status,
-          category,
-          inspection_required,
-          inspection_status,
-          due_date
-        `)
+        .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: true });
 
@@ -70,30 +49,35 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
     },
   });
 
-  const handleDragStart = (e: React.DragEvent, taskId: string) => {
-    e.dataTransfer.setData('taskId', taskId);
-  };
+  const updateTaskStatus = useMutation({
+    mutationFn: async ({ taskId, newStatus }: { taskId: string; newStatus: TaskStatus }) => {
+      const { error } = await supabase
+        .from('project_tasks')
+        .update({ status: newStatus })
+        .eq('id', taskId);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = async (e: React.DragEvent, newStatus: TaskStatus) => {
-    e.preventDefault();
-    const taskId = e.dataTransfer.getData('taskId');
-    
-    const { error } = await supabase
-      .from('project_tasks')
-      .update({ status: newStatus })
-      .eq('id', taskId);
-
-    if (error) {
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
+    },
+    onError: (error) => {
       toast({
         title: "Error updating task",
         description: error.message,
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, newStatus: TaskStatus) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
+    updateTaskStatus.mutate({ taskId, newStatus });
   };
 
   if (isLoading) {
@@ -120,19 +104,11 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
               <TaskColumn
                 key={status}
                 title={label}
+                status={status}
+                tasks={tasks?.filter((task) => task.status === status) || []}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, status)}
-              >
-                {tasks
-                  ?.filter((task) => task.status === status)
-                  .map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      onDragStart={(e) => handleDragStart(e, task.id)}
-                    />
-                  ))}
-              </TaskColumn>
+              />
             ))}
           </div>
         </ScrollArea>
