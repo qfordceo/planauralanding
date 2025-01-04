@@ -9,9 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Calendar, AlertTriangle, CheckCircle } from "lucide-react"
+import { Calendar, AlertTriangle, CheckCircle, AlertOctagon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 export function DocumentRenewalTable() {
   const { toast } = useToast()
@@ -57,28 +58,42 @@ export function DocumentRenewalTable() {
             );
             
             return (
-              <TableRow key={doc.id}>
+              <TableRow 
+                key={doc.id}
+                className={cn(
+                  daysUntilExpiry <= 7 && "bg-red-50",
+                  daysUntilExpiry <= 14 && daysUntilExpiry > 7 && "bg-yellow-50"
+                )}
+              >
                 <TableCell>{doc.contractors?.business_name}</TableCell>
                 <TableCell className="capitalize">{doc.document_type.replace('_', ' ')}</TableCell>
                 <TableCell>{new Date(doc.expiration_date).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    {daysUntilExpiry <= 7 ? (
+                    {daysUntilExpiry <= 3 ? (
+                      <AlertOctagon className="h-4 w-4 text-red-600 animate-pulse" />
+                    ) : daysUntilExpiry <= 7 ? (
                       <AlertTriangle className="h-4 w-4 text-red-500" />
                     ) : daysUntilExpiry <= 14 ? (
                       <AlertTriangle className="h-4 w-4 text-yellow-500" />
                     ) : (
                       <Calendar className="h-4 w-4 text-blue-500" />
                     )}
-                    {daysUntilExpiry} days
+                    <span className={cn(
+                      "font-medium",
+                      daysUntilExpiry <= 3 && "text-red-600",
+                      daysUntilExpiry <= 7 && daysUntilExpiry > 3 && "text-red-500",
+                      daysUntilExpiry <= 14 && daysUntilExpiry > 7 && "text-yellow-500"
+                    )}>
+                      {daysUntilExpiry} days
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
                   <Button 
-                    variant="outline" 
+                    variant={daysUntilExpiry <= 7 ? "destructive" : "outline"} 
                     size="sm"
                     onClick={() => {
-                      // Send renewal reminder
                       toast({
                         title: "Reminder Sent",
                         description: "Renewal reminder has been sent to the contractor.",
