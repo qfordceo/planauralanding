@@ -26,13 +26,16 @@ serve(async (req) => {
     Current Estimated Cost: $${buildEstimate.total_estimated_cost}
     Current Actual Cost: $${buildEstimate.total_actual_cost}
     
-    Provide a concise analysis of:
+    Provide a detailed analysis of:
     1. Cost efficiency compared to target
     2. Potential cost saving opportunities
-    3. Risk factors
-    4. Timeline implications
+    3. Risk factors and mitigation strategies
+    4. Timeline implications and recommendations
+    5. Material selection optimization
+    6. Labor cost management
+    7. Quality vs cost trade-offs
     
-    Keep the response under 250 words and focus on actionable insights.`
+    Focus on actionable insights and specific recommendations. Include numerical comparisons where relevant.`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -41,9 +44,9 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'You are a construction cost analysis expert.' },
+          { role: 'system', content: 'You are a construction cost analysis expert with deep knowledge of building economics, material costs, and project management.' },
           { role: 'user', content: prompt }
         ],
       }),
