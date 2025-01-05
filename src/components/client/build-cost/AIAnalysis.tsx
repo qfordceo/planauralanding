@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, MessageSquare } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AIAnalysisProps {
-  buildEstimate: any;
+  buildEstimate: {
+    floor_plans: any;
+    land_listings: any;
+    line_items: any[];
+    target_build_cost: number;
+    total_estimated_cost: number;
+    total_awarded_cost: number;
+    total_actual_cost: number;
+    land_cost: number;
+  };
 }
 
 export function AIAnalysis({ buildEstimate }: AIAnalysisProps) {
@@ -23,9 +31,6 @@ export function AIAnalysis({ buildEstimate }: AIAnalysisProps) {
           buildEstimate,
           floorPlan: buildEstimate.floor_plans,
           landListing: buildEstimate.land_listings
-        },
-        headers: {
-          'Content-Type': 'application/json'
         }
       });
 
@@ -62,7 +67,7 @@ export function AIAnalysis({ buildEstimate }: AIAnalysisProps) {
           </>
         ) : (
           <>
-            <MessageSquare className="mr-2 h-4 w-4" />
+            <Sparkles className="mr-2 h-4 w-4" />
             Get AI Build Analysis
           </>
         )}
