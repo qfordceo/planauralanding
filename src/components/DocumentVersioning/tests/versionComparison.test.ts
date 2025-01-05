@@ -9,6 +9,7 @@ describe('versionComparison', () => {
       version_number: 2,
       file_path: '/path/2',
       created_at: new Date().toISOString(),
+      created_by: 'user-1',
       metadata: {
         original_name: 'doc-v2.pdf',
         size: 2048,
@@ -21,6 +22,7 @@ describe('versionComparison', () => {
       version_number: 1,
       file_path: '/path/1',
       created_at: new Date(Date.now() - 86400000).toISOString(),
+      created_by: 'user-1',
       metadata: {
         original_name: 'doc-v1.pdf',
         size: 1024,
