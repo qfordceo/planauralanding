@@ -13,7 +13,7 @@ import { ContractorRegistration } from "@/components/contractor/dashboard/Contra
 import { TermsModal } from "@/components/contractor/dashboard/TermsModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { ClientDashboard } from "@/pages/ClientDashboard";
+import ClientDashboard from "@/pages/ClientDashboard";
 
 const queryClient = new QueryClient();
 

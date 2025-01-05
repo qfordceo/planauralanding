@@ -84,3 +84,6 @@ export function ClientDashboard() {
     </div>
   );
 }
+
+// Add default export
+export default ClientDashboard;
