@@ -12,8 +12,8 @@ import { NoProfileState } from "@/components/contractor/dashboard/NoProfileState
 import { ContractorRegistration } from "@/components/contractor/dashboard/ContractorRegistration";
 import { TermsModal } from "@/components/contractor/dashboard/TermsModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import ClientDashboard from "@/pages/ClientDashboard";
+import AdminDashboard from "./AdminDashboard";
+import ClientDashboard from "./ClientDashboard";
 
 const queryClient = new QueryClient();
 

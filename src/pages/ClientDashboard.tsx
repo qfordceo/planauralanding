@@ -6,7 +6,7 @@ import { DashboardHeader } from "@/components/client/dashboard/DashboardHeader";
 import { DashboardGrid } from "@/components/client/dashboard/DashboardGrid";
 import type { Profile } from "@/types/profile";
 
-export function ClientDashboard() {
+export default function ClientDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = React.useState<string | null>(null);
   
@@ -84,6 +84,3 @@ export function ClientDashboard() {
     </div>
   );
 }
-
-// Add default export
-export default ClientDashboard;
