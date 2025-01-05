@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RealTimeCosts } from "./RealTimeCosts";
 import { CostSummary } from "./CostSummary";
@@ -19,6 +20,21 @@ export function CostOverview({
   targetBuildCost,
   onCostUpdate 
 }: CostOverviewProps) {
+  const [costs, setCosts] = useState({
+    estimated: 0,
+    awarded: 0,
+    actual: 0
+  });
+
+  const handleCostUpdate = (newCosts: {
+    estimated: number;
+    awarded: number;
+    actual: number;
+  }) => {
+    setCosts(newCosts);
+    onCostUpdate(newCosts);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -27,7 +43,7 @@ export function CostOverview({
       <CardContent className="space-y-6">
         <RealTimeCosts
           buildEstimateId={floorPlanId}
-          onCostUpdate={onCostUpdate}
+          onCostUpdate={handleCostUpdate}
         />
 
         <CostSummary
