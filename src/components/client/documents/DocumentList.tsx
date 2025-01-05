@@ -12,6 +12,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { ALLOWED_FILE_TYPES } from "@/constants/fileTypes";
+import { LucideIcon } from "lucide-react";
 
 interface Document {
   id: string;
@@ -32,7 +33,7 @@ export function DocumentList({ documents, searchTerm, isLoading, onDownloadVersi
   const [versions, setVersions] = useState<DocumentVersion[]>([]);
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
 
-  const getFileIcon = (contentType: string) => {
+  const getFileIcon = (contentType: string): LucideIcon => {
     const fileConfig = ALLOWED_FILE_TYPES[contentType as keyof typeof ALLOWED_FILE_TYPES];
     return fileConfig?.icon || File;
   };
