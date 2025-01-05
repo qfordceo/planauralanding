@@ -42,6 +42,13 @@ export function useContractWorkflow(projectId: string) {
               scope: "Full home construction as per approved plans...",
               payment_schedule: "As per milestone completion...",
             },
+            workflow_metadata: {},
+            validation_status: {},
+            stage_history: [{
+              stage: "setup",
+              timestamp: new Date().toISOString(),
+              actor_id: (await supabase.auth.getUser()).data.user?.id
+            }]
           },
         ])
         .select()
@@ -68,59 +75,57 @@ export function useContractWorkflow(projectId: string) {
     },
   });
 
-  const signContractMutation = useMutation({
-    mutationFn: async () => {
-      const { data: userResponse } = await supabase.auth.getUser();
-      const isClient = contract?.project.user_id === userResponse.user?.id;
-      
-      const updates = {
-        ...(isClient ? {
-          workflow_stage: "contractor_review",
-          client_signature_data: { signed_at: new Date().toISOString() },
-          signed_by_client_at: new Date().toISOString()
-        } : {
-          workflow_stage: "completed",
-          contractor_signature_data: { signed_at: new Date().toISOString() },
-          signed_by_contractor_at: new Date().toISOString(),
-          status: "signed"
-        })
-      };
-
+  const updateWorkflowStageMutation = useMutation({
+    mutationFn: async (newStage: string) => {
+      const user = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("project_contracts")
-        .update(updates)
+        .update({
+          workflow_stage: newStage,
+          stage_history: [
+            ...(contract?.stage_history || []),
+            {
+              stage: newStage,
+              timestamp: new Date().toISOString(),
+              actor_id: user.data.user?.id
+            }
+          ]
+        })
         .eq("id", contract?.id)
         .select()
         .single();
 
       if (error) throw error;
-
-      if (isClient) {
-        await supabase.functions.invoke("send-contract-email", {
-          body: {
-            contractId: contract.id,
-            recipientId: data.contractor_id,
-            notificationType: "review"
-          },
-        });
-      } else {
-        await supabase.functions.invoke("send-contract-email", {
-          body: {
-            contractId: contract.id,
-            recipientId: contract.project.user_id,
-            notificationType: "completed"
-          },
-        });
-      }
-
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project-contract"] });
       toast({
-        title: "Contract Signed",
-        description: "The contract has been successfully signed",
+        title: "Workflow Updated",
+        description: "Contract stage has been updated successfully",
       });
+    },
+  });
+
+  const validateStageMutation = useMutation({
+    mutationFn: async (validationData: Record<string, boolean>) => {
+      const { data, error } = await supabase
+        .from("project_contracts")
+        .update({
+          validation_status: {
+            ...(contract?.validation_status || {}),
+            ...validationData
+          }
+        })
+        .eq("id", contract?.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project-contract"] });
     },
   });
 
@@ -128,8 +133,10 @@ export function useContractWorkflow(projectId: string) {
     contract,
     isLoading,
     createContract: createContractMutation.mutate,
-    signContract: signContractMutation.mutate,
-    isSigningContract: signContractMutation.isPending,
+    updateWorkflowStage: updateWorkflowStageMutation.mutate,
+    validateStage: validateStageMutation.mutate,
+    isUpdatingStage: updateWorkflowStageMutation.isPending,
+    isValidating: validateStageMutation.isPending,
     isCreatingContract: createContractMutation.isPending
   };
 }

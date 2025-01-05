@@ -2427,9 +2427,12 @@ export type Database = {
           signed_by_contractor_at: string | null
           signing_history: Json | null
           signing_status: string
+          stage_history: Json[] | null
           status: string
           updated_at: string
+          validation_status: Json | null
           version_history: Json | null
+          workflow_metadata: Json | null
           workflow_stage: string | null
         }
         Insert: {
@@ -2450,9 +2453,12 @@ export type Database = {
           signed_by_contractor_at?: string | null
           signing_history?: Json | null
           signing_status?: string
+          stage_history?: Json[] | null
           status?: string
           updated_at?: string
+          validation_status?: Json | null
           version_history?: Json | null
+          workflow_metadata?: Json | null
           workflow_stage?: string | null
         }
         Update: {
@@ -2473,9 +2479,12 @@ export type Database = {
           signed_by_contractor_at?: string | null
           signing_history?: Json | null
           signing_status?: string
+          stage_history?: Json[] | null
           status?: string
           updated_at?: string
+          validation_status?: Json | null
           version_history?: Json | null
+          workflow_metadata?: Json | null
           workflow_stage?: string | null
         }
         Relationships: [

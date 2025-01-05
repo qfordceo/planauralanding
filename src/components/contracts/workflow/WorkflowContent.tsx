@@ -25,7 +25,17 @@ export function WorkflowContent({ projectId, contract }: WorkflowContentProps) {
         
         const { error } = await supabase
           .from('project_contracts')
-          .update({ workflow_stage: nextStage })
+          .update({ 
+            workflow_stage: nextStage,
+            stage_history: [
+              ...(contract.stage_history || []),
+              {
+                stage: nextStage,
+                timestamp: new Date().toISOString(),
+                actor_id: (await supabase.auth.getUser()).data.user?.id
+              }
+            ]
+          })
           .eq('id', contract.id);
 
         if (error) throw error;

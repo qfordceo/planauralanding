@@ -14,6 +14,13 @@ export interface Contract {
     scope: string;
     payment_schedule: string;
   };
+  workflow_metadata: Record<string, any>;
+  validation_status: Record<string, boolean>;
+  stage_history: Array<{
+    stage: WorkflowStage;
+    timestamp: string;
+    actor_id: string;
+  }>;
   project: {
     title: string;
     description: string;
