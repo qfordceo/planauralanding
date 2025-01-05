@@ -61,4 +61,17 @@ describe('versionComparison', () => {
       modified: []
     });
   });
+
+  it('detects file size changes correctly', () => {
+    const result = compareVersions(mockVersions, 2);
+    expect(result.diff.modified).toContain('File size changed from 1024 to 2048 bytes');
+  });
+
+  it('handles metadata comparison correctly', () => {
+    const versionsWithDifferentNames = [...mockVersions];
+    versionsWithDifferentNames[0].metadata.original_name = 'new-name.pdf';
+    
+    const result = compareVersions(versionsWithDifferentNames, 2);
+    expect(result.diff.modified).toContain('Filename changed from doc-v1.pdf to new-name.pdf');
+  });
 });

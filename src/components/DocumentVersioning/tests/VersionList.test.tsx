@@ -93,4 +93,32 @@ describe('VersionList', () => {
     expect(screen.getByText('(Latest)')).toBeInTheDocument();
     expect(screen.getByText('(Current)')).toBeInTheDocument();
   });
+
+  it('handles empty version list', () => {
+    render(
+      <VersionList
+        versions={[]}
+        currentVersion={1}
+        onVersionSelect={mockOnVersionSelect}
+        isLoading={false}
+      />
+    );
+
+    expect(screen.queryByText('v1')).not.toBeInTheDocument();
+  });
+
+  it('maintains correct order of versions', () => {
+    render(
+      <VersionList
+        versions={mockVersions}
+        currentVersion={1}
+        onVersionSelect={mockOnVersionSelect}
+        isLoading={false}
+      />
+    );
+
+    const versions = screen.getAllByRole('button');
+    expect(versions[0]).toHaveTextContent('v2');
+    expect(versions[1]).toHaveTextContent('v1');
+  });
 });

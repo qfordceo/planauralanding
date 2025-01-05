@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { join } from 'path';
+import { writeFileSync } from 'fs';
+import { tmpdir } from 'os';
 
 test.describe('Document Versioning', () => {
   test.beforeEach(async ({ page }) => {
@@ -8,11 +11,15 @@ test.describe('Document Versioning', () => {
   });
 
   test('creates a new document version', async ({ page }) => {
+    // Create a temporary test file
+    const testFilePath = join(tmpdir(), 'test-document.pdf');
+    writeFileSync(testFilePath, 'Test content');
+
     // Click create version button
     await page.click('button:has-text("Create Version")');
 
     // Upload new file
-    await page.setInputFiles('input[type="file"]', 'path/to/test-document.pdf');
+    await page.setInputFiles('input[type="file"]', testFilePath);
 
     // Wait for upload to complete
     await expect(page.locator('.toast-success')).toBeVisible();
@@ -45,9 +52,13 @@ test.describe('Document Versioning', () => {
   });
 
   test('handles large documents', async ({ page }) => {
-    // Upload large test file (10MB)
-    const largeFile = await generateLargeTestFile(10 * 1024 * 1024);
-    await page.setInputFiles('input[type="file"]', largeFile);
+    // Create a large test file (10MB)
+    const testFilePath = join(tmpdir(), 'large-test-document.pdf');
+    const content = Buffer.alloc(10 * 1024 * 1024, 'a');
+    writeFileSync(testFilePath, content);
+
+    // Upload large file
+    await page.setInputFiles('input[type="file"]', testFilePath);
 
     // Verify upload completes within reasonable time
     const startTime = Date.now();
@@ -61,8 +72,3 @@ test.describe('Document Versioning', () => {
     expect(Date.now() - startTime).toBeLessThan(1000); // Should switch within 1 second
   });
 });
-
-async function generateLargeTestFile(size: number): Promise<Blob> {
-  const content = new Array(size).fill('a').join('');
-  return new Blob([content], { type: 'application/pdf' });
-}
