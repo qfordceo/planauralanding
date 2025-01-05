@@ -46,6 +46,17 @@ export default function LandingPage() {
           <p>1234 Inspiration Lane, Suite 100, Scottsdale, AZ 85260</p>
           <p>(480) 555-0123</p>
         </div>
+
+        {/* Legal Links */}
+        <div className="border-t pt-8">
+          <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
+            <Link to="/privacy-policy" className="hover:text-primary">Privacy Policy</Link>
+            <Link to="/terms-of-service" className="hover:text-primary">Terms of Service</Link>
+            <Link to="/data-processing-agreement" className="hover:text-primary">Data Processing Agreement</Link>
+            <Link to="/legal-agreements" className="hover:text-primary">Legal Agreements</Link>
+            <span>© 2024 Plan Aura LLC. All rights reserved.</span>
+          </nav>
+        </div>
       </main>
     </div>
   );
