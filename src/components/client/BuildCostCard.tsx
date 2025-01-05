@@ -1,15 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
-import { CostSummary } from "./build-cost/CostSummary";
-import { RealTimeCosts } from "./build-cost/RealTimeCosts";
-import { LineItems } from "./build-cost/LineItems";
-import { AIAnalysis } from "./build-cost/AIAnalysis";
-import { TimelineComparison } from "@/components/timeline/monitoring/TimelineComparison";
-import { ProgressTracker } from "@/components/timeline/monitoring/ProgressTracker";
+import { CostOverview } from "./build-cost/CostOverview";
+import { DetailedAnalysis } from "./build-cost/DetailedAnalysis";
+import { InsightsSection } from "./build-cost/InsightsSection";
 
 interface BuildCostCardProps {
   floorPlanId: string;
@@ -84,62 +80,32 @@ export function BuildCostCard({ floorPlanId, landListingId, landCost }: BuildCos
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Build Cost Analysis</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <RealTimeCosts
-            buildEstimateId={floorPlanId}
-            onCostUpdate={setCosts}
-          />
+      <CostOverview
+        floorPlanId={floorPlanId}
+        landCost={landCost}
+        targetBuildCost={targetBuildCost}
+        onCostUpdate={setCosts}
+      />
 
-          <CostSummary
-            landCost={landCost}
-            targetBuildCost={targetBuildCost}
-            totalEstimatedCost={costs.estimated}
-            totalAwardedCost={costs.awarded}
-            totalActualCost={costs.actual}
-          />
+      <DetailedAnalysis
+        lineItems={lineItems}
+        milestones={milestones}
+        completionDate={buildData.floorPlan.completion_date}
+      />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-medium mb-4">Cost Breakdown</h4>
-              <LineItems items={lineItems} />
-            </div>
-            
-            <div>
-              <h4 className="font-medium mb-4">Progress Tracking</h4>
-              <ProgressTracker 
-                milestones={milestones} 
-                agreedCompletionDate={buildData.floorPlan.completion_date}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <TimelineComparison projectId={floorPlanId} />
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>AI Insights</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AIAnalysis buildEstimate={{
-              floor_plans: floorPlan,
-              land_listings: buildData.land,
-              line_items: lineItems,
-              target_build_cost: targetBuildCost,
-              total_estimated_cost: costs.estimated,
-              total_awarded_cost: costs.awarded,
-              total_actual_cost: costs.actual,
-              land_cost: landCost
-            }} />
-          </CardContent>
-        </Card>
-      </div>
+      <InsightsSection
+        projectId={floorPlanId}
+        buildEstimate={{
+          floor_plans: floorPlan,
+          land_listings: buildData.land,
+          line_items: lineItems,
+          target_build_cost: targetBuildCost,
+          total_estimated_cost: costs.estimated,
+          total_awarded_cost: costs.awarded,
+          total_actual_cost: costs.actual,
+          land_cost: landCost
+        }}
+      />
     </div>
   );
 }
