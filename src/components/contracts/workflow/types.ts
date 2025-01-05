@@ -2,6 +2,8 @@ export type WorkflowStage =
   | 'setup'
   | 'client_review'
   | 'contractor_review'
+  | 'review'
+  | 'signing'
   | 'completed';
 
 export interface Contract {
@@ -21,11 +23,6 @@ export interface Contract {
     timestamp: string;
     actor_id: string;
   }>;
-  project: {
-    title: string;
-    description: string;
-    user_id: string;
-  };
 }
 
 export interface WorkflowState {

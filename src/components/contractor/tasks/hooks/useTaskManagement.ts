@@ -20,6 +20,30 @@ export function useTaskManagement(contractorId: string) {
     },
   });
 
+  const createTask = useMutation({
+    mutationFn: async (taskData: { title: string; priority: string; status: string }) => {
+      const { error } = await supabase
+        .from('project_tasks')
+        .insert([{ ...taskData, assigned_contractor_id: contractorId }]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contractor-tasks'] });
+      toast({
+        title: "Success",
+        description: "Task created successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create task",
+        variant: "destructive",
+      });
+    },
+  });
+
   const markAsResolved = useMutation({
     mutationFn: async (taskId: string) => {
       const { error } = await supabase
@@ -48,6 +72,8 @@ export function useTaskManagement(contractorId: string) {
   return {
     tasks,
     isLoading,
+    createTask: createTask.mutate,
+    isCreating: createTask.isPending,
     markAsResolved: markAsResolved.mutate,
     isUpdating: markAsResolved.isPending
   };
