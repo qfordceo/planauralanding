@@ -17,30 +17,37 @@ import ContractorResourceHub from "./pages/ContractorResourceHub";
 import ContractorCompliance from "./pages/ContractorCompliance";
 import { AdminProvider } from "./contexts/AdminContext";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AdminProvider>
-        <Router>
+        <Router basename="/">
           <Routes>
             <Route element={<Layout />}>
-              <Route index element={<LandingPage />} />
-              <Route path="auth" element={<Auth />} />
-              <Route path="client-dashboard" element={<ClientDashboard />} />
-              <Route path="contractor-dashboard" element={<ContractorDashboard />} />
-              <Route path="admin-dashboard" element={<AdminDashboard />} />
-              <Route path="admin" element={<Navigate to="/admin-dashboard" replace />} />
-              <Route path="waitlist" element={<Waitlist />} />
-              <Route path="privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="terms-of-service" element={<TermsOfService />} />
-              <Route path="data-processing-agreement" element={<DataProcessingAgreement />} />
-              <Route path="legal-agreements" element={<LegalAgreements />} />
-              <Route path="terms-acknowledgment" element={<TermsAcknowledgment />} />
-              <Route path="contractor-registration/*" element={<ContractorRegistrationFlow />} />
-              <Route path="contractor-resources" element={<ContractorResourceHub />} />
-              <Route path="contractor-compliance" element={<ContractorCompliance />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/client-dashboard" element={<ClientDashboard />} />
+              <Route path="/contractor-dashboard" element={<ContractorDashboard />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/admin" element={<Navigate to="/admin-dashboard" replace />} />
+              <Route path="/waitlist" element={<Waitlist />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/data-processing-agreement" element={<DataProcessingAgreement />} />
+              <Route path="/legal-agreements" element={<LegalAgreements />} />
+              <Route path="/terms-acknowledgment" element={<TermsAcknowledgment />} />
+              <Route path="/contractor-registration/*" element={<ContractorRegistrationFlow />} />
+              <Route path="/contractor-resources" element={<ContractorResourceHub />} />
+              <Route path="/contractor-compliance" element={<ContractorCompliance />} />
             </Route>
           </Routes>
         </Router>

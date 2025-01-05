@@ -707,6 +707,13 @@ export type Database = {
             foreignKeyName: "contractor_bids_project_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "contractor_bids_project_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -970,6 +977,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "project_statistics"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "contractor_inspection_defects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics_secure"
             referencedColumns: ["project_id"]
           },
           {
@@ -2457,6 +2471,13 @@ export type Database = {
             foreignKeyName: "project_activity_logs_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_activity_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -2553,6 +2574,13 @@ export type Database = {
             foreignKeyName: "project_contracts_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -2605,6 +2633,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "project_statistics"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_delay_notifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics_secure"
             referencedColumns: ["project_id"]
           },
           {
@@ -2714,6 +2749,13 @@ export type Database = {
             foreignKeyName: "project_disputes_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_disputes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -2777,6 +2819,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "project_statistics"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics_secure"
             referencedColumns: ["project_id"]
           },
           {
@@ -3030,6 +3079,13 @@ export type Database = {
             foreignKeyName: "project_tasks_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -3268,6 +3324,13 @@ export type Database = {
             foreignKeyName: "timeline_agreements_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "timeline_agreements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
@@ -3481,6 +3544,32 @@ export type Database = {
           },
         ]
       }
+      project_statistics_secure: {
+        Row: {
+          average_bid: number | null
+          project_id: string | null
+          total_bids: number | null
+          total_messages: number | null
+          total_tasks: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_access_admin_users: {
@@ -3510,6 +3599,10 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      refresh_project_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       reset_test_data: {
         Args: Record<PropertyKey, never>
