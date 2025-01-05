@@ -11,8 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectTimeline } from "@/components/client/build-cost/ProjectTimeline";
 import { DocumentRepository } from "@/components/client/documents/DocumentRepository";
 import { CommunicationHub } from "@/components/client/communication/CommunicationHub";
+import { TaskBoard } from "@/components/projects/tasks/board/TaskBoard";
 
-// Lazy load admin and contractor dashboards
 const AdminDashboard = lazy(() => import("@/components/admin/AdminDashboard"));
 const ContractorDashboard = lazy(() => import("@/components/contractor/ContractorDashboard").then(module => ({ default: module.ContractorDashboard })));
 
@@ -67,7 +67,6 @@ export default function Index() {
     return <LoadingFallback />;
   }
 
-  // Show admin dashboard for admins
   if (isAdmin) {
     return (
       <RoleGuard requireAdmin>
@@ -78,18 +77,16 @@ export default function Index() {
     );
   }
 
-  // Show contractor dashboard for contractors
   if (isContractor) {
     return (
       <RoleGuard requireContractor>
         <Suspense fallback={<LoadingFallback />}>
-          <ContractorDashboard contractor={userData?.contractor} />
+          <ContractorDashboard contractor={userData?.profile} />
         </Suspense>
       </RoleGuard>
     );
   }
 
-  // Show client dashboard with active project if exists
   if (userData?.activeProject) {
     return (
       <div className="container mx-auto p-6 space-y-6">
@@ -97,12 +94,17 @@ export default function Index() {
         
         <ProjectManagementSection />
 
-        <Tabs defaultValue="timeline" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="tasks" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="communication">Communication</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="tasks" className="space-y-4">
+            <TaskBoard projectId={userData.activeProject.id} />
+          </TabsContent>
 
           <TabsContent value="timeline" className="space-y-4">
             <ProjectTimeline projectId={userData.activeProject.id} />
@@ -120,7 +122,6 @@ export default function Index() {
     );
   }
 
-  // Show default client dashboard with no active project
   return (
     <div className="container mx-auto p-6">
       <ProjectManagementSection />
