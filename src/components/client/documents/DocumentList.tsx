@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { FileText, File, FileImage, Clock } from "lucide-react";
+import { FileText, File, LucideIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { DocumentVersion } from "@/types/documents";
@@ -12,7 +12,6 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { ALLOWED_FILE_TYPES } from "@/constants/fileTypes";
-import { LucideIcon } from "lucide-react";
 
 interface Document {
   id: string;
@@ -115,7 +114,7 @@ export function DocumentList({ documents, searchTerm, isLoading, onDownloadVersi
                 size="sm"
                 onClick={() => handleViewVersions(doc.id)}
               >
-                <Clock className="h-4 w-4 mr-2" />
+                <FileText className="h-4 w-4 mr-2" />
                 History
               </Button>
             </div>
