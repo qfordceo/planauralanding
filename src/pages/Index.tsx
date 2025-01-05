@@ -7,11 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { usePermissions } from "@/hooks/usePermissions";
 import { ProjectManagementSection } from "@/components/projects/ProjectManagementSection";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProjectTimeline } from "@/components/client/build-cost/ProjectTimeline";
-import { DocumentRepository } from "@/components/client/documents/DocumentRepository";
-import { CommunicationHub } from "@/components/client/communication/CommunicationHub";
-import { TaskBoard } from "@/components/projects/tasks/board/TaskBoard";
+import { ProjectDashboard } from "@/components/client/dashboard/ProjectDashboard";
 
 const AdminDashboard = lazy(() => import("@/components/admin/AdminDashboard"));
 const ContractorDashboard = lazy(() => import("@/components/contractor/ContractorDashboard").then(module => ({ default: module.ContractorDashboard })));
@@ -89,35 +85,8 @@ export default function Index() {
 
   if (userData?.activeProject) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold">Project Dashboard</h1>
-        
-        <ProjectManagementSection />
-
-        <Tabs defaultValue="tasks" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="communication">Communication</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="tasks" className="space-y-4">
-            <TaskBoard projectId={userData.activeProject.id} />
-          </TabsContent>
-
-          <TabsContent value="timeline" className="space-y-4">
-            <ProjectTimeline projectId={userData.activeProject.id} />
-          </TabsContent>
-
-          <TabsContent value="documents" className="space-y-4">
-            <DocumentRepository projectId={userData.activeProject.id} />
-          </TabsContent>
-
-          <TabsContent value="communication" className="space-y-4">
-            <CommunicationHub projectId={userData.activeProject.id} />
-          </TabsContent>
-        </Tabs>
+      <div className="container mx-auto p-6">
+        <ProjectDashboard projectId={userData.activeProject.id} />
       </div>
     );
   }
