@@ -1,17 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { FileText, File, LucideIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { DocumentVersion } from "@/types/documents";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { formatDistanceToNow } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { ALLOWED_FILE_TYPES } from "@/constants/fileTypes";
+import { DocumentListItem } from "./DocumentListItem";
+import { VersionHistory } from "./VersionHistory";
 
 interface Document {
   id: string;
@@ -31,11 +23,6 @@ export function DocumentList({ documents, searchTerm, isLoading, onDownloadVersi
   const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
   const [versions, setVersions] = useState<DocumentVersion[]>([]);
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
-
-  const getFileIcon = (contentType: string): LucideIcon => {
-    const fileConfig = ALLOWED_FILE_TYPES[contentType as keyof typeof ALLOWED_FILE_TYPES];
-    return fileConfig?.icon || File;
-  };
 
   const filteredDocuments = documents?.filter(doc =>
     doc.title?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -89,76 +76,22 @@ export function DocumentList({ documents, searchTerm, isLoading, onDownloadVersi
 
   return (
     <div className="space-y-4">
-      {filteredDocuments?.map((doc) => {
-        const IconComponent = getFileIcon(doc.content_type || 'application/octet-stream');
-        return (
-          <div
-            key={doc.id}
-            className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <IconComponent className="h-5 w-5 text-muted-foreground" />
-              <span className="font-medium">{doc.title || 'Untitled Document'}</span>
-              <span className="text-sm text-muted-foreground">v{doc.current_version}</span>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => onDownloadVersion(doc.id, doc.current_version)}
-              >
-                Download
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => handleViewVersions(doc.id)}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                History
-              </Button>
-            </div>
-          </div>
-        );
-      })}
+      {filteredDocuments?.map((doc) => (
+        <DocumentListItem
+          key={doc.id}
+          {...doc}
+          onDownload={onDownloadVersion}
+          onViewHistory={handleViewVersions}
+        />
+      ))}
 
-      <Dialog open={!!selectedDocument} onOpenChange={() => setSelectedDocument(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Version History</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            {isLoadingVersions ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : (
-              versions.map((version) => (
-                <div
-                  key={version.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div>
-                    <div className="font-medium">Version {version.version_number}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(version.created_at), { addSuffix: true })}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDownloadVersion(version.document_id, version.version_number)}
-                  >
-                    Download
-                  </Button>
-                </div>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <VersionHistory
+        isOpen={!!selectedDocument}
+        onClose={() => setSelectedDocument(null)}
+        versions={versions}
+        isLoading={isLoadingVersions}
+        onDownloadVersion={onDownloadVersion}
+      />
     </div>
   );
 }
