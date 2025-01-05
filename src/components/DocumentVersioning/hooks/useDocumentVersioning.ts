@@ -7,7 +7,7 @@ export function useDocumentVersioning(documentId: string) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: versions, isLoading } = useQuery({
+  const { data: versions, isLoading, error: fetchError } = useQuery({
     queryKey: ['document-versions', documentId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -16,13 +16,24 @@ export function useDocumentVersioning(documentId: string) {
         .eq('document_id', documentId)
         .order('version_number', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error fetching versions",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
       return data as DocumentVersion[];
     }
   });
 
   const createVersion = useMutation({
     mutationFn: async (file: File) => {
+      if (file.size > 50 * 1024 * 1024) { // 50MB limit
+        throw new Error('File size exceeds 50MB limit');
+      }
+
       const currentVersion = versions?.[0]?.version_number || 0;
       const newVersion = currentVersion + 1;
 
@@ -31,7 +42,10 @@ export function useDocumentVersioning(documentId: string) {
 
       const { error: uploadError } = await supabase.storage
         .from('project-documents')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) throw uploadError;
 
@@ -58,11 +72,11 @@ export function useDocumentVersioning(documentId: string) {
         description: "New version created successfully",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error creating version:', error);
       toast({
         title: "Error",
-        description: "Failed to create new version",
+        description: error.message || "Failed to create new version",
         variant: "destructive",
       });
     },
@@ -87,11 +101,11 @@ export function useDocumentVersioning(documentId: string) {
         description: "Document reverted successfully",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error reverting version:', error);
       toast({
         title: "Error",
-        description: "Failed to revert document",
+        description: error.message || "Failed to revert document",
         variant: "destructive",
       });
     },
@@ -100,6 +114,7 @@ export function useDocumentVersioning(documentId: string) {
   return {
     versions,
     isLoading,
+    error: fetchError,
     createVersion: createVersion.mutate,
     revertVersion: revertVersion.mutate,
     isCreating: createVersion.isPending,
