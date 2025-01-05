@@ -1,7 +1,7 @@
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ContractWorkflowManager } from "@/components/contracts/ContractWorkflowManager";
-import { ContractSetupStage } from "./stages/ContractSetupStage";
 import { LaunchFlowProvider, useLaunchFlow } from "./LaunchFlowProvider";
+import { ContractSetupStage } from "./stages/ContractSetupStage";
 
 interface ProjectLaunchFlowProps {
   projectId: string;
