@@ -55,15 +55,6 @@ export function useContractWorkflow(projectId: string) {
         .single();
 
       if (error) throw error;
-
-      await supabase.functions.invoke("send-contract-email", {
-        body: {
-          contractId: data.id,
-          recipientId: data.project.user_id,
-          notificationType: "review"
-        },
-      });
-
       return data;
     },
     onSuccess: () => {
@@ -100,10 +91,6 @@ export function useContractWorkflow(projectId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project-contract"] });
-      toast({
-        title: "Workflow Updated",
-        description: "Contract stage has been updated successfully",
-      });
     },
   });
 
@@ -129,14 +116,45 @@ export function useContractWorkflow(projectId: string) {
     },
   });
 
+  const signContractMutation = useMutation({
+    mutationFn: async () => {
+      const user = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from("project_contracts")
+        .update({
+          status: "signed",
+          signed_by_client_at: new Date().toISOString(),
+          client_signature_data: {
+            signed_by: user.data.user?.id,
+            signed_at: new Date().toISOString()
+          }
+        })
+        .eq("id", contract?.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project-contract"] });
+      toast({
+        title: "Contract Signed",
+        description: "The contract has been successfully signed",
+      });
+    },
+  });
+
   return {
     contract,
     isLoading,
     createContract: createContractMutation.mutate,
     updateWorkflowStage: updateWorkflowStageMutation.mutate,
     validateStage: validateStageMutation.mutate,
+    signContract: signContractMutation.mutate,
     isUpdatingStage: updateWorkflowStageMutation.isPending,
     isValidating: validateStageMutation.isPending,
-    isCreatingContract: createContractMutation.isPending
+    isCreatingContract: createContractMutation.isPending,
+    isSigningContract: signContractMutation.isPending
   };
 }
