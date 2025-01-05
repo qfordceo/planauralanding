@@ -29,6 +29,7 @@ export interface VersionBadgeProps {
 export interface DiffViewerProps {
   diff: VersionDiff;
   className?: string;
+  currentVersion: DocumentVersion;
 }
 
 export interface VersionListProps {

@@ -13,7 +13,11 @@ export function VersionDiff({ previousVersion, currentVersion }: VersionDiffProp
   return (
     <Card className="p-4">
       <h3 className="text-lg font-semibold mb-4">Changes</h3>
-      <DiffViewer diff={diff} className="h-[200px]" />
+      <DiffViewer 
+        diff={diff} 
+        className="h-[300px]" 
+        currentVersion={currentVersion}
+      />
     </Card>
   );
 }
