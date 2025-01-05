@@ -11,6 +11,9 @@ import { LoadingState } from "@/components/contractor/dashboard/LoadingState";
 import { NoProfileState } from "@/components/contractor/dashboard/NoProfileState";
 import { ContractorRegistration } from "@/components/contractor/dashboard/ContractorRegistration";
 import { TermsModal } from "@/components/contractor/dashboard/TermsModal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { ClientDashboard } from "@/pages/ClientDashboard";
 
 const queryClient = new QueryClient();
 
@@ -33,13 +36,14 @@ export default function ContractorDashboard() {
   } = useDashboardState();
 
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useAuthCheck(navigate, "/auth");
 
   useEffect(() => {
-    const checkContractorStatus = async () => {
+    const checkUserStatus = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -47,6 +51,16 @@ export default function ContractorDashboard() {
           return;
         }
 
+        // Check if user is admin
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", user.id)
+          .single();
+
+        setIsAdmin(profile?.is_admin || false);
+
+        // Check contractor status
         const { data: contractor, error } = await supabase
           .from("contractors")
           .select("*")
@@ -72,18 +86,62 @@ export default function ContractorDashboard() {
         }
         setLoading(false);
       } catch (error) {
-        console.error("Error in checkContractorStatus:", error);
+        console.error("Error in checkUserStatus:", error);
         setLoading(false);
       }
     };
 
-    checkContractorStatus();
+    checkUserStatus();
   }, [navigate, setContractor, setLoading, setRegistering, toast]);
 
   useNotifications(contractor, setOutbidCount, setDefectCount);
 
   if (loading) {
     return <LoadingState />;
+  }
+
+  if (isAdmin) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <div className="container mx-auto p-6">
+          <Tabs defaultValue="contractor" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="contractor">Contractor Dashboard</TabsTrigger>
+              <TabsTrigger value="client">Client Dashboard</TabsTrigger>
+              <TabsTrigger value="admin">Admin Dashboard</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="contractor">
+              {registering ? (
+                <ContractorRegistration
+                  setRegistering={setRegistering}
+                  registrationLoading={registrationLoading}
+                  setRegistrationLoading={setRegistrationLoading}
+                />
+              ) : !contractor ? (
+                <NoProfileState />
+              ) : (
+                <DashboardContent
+                  contractor={contractor}
+                  activeSection={activeSection}
+                  setActiveSection={setActiveSection}
+                  outbidCount={outbidCount}
+                  defectCount={defectCount}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="client">
+              <ClientDashboard />
+            </TabsContent>
+
+            <TabsContent value="admin">
+              <AdminDashboard />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </QueryClientProvider>
+    );
   }
 
   if (registering) {
