@@ -5,6 +5,7 @@ import { DocumentList } from "./DocumentList";
 import { SearchBar } from "../communication/SearchBar";
 import { UploadButton } from "./UploadButton";
 import { useDocumentRepository } from "./hooks/useDocumentRepository";
+import { ALLOWED_FILE_TYPES } from "@/constants/fileTypes";
 
 interface DocumentRepositoryProps {
   projectId: string;
