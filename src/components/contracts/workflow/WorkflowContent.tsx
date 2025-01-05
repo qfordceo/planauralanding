@@ -76,6 +76,7 @@ export function WorkflowContent({ projectId, contract }: WorkflowContentProps) {
     case 'completed':
       return (
         <ContractSignature
+          contractId={contract.id}
           onSign={() => {
             dispatch({ type: 'SET_CONTRACT', payload: { ...contract, status: 'signed' } });
             window.location.reload();

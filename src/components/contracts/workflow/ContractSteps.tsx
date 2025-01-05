@@ -44,6 +44,7 @@ export function ContractSteps({ projectId, onComplete }: ContractStepsProps) {
 
   return (
     <ContractSignature 
+      contractId={contract.id}
       onSign={() => {
         signContract(undefined, {
           onSuccess: onComplete

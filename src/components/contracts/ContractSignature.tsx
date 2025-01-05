@@ -43,7 +43,7 @@ export function ContractSignature({ onSign, isLoading, contractId }: ContractSig
         .from('project_contracts')
         .update({
           signing_status: 'client_signed',
-          signing_history: supabase.sql`array_append(signing_history, ${JSON.stringify(signatureData)}::jsonb)`,
+          signing_history: `[${JSON.stringify(signatureData)}]`,
           last_action_at: timestamp
         })
         .eq('id', contractId)
@@ -51,14 +51,12 @@ export function ContractSignature({ onSign, isLoading, contractId }: ContractSig
       if (updateError) throw updateError
 
       // Send notification
-      await fetch('/api/send-contract-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      await supabase.functions.invoke('send-contract-email', {
+        body: {
           contractId,
           recipientId: user.id,
           notificationType: 'signed'
-        })
+        }
       })
 
       toast({
