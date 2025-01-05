@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, File } from "lucide-react";
 import { ALLOWED_FILE_TYPES } from "@/constants/fileTypes";
 
 interface DocumentListItemProps {
