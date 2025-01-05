@@ -2292,6 +2292,60 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          contract_updates: boolean | null
+          created_at: string | null
+          email_notifications: boolean | null
+          id: string
+          milestone_updates: boolean | null
+          payment_updates: boolean | null
+          project_updates: boolean | null
+          sms_notifications: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          contract_updates?: boolean | null
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          milestone_updates?: boolean | null
+          payment_updates?: boolean | null
+          project_updates?: boolean | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          contract_updates?: boolean | null
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          milestone_updates?: boolean | null
+          payment_updates?: boolean | null
+          project_updates?: boolean | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_status: string | null
