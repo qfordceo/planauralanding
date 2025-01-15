@@ -4,25 +4,38 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { supabase } from '@/integrations/supabase/client';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface FileUploadTabProps {
   onUploadComplete: (url: string) => void;
 }
 
+const SUPPORTED_FORMATS = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'application/x-ifc': 'ifc',
+  'application/x-dwg': 'dwg',
+  'application/x-rvt': 'rvt'
+};
+
 export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      if (!file.type.startsWith('image/')) {
+      const fileType = file.type || `application/x-${file.name.split('.').pop()}`;
+      
+      if (!Object.keys(SUPPORTED_FORMATS).includes(fileType)) {
         toast({
           title: "Error",
-          description: "Please upload an image file",
+          description: "Unsupported file format. Please upload a JPG, PNG, IFC, DWG, or RVT file.",
           variant: "destructive",
         });
         return;
@@ -30,8 +43,9 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
 
       setIsLoading(true);
       setProgress(0);
+      setError(null);
 
-      const fileExt = file.name.split('.').pop();
+      const fileExt = SUPPORTED_FORMATS[fileType as keyof typeof SUPPORTED_FORMATS];
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -46,8 +60,26 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
         .from('floor-plans')
         .getPublicUrl(fileName);
 
+      // For BIM files, we need to process them first
+      if (fileType !== 'image/jpeg' && fileType !== 'image/png') {
+        setProgress(50);
+        
+        const { data: processedData, error: processError } = await supabase.functions
+          .invoke('process-bim-file', {
+            body: { 
+              fileUrl: publicUrl,
+              fileType: fileExt
+            }
+          });
+
+        if (processError) {
+          throw processError;
+        }
+
+        setProgress(100);
+      }
+
       onUploadComplete(publicUrl);
-      setProgress(100);
       
       toast({
         title: "Success",
@@ -55,6 +87,7 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
       });
     } catch (error) {
       console.error('Error uploading floor plan:', error);
+      setError(error instanceof Error ? error.message : 'Failed to upload floor plan');
       toast({
         title: "Error",
         description: "Failed to upload floor plan",
@@ -73,13 +106,23 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
       <CardContent className="space-y-4">
         <Input
           type="file"
-          accept="image/*"
+          accept=".jpg,.jpeg,.png,.ifc,.dwg,.rvt"
           onChange={handleFileUpload}
           disabled={isLoading}
         />
         {isLoading && (
           <Progress value={progress} className="w-full" />
         )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <div className="text-sm text-muted-foreground">
+          Supported formats: JPG, PNG, IFC (BIM), DWG (AutoCAD), RVT (Revit)
+        </div>
       </CardContent>
     </Card>
   );
