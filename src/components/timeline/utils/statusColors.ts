@@ -1,12 +1,15 @@
-export const getStatusColor = (status: string): string => {
+import { TaskStatus } from '../types';
+
+export const getStatusColor = (status: TaskStatus): string => {
   switch (status) {
     case 'completed':
-      return '#22c55e';
+      return '#4ade80'; // green-400
     case 'in_progress':
-      return '#3b82f6';
-    case 'pending':
-      return '#f59e0b';
+      return '#60a5fa'; // blue-400
+    case 'blocked':
+      return '#f87171'; // red-400
+    case 'not_started':
     default:
-      return '#64748b';
+      return '#94a3b8'; // slate-400
   }
 };

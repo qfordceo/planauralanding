@@ -1,107 +1,102 @@
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import FullCalendar from "@fullcalendar/react";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
-import { getStatusColor } from "./utils/statusColors";
 import { TimelineEventContent } from "./components/TimelineEventContent";
-import type { Milestone, TimelineEvent, TimelineResource } from "./types";
+import { getStatusColor } from "./utils/statusColors";
+import type { ProjectTask, Milestone, TimelineEvent, TimelineResource } from "./types";
 
 interface GanttTimelineProps {
   projectId: string;
 }
 
 export function GanttTimeline({ projectId }: GanttTimelineProps) {
-  const { data: timelineData, isLoading } = useQuery({
-    queryKey: ['project-timeline', projectId],
+  const { data: tasks } = useQuery({
+    queryKey: ['project-tasks', projectId],
     queryFn: async () => {
-      const { data: milestones, error: milestonesError } = await supabase
-        .from('project_milestones')
+      const { data, error } = await supabase
+        .from('project_tasks')
         .select(`
           id,
           title,
-          description,
-          due_date,
           status,
-          project_tasks (
+          start_date,
+          due_date,
+          assigned_contractor_id,
+          contractors:assigned_contractor_id (
             id,
-            title,
-            status,
-            start_date,
-            due_date,
-            assigned_contractor_id,
-            contractors:assigned_contractor_id (
-              business_name
-            )
+            business_name
           )
         `)
-        .eq('build_estimate_id', projectId)
-        .order('due_date', { ascending: true });
+        .eq('project_id', projectId)
+        .order('start_date', { ascending: true });
 
-      if (milestonesError) throw milestonesError;
-
-      const resources: TimelineResource[] = milestones?.map(milestone => ({
-        id: milestone.id,
-        title: milestone.title,
-        children: milestone.project_tasks?.map(task => ({
-          id: task.id,
-          title: task.title,
-          parentId: milestone.id
-        }))
-      })) || [];
-
-      const events: TimelineEvent[] = milestones?.flatMap(milestone => 
-        milestone.project_tasks?.map(task => ({
-          id: task.id,
-          resourceId: task.id,
-          title: task.title,
-          start: task.start_date,
-          end: task.due_date,
-          backgroundColor: getStatusColor(task.status),
-          extendedProps: {
-            contractor: task.contractors?.[0]?.business_name || '',
-            status: task.status
-          }
-        })) || []
-      ) || [];
-
-      return { resources, events };
+      if (error) throw error;
+      return data as ProjectTask[];
     }
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  const { data: milestones } = useQuery({
+    queryKey: ['project-milestones', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_milestones')
+        .select('id, title, due_date, status')
+        .eq('build_estimate_id', projectId)
+        .order('due_date', { ascending: true });
+
+      if (error) throw error;
+      return data as Milestone[];
+    }
+  });
+
+  const events: TimelineEvent[] = [
+    ...(tasks?.map(task => ({
+      id: task.id,
+      title: task.title,
+      start: task.start_date,
+      end: task.due_date,
+      backgroundColor: getStatusColor(task.status),
+      extendedProps: {
+        contractor: task.contractors?.[0]?.business_name || '',
+        status: task.status
+      }
+    })) || []),
+    ...(milestones?.map(milestone => ({
+      id: milestone.id,
+      title: milestone.title,
+      start: milestone.due_date,
+      end: milestone.due_date,
+      backgroundColor: '#8b5cf6', // violet-500 for milestones
+      extendedProps: {
+        contractor: '',
+        status: milestone.status
+      }
+    })) || [])
+  ];
+
+  const resources: TimelineResource[] = [
+    { id: 'tasks', title: 'Tasks' },
+    { id: 'milestones', title: 'Milestones' }
+  ];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Project Timeline</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[600px]">
-          <FullCalendar
-            plugins={[resourceTimelinePlugin]}
-            initialView="resourceTimelineMonth"
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
-            }}
-            resources={timelineData?.resources}
-            events={timelineData?.events}
-            resourceAreaWidth="20%"
-            slotMinWidth={100}
-            resourceAreaHeaderContent="Project Phases"
-            eventContent={TimelineEventContent}
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="h-[600px] bg-background">
+      <FullCalendar
+        plugins={[resourceTimelinePlugin]}
+        initialView="resourceTimelineMonth"
+        events={events}
+        resources={resources}
+        eventContent={TimelineEventContent}
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
+        }}
+        resourceAreaWidth="15%"
+        height="100%"
+        slotMinWidth={100}
+      />
+    </div>
   );
 }

@@ -1,11 +1,14 @@
 export interface Contractor {
+  id: string;
   business_name: string;
 }
+
+export type TaskStatus = 'not_started' | 'in_progress' | 'completed' | 'blocked';
 
 export interface ProjectTask {
   id: string;
   title: string;
-  status: string;
+  status: TaskStatus;
   start_date: string;
   due_date: string;
   assigned_contractor_id: string;
@@ -15,31 +18,23 @@ export interface ProjectTask {
 export interface Milestone {
   id: string;
   title: string;
-  description: string | null;
   due_date: string;
   status: string;
-  project_tasks?: ProjectTask[];
 }
 
 export interface TimelineEvent {
   id: string;
-  resourceId: string;
   title: string;
   start: string;
   end: string;
   backgroundColor: string;
   extendedProps: {
     contractor: string;
-    status: string;
+    status: TaskStatus;
   };
 }
 
 export interface TimelineResource {
   id: string;
   title: string;
-  children?: {
-    id: string;
-    title: string;
-    parentId: string;
-  }[];
 }
