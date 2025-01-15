@@ -1,23 +1,20 @@
-import React from 'react';
+import { EventContentArg } from '@fullcalendar/core';
 
-interface TimelineEventContentProps {
-  event: {
-    title: string;
-    extendedProps: {
-      contractor?: string;
-    };
-  };
-}
+export function TimelineEventContent(eventInfo: EventContentArg) {
+  const { event } = eventInfo;
+  const { contractor, status } = event.extendedProps;
 
-export function TimelineEventContent({ event }: TimelineEventContentProps) {
   return (
-    <div className="p-1 text-xs">
+    <div className="p-1">
       <div className="font-medium">{event.title}</div>
-      {event.extendedProps.contractor && (
-        <div className="text-muted-foreground">
-          {event.extendedProps.contractor}
+      {contractor && (
+        <div className="text-xs text-muted-foreground">
+          Contractor: {contractor}
         </div>
       )}
+      <div className="text-xs text-muted-foreground">
+        Status: {status}
+      </div>
     </div>
   );
 }
