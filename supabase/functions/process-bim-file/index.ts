@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { WebIFC } from 'web-ifc/web-ifc-api.js';
+import { IfcAPI } from 'https://esm.sh/web-ifc@0.0.46'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -73,13 +73,13 @@ serve(async (req) => {
 })
 
 async function processIFCFile(buffer: ArrayBuffer) {
-  const ifcApi = new WebIFC()
+  const ifcApi = new IfcAPI()
   await ifcApi.Init()
   
   const modelID = await ifcApi.OpenModel(new Uint8Array(buffer))
   
   // Extract walls
-  const walls = await ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCWALL)
+  const walls = await ifcApi.GetLineIDsWithType(modelID, ifcApi.IFCWALL)
   const wallsGeometry = await Promise.all(
     walls.map(async (id: number) => {
       const wallData = await ifcApi.GetLine(modelID, id)
@@ -92,7 +92,7 @@ async function processIFCFile(buffer: ArrayBuffer) {
   )
 
   // Extract spaces/rooms
-  const spaces = await ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCSPACE)
+  const spaces = await ifcApi.GetLineIDsWithType(modelID, ifcApi.IFCSPACE)
   const spacesGeometry = await Promise.all(
     spaces.map(async (id: number) => {
       const spaceData = await ifcApi.GetLine(modelID, id)
