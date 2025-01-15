@@ -1,97 +1,91 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { Configuration, OpenAIApi } from 'https://esm.sh/openai@3.3.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
+
+interface ClashDetectionRequest {
+  modelData: any;
+  floorPlanId: string;
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { modelData } = await req.json();
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    // Prepare the system message for clash detection
-    const systemMessage = `You are an expert BIM coordinator specializing in clash detection. 
-    Analyze the provided building model data for potential clashes between MEP and structural elements. 
-    Focus on identifying conflicts between:
-    1. Mechanical ducts vs structural beams
-    2. Plumbing pipes vs structural columns
-    3. Electrical conduits vs structural elements
-    Provide specific locations and suggested resolutions.`;
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemMessage },
-          { 
-            role: 'user', 
-            content: `Analyze this building model data for MEP and structural clashes: ${JSON.stringify(modelData)}`
-          }
-        ],
-        temperature: 0.2,
-      }),
-    });
-
-    const data = await response.json();
-    
-    // Store the clash detection results in Supabase
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    )
 
-    const { data: clashReport, error } = await supabaseClient
+    const configuration = new Configuration({
+      apiKey: Deno.env.get('OPENAI_API_KEY'),
+    })
+    const openai = new OpenAIApi(configuration)
+
+    const { modelData, floorPlanId } = await req.json() as ClashDetectionRequest
+
+    console.log('Analyzing model for clashes:', { floorPlanId })
+
+    // Analyze the model data for clashes using OpenAI
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "You are a BIM clash detection expert. Analyze the provided model data to identify potential clashes between MEP and structural elements."
+        },
+        {
+          role: "user",
+          content: `Analyze this BIM model data for potential clashes: ${JSON.stringify(modelData)}`
+        }
+      ],
+    })
+
+    const analysis = completion.data.choices[0].message?.content || ''
+    
+    // Store the clash detection results
+    const { data: report, error } = await supabaseClient
       .from('clash_detection_reports')
       .insert({
         model_data: modelData,
-        analysis_results: data.choices[0].message.content,
+        analysis_results: analysis,
         status: 'pending_review'
       })
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
+    if (error) throw error
+
+    console.log('Clash detection completed:', { reportId: report.id })
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        data: clashReport 
+        report 
       }),
       { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
-
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
+    )
   } catch (error) {
-    console.error('Error in clash detection:', error);
+    console.error('Error in clash detection:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message 
+      }),
       { 
-        status: 500, 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      },
+    )
   }
-});
+})

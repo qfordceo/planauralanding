@@ -1,86 +1,121 @@
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle, CheckCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { AlertTriangle, CheckCircle, XCircle } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface ClashDetectionReportProps {
-  modelId: string;
+  modelId?: string
 }
 
 export function ClashDetectionReport({ modelId }: ClashDetectionReportProps) {
-  const { data: clashReport, isLoading, error } = useQuery({
-    queryKey: ['clash-detection', modelId],
+  const { toast } = useToast()
+
+  const { data: report, isLoading } = useQuery({
+    queryKey: ['clash-report', modelId],
     queryFn: async () => {
-      const { data: modelData } = await supabase
-        .from('bim_models')
-        .select('model_data')
+      if (!modelId) return null
+
+      const { data, error } = await supabase
+        .from('clash_detection_reports')
+        .select('*')
         .eq('id', modelId)
-        .single();
+        .single()
 
-      if (!modelData) throw new Error('Model not found');
+      if (error) {
+        toast({
+          title: "Error loading clash report",
+          description: error.message,
+          variant: "destructive",
+        })
+        throw error
+      }
 
-      const response = await supabase.functions.invoke('detect-clashes', {
-        body: { modelData: modelData.model_data }
-      });
-
-      if (response.error) throw response.error;
-      return response.data;
-    }
-  });
+      return data
+    },
+    enabled: !!modelId
+  })
 
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="pt-6 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
+        <CardHeader>
+          <CardTitle>Loading Clash Report...</CardTitle>
+        </CardHeader>
       </Card>
-    );
+    )
   }
 
-  if (error) {
+  if (!report) {
     return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          Failed to analyze model for clashes. Please try again.
-        </AlertDescription>
-      </Alert>
-    );
+      <Card>
+        <CardHeader>
+          <CardTitle>No Clash Report Available</CardTitle>
+          <CardDescription>
+            Run a clash detection analysis to view potential issues.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    )
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-yellow-500" />
+          {report.status === 'resolved' ? (
+            <CheckCircle className="h-5 w-5 text-green-500" />
+          ) : report.status === 'pending_review' ? (
+            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+          ) : (
+            <XCircle className="h-5 w-5 text-red-500" />
+          )}
           Clash Detection Report
         </CardTitle>
+        <CardDescription>
+          Analysis completed on {new Date(report.created_at).toLocaleDateString()}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {clashReport?.analysis_results && (
-          <div className="space-y-4">
-            {clashReport.analysis_results.split('\n').map((line, index) => (
-              <div key={index} className="flex items-start gap-2">
-                {line.toLowerCase().includes('clash') ? (
-                  <AlertTriangle className="h-4 w-4 mt-1 text-yellow-500 shrink-0" />
-                ) : (
-                  <CheckCircle className="h-4 w-4 mt-1 text-green-500 shrink-0" />
-                )}
-                <p className="text-sm">{line}</p>
-              </div>
-            ))}
+        <div className="rounded-lg bg-muted p-4">
+          <pre className="whitespace-pre-wrap text-sm">
+            {report.analysis_results}
+          </pre>
+        </div>
+        {report.resolution_notes && (
+          <div className="rounded-lg bg-green-50 p-4">
+            <h4 className="font-medium text-green-900">Resolution Notes</h4>
+            <p className="mt-1 text-green-700">{report.resolution_notes}</p>
           </div>
         )}
-        <div className="flex justify-end">
-          <Button variant="outline" onClick={() => window.print()}>
-            Export Report
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              // Download report functionality
+              const reportData = JSON.stringify(report, null, 2)
+              const blob = new Blob([reportData], { type: 'application/json' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `clash-report-${report.id}.json`
+              document.body.appendChild(a)
+              a.click()
+              document.body.removeChild(a)
+              URL.revokeObjectURL(url)
+            }}
+          >
+            Download Report
           </Button>
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -525,6 +525,54 @@ export type Database = {
         }
         Relationships: []
       }
+      clash_detection_reports: {
+        Row: {
+          analysis_results: string
+          created_at: string
+          id: string
+          model_data: Json
+          resolution_notes: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["clash_report_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          analysis_results: string
+          created_at?: string
+          id?: string
+          model_data: Json
+          resolution_notes?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["clash_report_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          analysis_results?: string
+          created_at?: string
+          id?: string
+          model_data?: Json
+          resolution_notes?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["clash_report_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clash_detection_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clash_detection_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       compliance_verification_logs: {
         Row: {
           contractor_id: string | null
@@ -3942,6 +3990,7 @@ export type Database = {
       }
     }
     Enums: {
+      clash_report_status: "pending_review" | "reviewed" | "resolved"
       contract_signing_status:
         | "pending"
         | "client_signed"
