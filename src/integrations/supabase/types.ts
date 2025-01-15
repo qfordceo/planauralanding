@@ -2387,6 +2387,53 @@ export type Database = {
           },
         ]
       }
+      material_order_tracking: {
+        Row: {
+          actual_delivery: string | null
+          carrier: string | null
+          created_at: string | null
+          estimated_delivery: string | null
+          id: string
+          order_id: string | null
+          status: string
+          status_updates: Json[] | null
+          tracking_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_delivery?: string | null
+          carrier?: string | null
+          created_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          order_id?: string | null
+          status: string
+          status_updates?: Json[] | null
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_delivery?: string | null
+          carrier?: string | null
+          created_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          order_id?: string | null
+          status?: string
+          status_updates?: Json[] | null
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_order_tracking_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "material_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_orders: {
         Row: {
           contractor_id: string | null
@@ -2448,30 +2495,90 @@ export type Database = {
           },
         ]
       }
+      material_price_updates: {
+        Row: {
+          available_quantity: number | null
+          id: string
+          last_updated: string | null
+          material_id: string | null
+          metadata: Json | null
+          next_update: string | null
+          price: number
+          supplier_id: string | null
+          unit: string
+        }
+        Insert: {
+          available_quantity?: number | null
+          id?: string
+          last_updated?: string | null
+          material_id?: string | null
+          metadata?: Json | null
+          next_update?: string | null
+          price: number
+          supplier_id?: string | null
+          unit: string
+        }
+        Update: {
+          available_quantity?: number | null
+          id?: string
+          last_updated?: string | null
+          material_id?: string | null
+          metadata?: Json | null
+          next_update?: string | null
+          price?: number
+          supplier_id?: string | null
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_price_updates_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "build_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_price_updates_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "material_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_suppliers: {
         Row: {
+          api_credentials: Json | null
+          api_endpoint: string | null
           categories: string[]
           contact_info: Json | null
           created_at: string
           id: string
+          last_sync: string | null
           name: string
           rating: number | null
           updated_at: string
         }
         Insert: {
+          api_credentials?: Json | null
+          api_endpoint?: string | null
           categories?: string[]
           contact_info?: Json | null
           created_at?: string
           id?: string
+          last_sync?: string | null
           name: string
           rating?: number | null
           updated_at?: string
         }
         Update: {
+          api_credentials?: Json | null
+          api_endpoint?: string | null
           categories?: string[]
           contact_info?: Json | null
           created_at?: string
           id?: string
+          last_sync?: string | null
           name?: string
           rating?: number | null
           updated_at?: string

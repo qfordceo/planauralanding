@@ -1,0 +1,9 @@
+project_id = "vaxxrwnfcaxvqvdhlsad"
+
+[global.env]
+SUPABASE_URL = "env"
+SUPABASE_SERVICE_ROLE_KEY = "env"
+
+[[functions]]
+name = "fetch-material-prices"
+verify_jwt = true
