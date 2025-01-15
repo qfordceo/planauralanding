@@ -415,6 +415,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "build_line_items_awarded_contractor_id_fkey"
+            columns: ["awarded_contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
+          {
             foreignKeyName: "build_line_items_build_estimate_id_fkey"
             columns: ["build_estimate_id"]
             isOneToOne: false
@@ -427,6 +434,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "build_line_items_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -615,6 +629,13 @@ export type Database = {
             referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "compliance_verification_logs_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
         ]
       }
       construction_task_templates: {
@@ -767,6 +788,13 @@ export type Database = {
             referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_appointments_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
         ]
       }
       contractor_availability: {
@@ -801,6 +829,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_availability_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -842,6 +877,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_badges_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -886,6 +928,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_bids_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
           {
             foreignKeyName: "contractor_bids_project_fkey"
@@ -958,6 +1007,13 @@ export type Database = {
             referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_clients_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
         ]
       }
       contractor_compliance_documents: {
@@ -1027,6 +1083,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "contractor_compliance_documents_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
+          {
             foreignKeyName: "contractor_compliance_documents_verified_by_fkey"
             columns: ["verified_by"]
             isOneToOne: false
@@ -1071,6 +1134,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_day_exceptions_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -1119,6 +1189,13 @@ export type Database = {
             referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_expenses_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
         ]
       }
       contractor_inspection_defects: {
@@ -1162,6 +1239,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_inspection_defects_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
           {
             foreignKeyName: "contractor_inspection_defects_project_id_fkey"
@@ -1231,6 +1315,13 @@ export type Database = {
             referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_inventory_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
         ]
       }
       contractor_liability_waivers: {
@@ -1290,6 +1381,13 @@ export type Database = {
             referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_liability_waivers_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
         ]
       }
       contractor_marketing: {
@@ -1340,6 +1438,13 @@ export type Database = {
             referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_marketing_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
         ]
       }
       contractor_onboarding_progress: {
@@ -1380,6 +1485,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_onboarding_progress_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -1459,6 +1571,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "contractor_payment_milestones_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
+          {
             foreignKeyName: "contractor_payment_milestones_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
@@ -1502,6 +1621,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_portfolio_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -1563,6 +1689,13 @@ export type Database = {
             referencedRelation: "contractors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contractor_projects_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
         ]
       }
       contractor_references: {
@@ -1600,6 +1733,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_references_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -1755,6 +1895,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contractor_reviews_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -2379,11 +2526,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "license_verification_logs_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
+          {
             foreignKeyName: "license_verification_logs_contractor_id_fkey1"
             columns: ["contractor_id"]
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_verification_logs_contractor_id_fkey1"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
         ]
       }
@@ -2478,6 +2639,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_orders_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
           {
             foreignKeyName: "material_orders_project_id_fkey"
@@ -3280,6 +3448,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "project_milestones_assigned_contractor_id_fkey"
+            columns: ["assigned_contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
+          {
             foreignKeyName: "project_milestones_build_estimate_id_fkey"
             columns: ["build_estimate_id"]
             isOneToOne: false
@@ -3456,6 +3631,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tasks_assigned_contractor_id_fkey"
+            columns: ["assigned_contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
           },
           {
             foreignKeyName: "project_tasks_project_id_fkey"
@@ -3822,6 +4004,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "timeline_agreements_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
+          {
             foreignKeyName: "timeline_agreements_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
@@ -4134,6 +4323,59 @@ export type Database = {
           {
             foreignKeyName: "projects_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resource_availability_view: {
+        Row: {
+          allocation_percentage: number | null
+          availability_end: string | null
+          availability_start: string | null
+          contractor_id: string | null
+          day_of_week: number | null
+          end_date: string | null
+          profile_id: string | null
+          project_id: string | null
+          resource_email: string | null
+          resource_id: string | null
+          role: string | null
+          start_date: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "resource_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "resource_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_allocations_resource_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_allocations_resource_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
