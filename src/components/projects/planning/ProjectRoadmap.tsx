@@ -6,16 +6,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Calendar } from "lucide-react";
 import { format } from "date-fns";
 
-interface RoadmapPhase {
-  id: string;
-  title: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  status: string;
-  order_index: number;
-}
-
 interface ProjectRoadmapProps {
   projectId: string;
 }
@@ -24,25 +14,19 @@ export function ProjectRoadmap({ projectId }: ProjectRoadmapProps) {
   const { data: roadmap, isLoading } = useQuery({
     queryKey: ['project-roadmap', projectId],
     queryFn: async () => {
-      const { data: roadmapData, error: roadmapError } = await supabase
+      const { data, error } = await supabase
         .from('project_roadmaps')
-        .select('*')
+        .select(`
+          *,
+          roadmap_phases (
+            *
+          )
+        `)
         .eq('project_id', projectId)
         .single();
 
-      if (roadmapError) throw roadmapError;
-
-      if (roadmapData) {
-        const { data: phases, error: phasesError } = await supabase
-          .from('roadmap_phases')
-          .select('*')
-          .eq('roadmap_id', roadmapData.id)
-          .order('order_index', { ascending: true });
-
-        if (phasesError) throw phasesError;
-        return { ...roadmapData, phases };
-      }
-      return null;
+      if (error) throw error;
+      return data;
     }
   });
 
@@ -62,16 +46,18 @@ export function ProjectRoadmap({ projectId }: ProjectRoadmapProps) {
       <CardContent>
         <ScrollArea className="h-[400px]">
           <div className="space-y-4">
-            {roadmap?.phases?.map((phase: RoadmapPhase) => (
+            {roadmap?.roadmap_phases?.map((phase) => (
               <Card key={phase.id} className="p-4">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-medium">{phase.title}</h3>
                     <p className="text-sm text-muted-foreground">{phase.description}</p>
                   </div>
-                  <div className="text-sm text-muted-foreground flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {phase.start_date && format(new Date(phase.start_date), 'MMM d, yyyy')}
+                  <div className="text-sm">
+                    <div className="flex items-center text-muted-foreground">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      {phase.start_date && format(new Date(phase.start_date), 'MMM d, yyyy')}
+                    </div>
                   </div>
                 </div>
               </Card>

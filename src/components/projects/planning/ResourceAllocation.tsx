@@ -6,18 +6,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Users } from "lucide-react";
 import { format } from "date-fns";
 
-interface ResourceAllocation {
-  id: string;
-  resource_id: string;
-  role: string;
-  allocation_percentage: number;
-  start_date: string;
-  end_date: string;
-  profiles: {
-    email: string;
-  };
-}
-
 interface ResourceAllocationProps {
   projectId: string;
 }
@@ -37,7 +25,7 @@ export function ResourceAllocation({ projectId }: ResourceAllocationProps) {
         .eq('project_id', projectId);
 
       if (error) throw error;
-      return data as ResourceAllocation[];
+      return data;
     }
   });
 

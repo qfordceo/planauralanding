@@ -13,7 +13,7 @@ interface ProjectTabsProps {
 export function ProjectTabs({ projectId }: ProjectTabsProps) {
   return (
     <Tabs defaultValue="planning" className="w-full">
-      <TabsList className="grid w-full grid-cols-6">
+      <TabsList className="grid w-full grid-cols-7">
         <TabsTrigger value="planning">Planning</TabsTrigger>
         <TabsTrigger value="tasks">Tasks</TabsTrigger>
         <TabsTrigger value="timeline">Timeline</TabsTrigger>
