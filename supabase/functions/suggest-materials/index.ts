@@ -47,9 +47,6 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    // Parse the AI response into structured categories
-    const aiResponse = data.choices[0].message.content;
-    
     // Process the AI response into structured data
     // This is a simplified example - the actual AI response would need proper parsing
     const categories = [

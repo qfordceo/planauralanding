@@ -98,6 +98,149 @@ export type Database = {
           },
         ]
       }
+      bim_material_selections: {
+        Row: {
+          bim_material_id: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          selected_product: Json
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bim_material_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity: number
+          selected_product: Json
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bim_material_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          selected_product?: Json
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bim_material_selections_bim_material_id_fkey"
+            columns: ["bim_material_id"]
+            isOneToOne: false
+            referencedRelation: "bim_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bim_material_selections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bim_material_selections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bim_materials: {
+        Row: {
+          bim_model_id: string | null
+          category: string
+          created_at: string | null
+          estimated_cost: number | null
+          id: string
+          material_type: string
+          quantity: number
+          specifications: Json | null
+          unit: string
+          updated_at: string | null
+        }
+        Insert: {
+          bim_model_id?: string | null
+          category: string
+          created_at?: string | null
+          estimated_cost?: number | null
+          id?: string
+          material_type: string
+          quantity: number
+          specifications?: Json | null
+          unit: string
+          updated_at?: string | null
+        }
+        Update: {
+          bim_model_id?: string | null
+          category?: string
+          created_at?: string | null
+          estimated_cost?: number | null
+          id?: string
+          material_type?: string
+          quantity?: number
+          specifications?: Json | null
+          unit?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bim_materials_bim_model_id_fkey"
+            columns: ["bim_model_id"]
+            isOneToOne: false
+            referencedRelation: "bim_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bim_models: {
+        Row: {
+          created_at: string | null
+          floor_plan_id: string | null
+          id: string
+          ifc_file_path: string | null
+          model_data: Json | null
+          processing_errors: string[] | null
+          processing_status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          floor_plan_id?: string | null
+          id?: string
+          ifc_file_path?: string | null
+          model_data?: Json | null
+          processing_errors?: string[] | null
+          processing_status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          floor_plan_id?: string | null
+          id?: string
+          ifc_file_path?: string | null
+          model_data?: Json | null
+          processing_errors?: string[] | null
+          processing_status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bim_models_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author_id: string | null
