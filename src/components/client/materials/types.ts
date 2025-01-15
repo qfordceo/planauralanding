@@ -1,4 +1,6 @@
-import { MaterialCategory, MaterialItem } from "@/types/materials";
+import { MaterialCategory as MaterialCategoryType, MaterialItem } from "@/types/materials";
+
+export type MaterialCategory = MaterialCategoryType;
 
 export interface MaterialsCostSummaryProps {
   materialCategories: MaterialCategory[];
