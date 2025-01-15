@@ -10,7 +10,7 @@ interface CustomizationOption {
   unit: string;
 }
 
-interface CustomizationListProps {
+export interface CustomizationListProps {
   options: CustomizationOption[];
   selectedCustomizations: Array<{
     customization_id: string;

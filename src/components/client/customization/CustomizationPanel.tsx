@@ -19,10 +19,22 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
   const activeUsers = useCustomizationPresence(floorPlanId);
   const [budgetAnalysis, setBudgetAnalysis] = useState<any>(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [options, setOptions] = useState<any[]>([]);
   const [selectedCustomizations, setSelectedCustomizations] = useState<Array<{
     customization_id: string;
     quantity: number;
   }>>([]);
+
+  useEffect(() => {
+    // Fetch customization options
+    const fetchOptions = async () => {
+      const { data } = await supabase
+        .from('customization_options')
+        .select('*');
+      setOptions(data || []);
+    };
+    fetchOptions();
+  }, []);
 
   const handleCustomizationChange = (customizationId: string, quantity: number) => {
     setSelectedCustomizations(prev => {
@@ -98,7 +110,7 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
           {['floorplan', 'materials', 'finishes'].map(type => (
             <TabsContent key={type} value={type}>
               <CustomizationList
-                type={type}
+                options={options}
                 selectedCustomizations={selectedCustomizations}
                 onCustomizationChange={handleCustomizationChange}
               />

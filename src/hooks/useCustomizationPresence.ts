@@ -14,7 +14,11 @@ export function useCustomizationPresence(floorPlanId: string) {
     const channel = supabase.channel(`customization:${floorPlanId}`)
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        const presenceArray = Object.values(state).flat() as PresenceState[];
+        const presenceArray = Object.values(state).flat().map(presence => ({
+          user_id: presence.user_id || '',
+          last_seen: presence.last_seen || new Date().toISOString(),
+          viewing_section: presence.viewing_section || 'customization'
+        })) as PresenceState[];
         setActiveUsers(presenceArray);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
