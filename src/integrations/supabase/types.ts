@@ -1842,6 +1842,39 @@ export type Database = {
         }
         Relationships: []
       }
+      customization_options: {
+        Row: {
+          base_cost: number
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["customization_type"]
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          base_cost?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          type: Database["public"]["Enums"]["customization_type"]
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base_cost?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["customization_type"]
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dispute_mediation_sessions: {
         Row: {
           client_accepted: boolean | null
@@ -3704,6 +3737,68 @@ export type Database = {
           },
         ]
       }
+      user_customizations: {
+        Row: {
+          created_at: string
+          customization_id: string | null
+          floor_plan_id: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customization_id?: string | null
+          floor_plan_id?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customization_id?: string | null
+          floor_plan_id?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_customizations_customization_id_fkey"
+            columns: ["customization_id"]
+            isOneToOne: false
+            referencedRelation: "customization_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_customizations_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_customizations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_customizations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_notification_preferences: {
         Row: {
           contract_updates: boolean | null
@@ -4018,6 +4113,7 @@ export type Database = {
         | "painting"
         | "landscaping"
         | "general"
+      customization_type: "floorplan" | "material" | "finish"
       inspection_status:
         | "not_required"
         | "scheduled"

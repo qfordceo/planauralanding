@@ -12,6 +12,7 @@ import type { Profile } from "@/types/profile";
 import type { BuildData } from "./types";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { CustomizationPanel } from "@/components/client/customization/CustomizationPanel";
 
 interface SavedBuildWithFloorPlan {
   floor_plans: {
@@ -166,6 +167,19 @@ export function DashboardGrid({
             profile={profile} 
             floorPlanId={activeBuild?.floor_plan_id}
           />
+        )}
+      </DashboardCard>
+
+      <DashboardCard
+        title="Customize Your Home"
+        description="Customize your floor plan, materials, and finishes with real-time budget updates"
+        icon={Palette}
+        buttonText={activeSection === 'customize' ? 'Close Customization' : 'Customize'}
+        onClick={() => setActiveSection(activeSection === 'customize' ? null : 'customize')}
+        expanded={activeSection === 'customize'}
+      >
+        {activeSection === 'customize' && activeBuild && (
+          <CustomizationPanel floorPlanId={activeBuild.floor_plan_id} />
         )}
       </DashboardCard>
 
