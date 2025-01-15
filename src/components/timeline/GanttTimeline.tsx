@@ -4,32 +4,12 @@ import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { getStatusColor } from "./utils/statusColors";
+import { TimelineEventContent } from "./components/TimelineEventContent";
+import type { Milestone, TimelineEvent, TimelineResource } from "./types";
 
 interface GanttTimelineProps {
   projectId: string;
-}
-
-interface Contractor {
-  business_name: string;
-}
-
-interface ProjectTask {
-  id: string;
-  title: string;
-  status: string;
-  start_date: string;
-  due_date: string;
-  assigned_contractor_id: string;
-  contractors?: Contractor;
-}
-
-interface Milestone {
-  id: string;
-  title: string;
-  description: string | null;
-  due_date: string;
-  status: string;
-  project_tasks?: ProjectTask[];
 }
 
 export function GanttTimeline({ projectId }: GanttTimelineProps) {
@@ -61,7 +41,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
 
       if (milestonesError) throw milestonesError;
 
-      const resources = milestones?.map(milestone => ({
+      const resources: TimelineResource[] = milestones?.map(milestone => ({
         id: milestone.id,
         title: milestone.title,
         children: milestone.project_tasks?.map(task => ({
@@ -71,7 +51,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
         }))
       })) || [];
 
-      const events = milestones?.flatMap(milestone => 
+      const events: TimelineEvent[] = milestones?.flatMap(milestone => 
         milestone.project_tasks?.map(task => ({
           id: task.id,
           resourceId: task.id,
@@ -80,7 +60,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
           end: task.due_date,
           backgroundColor: getStatusColor(task.status),
           extendedProps: {
-            contractor: task.contractors?.business_name,
+            contractor: task.contractors?.business_name || '',
             status: task.status
           }
         })) || []
@@ -118,34 +98,10 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
             resourceAreaWidth="20%"
             slotMinWidth={100}
             resourceAreaHeaderContent="Project Phases"
-            eventContent={(arg) => (
-              <div className="p-1 text-xs">
-                <div className="font-medium">{arg.event.title}</div>
-                {arg.event.extendedProps.contractor && (
-                  <div className="text-muted-foreground">
-                    {arg.event.extendedProps.contractor}
-                  </div>
-                )}
-              </div>
-            )}
+            eventContent={TimelineEventContent}
           />
         </div>
       </CardContent>
     </Card>
   );
-}
-
-function getStatusColor(status: string): string {
-  switch (status) {
-    case 'completed':
-      return '#22c55e'; // green-500
-    case 'in_progress':
-      return '#3b82f6'; // blue-500
-    case 'blocked':
-      return '#ef4444'; // red-500
-    case 'needs_review':
-      return '#f59e0b'; // amber-500
-    default:
-      return '#94a3b8'; // slate-400
-  }
 }
