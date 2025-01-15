@@ -1,6 +1,5 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,45 +12,27 @@ serve(async (req) => {
   }
 
   try {
-    const { customizations, floorPlanId } = await req.json();
+    const { customizations, floorPlanId, location } = await req.json();
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const openAiKey = Deno.env.get('OPENAI_API_KEY')!;
 
-    // Get floor plan details
-    const { data: floorPlan, error: floorPlanError } = await supabase
-      .from('floor_plans')
-      .select('*')
-      .eq('id', floorPlanId)
-      .single();
+    // Get floor plan and market data
+    const response = await fetch(`${supabaseUrl}/rest/v1/floor_plans?id=eq.${floorPlanId}&select=*`, {
+      headers: {
+        Authorization: `Bearer ${supabaseKey}`,
+        apikey: supabaseKey,
+      },
+    });
 
-    if (floorPlanError) throw floorPlanError;
-
-    // Calculate base cost
-    const baseCost = floorPlan.build_price_per_sqft * floorPlan.square_feet;
-
-    // Get customization details
-    const { data: customizationOptions, error: customizationError } = await supabase
-      .from('customization_options')
-      .select('*')
-      .in('id', customizations.map(c => c.customization_id));
-
-    if (customizationError) throw customizationError;
-
-    // Calculate total customization cost
-    const customizationCost = customizations.reduce((total, customization) => {
-      const option = customizationOptions.find(opt => opt.id === customization.customization_id);
-      if (!option) return total;
-      return total + (option.base_cost * (customization.quantity || 1));
-    }, 0);
-
-    // Get AI recommendations using OpenAI
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const [floorPlan] = await response.json();
+    
+    // Get AI analysis with enhanced context
+    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openAiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -59,29 +40,40 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that provides budget recommendations for home customizations.'
+            content: 'You are a construction and sustainability expert providing detailed cost analysis and recommendations.'
           },
           {
             role: 'user',
-            content: `Analyze these customizations and provide cost-saving recommendations:
+            content: `Analyze these customizations and provide detailed recommendations including sustainability impact:
+              Location: ${location}
               Floor Plan: ${floorPlan.square_feet} sq ft
-              Base Cost: $${baseCost}
-              Customizations: ${JSON.stringify(customizationOptions)}
-              Total Additional Cost: $${customizationCost}`
+              Style: ${floorPlan.style}
+              Customizations: ${JSON.stringify(customizations)}
+              Consider: local material costs, energy efficiency, sustainability, and long-term value`
           }
         ]
       })
     });
 
-    const aiData = await openAIResponse.json();
-    const recommendations = aiData.choices[0].message.content;
+    const aiData = await aiResponse.json();
+    
+    // Calculate costs with market adjustments
+    const baseCost = floorPlan.build_price_per_sqft * floorPlan.square_feet;
+    const customizationCost = calculateCustomizationCost(customizations, location);
+    const sustainabilityImpact = calculateSustainabilityImpact(customizations);
 
     return new Response(
       JSON.stringify({
         baseCost,
         customizationCost,
         totalCost: baseCost + customizationCost,
-        recommendations
+        sustainabilityImpact,
+        recommendations: aiData.choices[0].message.content,
+        marketAnalysis: {
+          localFactors: await getLocalMarketFactors(location),
+          priceHistory: await getPriceHistory(location),
+          futureProjections: await getFutureProjections(location)
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -94,3 +86,119 @@ serve(async (req) => {
     );
   }
 });
+
+function calculateCustomizationCost(customizations: any[], location: string) {
+  let totalCost = 0;
+  const locationFactors = {
+    'urban': 1.2,
+    'suburban': 1.0,
+    'rural': 0.9
+  };
+  
+  const locationMultiplier = locationFactors[location as keyof typeof locationFactors] || 1.0;
+
+  customizations.forEach(customization => {
+    const baseCost = customization.quantity * customization.unitCost;
+    const adjustedCost = baseCost * locationMultiplier;
+    totalCost += adjustedCost;
+  });
+
+  return totalCost;
+}
+
+function calculateSustainabilityImpact(customizations: any[]) {
+  const scores = {
+    energyEfficiency: 0,
+    waterConservation: 0,
+    materialsSustainability: 0,
+    carbonFootprint: 0
+  };
+
+  const impactFactors = {
+    'solar_panels': { energyEfficiency: 8, carbonFootprint: -5 },
+    'led_lighting': { energyEfficiency: 3, carbonFootprint: -2 },
+    'smart_thermostat': { energyEfficiency: 4, carbonFootprint: -3 },
+    'low_flow_fixtures': { waterConservation: 6 },
+    'recycled_materials': { materialsSustainability: 7, carbonFootprint: -4 },
+    'eco_insulation': { energyEfficiency: 6, carbonFootprint: -3 }
+  };
+
+  customizations.forEach(customization => {
+    const impact = impactFactors[customization.type as keyof typeof impactFactors];
+    if (impact) {
+      Object.entries(impact).forEach(([key, value]) => {
+        scores[key as keyof typeof scores] += value * customization.quantity;
+      });
+    }
+  });
+
+  return scores;
+}
+
+async function getLocalMarketFactors(location: string) {
+  // Simulated market data - in production, this would call a real estate API
+  const marketData = {
+    urban: {
+      laborCost: 1.2,
+      materialCost: 1.15,
+      demandFactor: 1.25,
+      permitCost: 1.3
+    },
+    suburban: {
+      laborCost: 1.0,
+      materialCost: 1.0,
+      demandFactor: 1.0,
+      permitCost: 1.0
+    },
+    rural: {
+      laborCost: 0.9,
+      materialCost: 0.95,
+      demandFactor: 0.8,
+      permitCost: 0.7
+    }
+  };
+
+  return marketData[location as keyof typeof marketData] || marketData.suburban;
+}
+
+async function getPriceHistory(location: string) {
+  // Simulated historical data - would be replaced with real API calls
+  const baseData = {
+    '2020': 100,
+    '2021': 105,
+    '2022': 112,
+    '2023': 118
+  };
+
+  const locationMultiplier = {
+    urban: 1.2,
+    suburban: 1.0,
+    rural: 0.8
+  }[location as keyof typeof locationMultiplier] || 1.0;
+
+  return Object.entries(baseData).reduce((acc, [year, value]) => ({
+    ...acc,
+    [year]: value * locationMultiplier
+  }), {});
+}
+
+async function getFutureProjections(location: string) {
+  // Simulated projection data - would be replaced with ML model predictions
+  const baseProjections = {
+    oneYear: 1.05,
+    threeYear: 1.15,
+    fiveYear: 1.25,
+    tenYear: 1.40
+  };
+
+  const locationRiskFactor = {
+    urban: 1.1,
+    suburban: 1.0,
+    rural: 0.9
+  }[location as keyof typeof locationRiskFactor] || 1.0;
+
+  return Object.entries(baseProjections).reduce((acc, [term, multiplier]) => ({
+    ...acc,
+    [term]: multiplier * locationRiskFactor
+  }), {});
+}

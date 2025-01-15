@@ -1,14 +1,13 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import { CustomizationList } from "./CustomizationList";
-import { BudgetSummary } from "./BudgetSummary";
-import { AIRecommendations } from "./AIRecommendations";
+import { useState, useEffect } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CustomizationList } from './CustomizationList';
+import { BudgetSummary } from './BudgetSummary';
+import { AIRecommendations } from './AIRecommendations';
+import { useCustomizationPresence } from '@/hooks/useCustomizationPresence';
+import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { UserAvatar } from '@/components/ui/avatar';
 
 interface CustomizationPanelProps {
   floorPlanId: string;
@@ -16,74 +15,63 @@ interface CustomizationPanelProps {
 
 export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
   const { toast } = useToast();
-  const [selectedCustomizations, setSelectedCustomizations] = useState<Array<{
-    customization_id: string;
-    quantity: number;
-  }>>([]);
+  const activeUsers = useCustomizationPresence(floorPlanId);
+  const [budgetAnalysis, setBudgetAnalysis] = useState<any>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
 
-  const { data: customizationOptions, isLoading: isLoadingOptions } = useQuery({
-    queryKey: ['customization-options'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('customization_options')
-        .select('*');
-      
+  const handleCustomizationChange = async (customizations: any[]) => {
+    setIsCalculating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('calculate-budget', {
+        body: { 
+          customizations,
+          floorPlanId,
+          location: 'user-location' // You'd want to get this from user data
+        }
+      });
+
       if (error) throw error;
-      return data;
-    }
-  });
-
-  const { data: budgetAnalysis, isLoading: isCalculating } = useQuery({
-    queryKey: ['budget-analysis', selectedCustomizations],
-    queryFn: async () => {
-      const response = await supabase.functions.invoke('calculate-budget', {
-        body: { customizations: selectedCustomizations, floorPlanId }
+      
+      setBudgetAnalysis(data);
+      
+      toast({
+        title: "Calculations Updated",
+        description: "Budget and recommendations have been refreshed.",
       });
-
-      if (response.error) throw response.error;
-      return response.data;
-    },
-    enabled: selectedCustomizations.length > 0
-  });
-
-  const handleCustomizationChange = async (
-    customizationId: string,
-    quantity: number
-  ) => {
-    const newCustomizations = selectedCustomizations.filter(
-      c => c.customization_id !== customizationId
-    );
-
-    if (quantity > 0) {
-      newCustomizations.push({
-        customization_id: customizationId,
-        quantity
+    } catch (error) {
+      console.error('Error calculating budget:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update calculations. Please try again.",
+        variant: "destructive"
       });
+    } finally {
+      setIsCalculating(false);
     }
-
-    setSelectedCustomizations(newCustomizations);
-
-    toast({
-      title: "Customization Updated",
-      description: "Budget calculations are being updated..."
-    });
   };
-
-  if (isLoadingOptions) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Customize Your Home</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span>Customize Your Home</span>
+          <div className="flex items-center gap-2">
+            {activeUsers.map((user) => (
+              <div key={user.user_id} className="flex items-center">
+                <UserAvatar
+                  user={user}
+                  className="h-6 w-6"
+                />
+                <Badge variant="outline" className="ml-2">
+                  Viewing
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="floorplan" className="w-full">
+        <Tabs defaultValue="floorplan">
           <TabsList>
             <TabsTrigger value="floorplan">Floor Plan</TabsTrigger>
             <TabsTrigger value="materials">Materials</TabsTrigger>
@@ -93,8 +81,7 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
           {['floorplan', 'materials', 'finishes'].map(type => (
             <TabsContent key={type} value={type}>
               <CustomizationList
-                options={customizationOptions?.filter(opt => opt.type === type) || []}
-                selectedCustomizations={selectedCustomizations}
+                type={type}
                 onCustomizationChange={handleCustomizationChange}
               />
             </TabsContent>
@@ -110,6 +97,8 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
           <AIRecommendations
             isLoading={isCalculating}
             recommendations={budgetAnalysis?.recommendations}
+            sustainabilityImpact={budgetAnalysis?.sustainabilityImpact}
+            marketAnalysis={budgetAnalysis?.marketAnalysis}
           />
         </div>
       </CardContent>
