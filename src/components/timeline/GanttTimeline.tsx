@@ -9,11 +9,33 @@ interface GanttTimelineProps {
   projectId: string;
 }
 
+interface Contractor {
+  business_name: string;
+}
+
+interface ProjectTask {
+  id: string;
+  title: string;
+  status: string;
+  start_date: string;
+  due_date: string;
+  assigned_contractor_id: string;
+  contractors?: Contractor;
+}
+
+interface Milestone {
+  id: string;
+  title: string;
+  description: string;
+  due_date: string;
+  status: string;
+  project_tasks?: ProjectTask[];
+}
+
 export function GanttTimeline({ projectId }: GanttTimelineProps) {
   const { data: timelineData, isLoading } = useQuery({
     queryKey: ['project-timeline', projectId],
     queryFn: async () => {
-      // Fetch milestones with linked tasks
       const { data: milestones, error: milestonesError } = await supabase
         .from('project_milestones')
         .select(`
@@ -39,7 +61,6 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
 
       if (milestonesError) throw milestonesError;
 
-      // Transform data for FullCalendar
       const resources = milestones?.map(milestone => ({
         id: milestone.id,
         title: milestone.title,
