@@ -7,9 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { AlertTriangle, CheckCircle, XCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { ClashStatusIcon } from "./components/ClashStatusIcon"
+import { AnalysisResults } from "./components/AnalysisResults"
+import { DownloadButton } from "./components/DownloadButton"
 
 interface ClashDetectionReportProps {
   modelId?: string
@@ -70,13 +71,7 @@ export function ClashDetectionReport({ modelId }: ClashDetectionReportProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          {report.status === 'resolved' ? (
-            <CheckCircle className="h-5 w-5 text-green-500" />
-          ) : report.status === 'pending_review' ? (
-            <AlertTriangle className="h-5 w-5 text-yellow-500" />
-          ) : (
-            <XCircle className="h-5 w-5 text-red-500" />
-          )}
+          <ClashStatusIcon status={report.status} />
           Clash Detection Report
         </CardTitle>
         <CardDescription>
@@ -84,36 +79,12 @@ export function ClashDetectionReport({ modelId }: ClashDetectionReportProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="rounded-lg bg-muted p-4">
-          <pre className="whitespace-pre-wrap text-sm">
-            {report.analysis_results}
-          </pre>
-        </div>
-        {report.resolution_notes && (
-          <div className="rounded-lg bg-green-50 p-4">
-            <h4 className="font-medium text-green-900">Resolution Notes</h4>
-            <p className="mt-1 text-green-700">{report.resolution_notes}</p>
-          </div>
-        )}
+        <AnalysisResults 
+          results={report.analysis_results}
+          resolutionNotes={report.resolution_notes}
+        />
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              // Download report functionality
-              const reportData = JSON.stringify(report, null, 2)
-              const blob = new Blob([reportData], { type: 'application/json' })
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a')
-              a.href = url
-              a.download = `clash-report-${report.id}.json`
-              document.body.appendChild(a)
-              a.click()
-              document.body.removeChild(a)
-              URL.revokeObjectURL(url)
-            }}
-          >
-            Download Report
-          </Button>
+          <DownloadButton report={report} />
         </div>
       </CardContent>
     </Card>
