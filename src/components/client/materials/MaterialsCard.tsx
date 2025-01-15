@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Package } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useMaterialSuggestions } from "./hooks/useMaterialSuggestions";
 import { MaterialsList } from "./MaterialsList";
 import { MaterialsCostSummary } from "./MaterialsCostSummary";
-import { useMaterialSuggestions } from "./hooks/useMaterialSuggestions";
 import { MaterialsCardProps } from "./types";
 
 export function MaterialsCard({ floorPlanId, onSelectionComplete }: MaterialsCardProps) {
+  const { toast } = useToast();
   const { 
     isLoading, 
     materialCategories, 

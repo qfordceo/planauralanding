@@ -1,15 +1,4 @@
-import { MaterialItem } from "@/types/materials";
-
-export interface MaterialCategory {
-  name: string;
-  items: MaterialItem[];
-  estimatedCost: number;
-}
-
-export interface MaterialsCardProps {
-  floorPlanId: string;
-  onSelectionComplete?: () => void;
-}
+import { MaterialCategory, MaterialItem } from "@/types/materials";
 
 export interface MaterialsCostSummaryProps {
   materialCategories: MaterialCategory[];
@@ -17,5 +6,10 @@ export interface MaterialsCostSummaryProps {
 
 export interface MaterialsListProps {
   materialCategories: MaterialCategory[];
+  onSelectionComplete?: () => void;
+}
+
+export interface MaterialsCardProps {
+  floorPlanId: string;
   onSelectionComplete?: () => void;
 }

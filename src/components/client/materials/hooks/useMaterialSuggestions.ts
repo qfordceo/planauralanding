@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { MaterialCategory } from "../types";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import type { MaterialCategory } from "@/types/materials";
 
 export function useMaterialSuggestions(floorPlanId: string) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [materialCategories, setMaterialCategories] = useState<MaterialCategory[]>([]);
-  
+
   const fetchMaterialSuggestions = async () => {
     setIsLoading(true);
     try {

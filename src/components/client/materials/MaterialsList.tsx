@@ -1,15 +1,18 @@
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import { formatPrice } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { MaterialsListProps } from "./types";
-import { MaterialItem } from "@/types/materials";
+import { useState } from "react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { useToast } from "@/hooks/use-toast";
 
-export function MaterialsList({ materialCategories, onSelectionComplete }: MaterialsListProps) {
+export function MaterialsList({ 
+  materialCategories, 
+  onSelectionComplete 
+}: MaterialsListProps) {
   const { toast } = useToast();
-  const [selectedMaterials, setSelectedMaterials] = useLocalStorage<Record<string, MaterialItem>>('selected-materials', {});
+  const [selectedMaterials, setSelectedMaterials] = useLocalStorage<Record<string, any>>('selected-materials', {});
 
-  const handleProductSelect = (category: string, item: MaterialItem, product: any) => {
+  const handleProductSelect = (category: string, item: any, product: any) => {
     setSelectedMaterials(prev => ({
       ...prev,
       [`${category}-${item.name}`]: {
@@ -68,7 +71,6 @@ export function MaterialsList({ materialCategories, onSelectionComplete }: Mater
                       )}
                     </div>
                   </div>
-                  
                   <Button
                     variant="outline"
                     size="sm"
