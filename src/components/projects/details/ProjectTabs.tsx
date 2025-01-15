@@ -4,6 +4,7 @@ import { ProjectTimeline } from "../timeline/ProjectTimeline";
 import { MilestoneTracker } from "@/components/milestones/MilestoneTracker";
 import { DisputeResolution } from "@/components/disputes/DisputeResolution";
 import { TimelineEnforcement } from "@/components/timeline/TimelineEnforcement";
+import { ProjectPlanning } from "../planning/ProjectPlanning";
 
 interface ProjectTabsProps {
   projectId: string;
@@ -11,14 +12,19 @@ interface ProjectTabsProps {
 
 export function ProjectTabs({ projectId }: ProjectTabsProps) {
   return (
-    <Tabs defaultValue="tasks" className="w-full">
-      <TabsList className="grid w-full grid-cols-5">
+    <Tabs defaultValue="planning" className="w-full">
+      <TabsList className="grid w-full grid-cols-6">
+        <TabsTrigger value="planning">Planning</TabsTrigger>
         <TabsTrigger value="tasks">Tasks</TabsTrigger>
         <TabsTrigger value="timeline">Timeline</TabsTrigger>
         <TabsTrigger value="milestones">Milestones</TabsTrigger>
         <TabsTrigger value="disputes">Disputes</TabsTrigger>
         <TabsTrigger value="enforcement">Timeline Enforcement</TabsTrigger>
       </TabsList>
+
+      <TabsContent value="planning" className="mt-6">
+        <ProjectPlanning projectId={projectId} />
+      </TabsContent>
 
       <TabsContent value="tasks" className="mt-6">
         <TaskBoard projectId={projectId} />
