@@ -9,9 +9,7 @@ export interface ProjectTask {
   start_date: string;
   due_date: string;
   assigned_contractor_id: string;
-  contractors?: {
-    business_name: string;
-  };
+  contractors?: Contractor;
 }
 
 export interface Milestone {
