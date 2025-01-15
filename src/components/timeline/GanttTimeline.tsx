@@ -26,7 +26,7 @@ interface ProjectTask {
 interface Milestone {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   due_date: string;
   status: string;
   project_tasks?: ProjectTask[];
