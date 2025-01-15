@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { ClashDetectionReport } from "@/components/clash-detection/ClashDetectionReport";
 
 interface FloorPlanViewerProps {
   sceneData?: {
@@ -14,6 +15,7 @@ interface FloorPlanViewerProps {
       points: Array<{ x: number; y: number }>;
       height: number;
     }>;
+    bimModelId?: string; // Added for clash detection
   };
   isLoading?: boolean;
 }
@@ -151,8 +153,14 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
   }
 
   return (
-    <Card className="w-full h-[500px]">
-      <div ref={containerRef} className="w-full h-full" />
-    </Card>
+    <div className="space-y-4">
+      <Card className="w-full h-[500px]">
+        <div ref={containerRef} className="w-full h-full" />
+      </Card>
+      
+      {sceneData?.bimModelId && (
+        <ClashDetectionReport modelId={sceneData.bimModelId} />
+      )}
+    </div>
   );
 }
