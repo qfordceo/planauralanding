@@ -4,7 +4,7 @@ import FullCalendar from "@fullcalendar/react";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import { TimelineEventContent } from "./components/TimelineEventContent";
 import { getStatusColor } from "./utils/statusColors";
-import type { ProjectTask, Milestone, TimelineEvent, TimelineResource } from "./types";
+import type { ProjectTask, Milestone, TimelineEvent, TimelineResource, TaskStatus } from "./types";
 
 interface GanttTimelineProps {
   projectId: string;
@@ -56,10 +56,10 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
       title: task.title,
       start: task.start_date,
       end: task.due_date,
-      backgroundColor: getStatusColor(task.status),
+      backgroundColor: getStatusColor(task.status as TaskStatus),
       extendedProps: {
         contractor: task.contractors?.[0]?.business_name || '',
-        status: task.status
+        status: task.status as TaskStatus
       }
     })) || []),
     ...(milestones?.map(milestone => ({
@@ -70,7 +70,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
       backgroundColor: '#8b5cf6', // violet-500 for milestones
       extendedProps: {
         contractor: '',
-        status: milestone.status
+        status: 'not_started' as TaskStatus // Default status for milestones
       }
     })) || [])
   ];
