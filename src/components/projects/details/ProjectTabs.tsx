@@ -1,10 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TaskBoard } from "../tasks/board/TaskBoard";
-import { ProjectTimeline } from "../timeline/ProjectTimeline";
-import { MilestoneTracker } from "@/components/milestones/MilestoneTracker";
-import { DisputeResolution } from "@/components/disputes/DisputeResolution";
-import { TimelineEnforcement } from "@/components/timeline/TimelineEnforcement";
-import { ProjectPlanning } from "../planning/ProjectPlanning";
+import { ProjectOverview } from "../tabs/ProjectOverview";
+import { ProjectTasksTab } from "../tabs/ProjectTasksTab";
+import { ProjectDocumentsTab } from "../tabs/ProjectDocumentsTab";
+import { ProjectDisputesTab } from "../tabs/ProjectDisputesTab";
+import { TimelineContainer } from "@/components/timeline/TimelineContainer";
 
 interface ProjectTabsProps {
   projectId: string;
@@ -12,38 +11,33 @@ interface ProjectTabsProps {
 
 export function ProjectTabs({ projectId }: ProjectTabsProps) {
   return (
-    <Tabs defaultValue="planning" className="w-full">
-      <TabsList className="grid w-full grid-cols-7">
-        <TabsTrigger value="planning">Planning</TabsTrigger>
-        <TabsTrigger value="tasks">Tasks</TabsTrigger>
+    <Tabs defaultValue="overview" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="timeline">Timeline</TabsTrigger>
-        <TabsTrigger value="milestones">Milestones</TabsTrigger>
+        <TabsTrigger value="tasks">Tasks</TabsTrigger>
+        <TabsTrigger value="documents">Documents</TabsTrigger>
         <TabsTrigger value="disputes">Disputes</TabsTrigger>
-        <TabsTrigger value="enforcement">Timeline Enforcement</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="planning" className="mt-6">
-        <ProjectPlanning projectId={projectId} />
+      <TabsContent value="overview">
+        <ProjectOverview projectId={projectId} />
       </TabsContent>
 
-      <TabsContent value="tasks" className="mt-6">
-        <TaskBoard projectId={projectId} />
+      <TabsContent value="timeline">
+        <TimelineContainer projectId={projectId} />
       </TabsContent>
 
-      <TabsContent value="timeline" className="mt-6">
-        <ProjectTimeline projectId={projectId} />
+      <TabsContent value="tasks">
+        <ProjectTasksTab projectId={projectId} />
       </TabsContent>
 
-      <TabsContent value="milestones" className="mt-6">
-        <MilestoneTracker projectId={projectId} />
+      <TabsContent value="documents">
+        <ProjectDocumentsTab projectId={projectId} />
       </TabsContent>
 
-      <TabsContent value="disputes" className="mt-6">
-        <DisputeResolution projectId={projectId} />
-      </TabsContent>
-
-      <TabsContent value="enforcement" className="mt-6">
-        <TimelineEnforcement projectId={projectId} />
+      <TabsContent value="disputes">
+        <ProjectDisputesTab projectId={projectId} />
       </TabsContent>
     </Tabs>
   );
