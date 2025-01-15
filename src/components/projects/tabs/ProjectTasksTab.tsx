@@ -1,14 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+interface ProjectTasksTabProps {
+  projectId: string;
+}
 
-export function ProjectTasksTab() {
+export function ProjectTasksTab({ projectId }: ProjectTasksTabProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Tasks</CardTitle>
-      </CardHeader>
-      <CardContent>
-        Coming soon: Task management interface
-      </CardContent>
-    </Card>
+    <div>
+      {/* Implement tasks tab content */}
+    </div>
   );
 }

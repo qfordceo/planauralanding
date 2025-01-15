@@ -1,10 +1,9 @@
 import { ProjectOverview } from "../tabs/ProjectOverview";
 
 interface ProjectHeaderProps {
-  title: string;
-  description: string;
+  projectId: string;
 }
 
-export function ProjectHeader({ title, description }: ProjectHeaderProps) {
-  return <ProjectOverview title={title} description={description} />;
+export function ProjectHeader({ projectId }: ProjectHeaderProps) {
+  return <ProjectOverview projectId={projectId} />;
 }

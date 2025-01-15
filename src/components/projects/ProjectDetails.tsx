@@ -42,11 +42,8 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
 
   return (
     <div className="space-y-6">
-      <ProjectHeader 
-        title={project.title} 
-        description={project.description} 
-      />
-
+      <ProjectHeader projectId={projectId} />
+      
       <ContractWorkflow 
         projectId={projectId} 
         onComplete={() => window.location.reload()}

@@ -1,14 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-export function ProjectDocumentsTab() {
+interface ProjectDocumentsTabProps {
+  projectId: string;
+}
+
+export function ProjectDocumentsTab({ projectId }: ProjectDocumentsTabProps) {
+  const { data: documents } = useQuery({
+    queryKey: ['project-documents', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_documents')
+        .select('*')
+        .eq('project_id', projectId);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Documents</CardTitle>
-      </CardHeader>
-      <CardContent>
-        Coming soon: Document management interface
-      </CardContent>
-    </Card>
+    <div>
+      <h2 className="text-lg font-semibold">Project Documents</h2>
+      <ul className="space-y-2">
+        {documents?.map((document) => (
+          <li key={document.id}>
+            <a href={document.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              {document.title}
+            </a>
+          </li>
+        )) || <p>No documents available.</p>}
+      </ul>
+    </div>
   );
 }

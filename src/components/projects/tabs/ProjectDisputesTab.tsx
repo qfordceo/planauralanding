@@ -1,14 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+interface ProjectDisputesTabProps {
+  projectId: string;
+}
 
-export function ProjectDisputesTab() {
+export function ProjectDisputesTab({ projectId }: ProjectDisputesTabProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Disputes</CardTitle>
-      </CardHeader>
-      <CardContent>
-        Coming soon: Dispute resolution interface
-      </CardContent>
-    </Card>
+    <div>
+      <div className="text-muted-foreground text-center py-8">
+        No disputes found for this project
+      </div>
+    </div>
   );
 }
