@@ -60,7 +60,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
           end: task.due_date,
           backgroundColor: getStatusColor(task.status),
           extendedProps: {
-            contractor: task.contractors?.business_name || '',
+            contractor: task.contractors?.[0]?.business_name || '',
             status: task.status
           }
         })) || []
