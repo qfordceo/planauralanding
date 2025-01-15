@@ -14,7 +14,8 @@ export function useCustomizationPresence(floorPlanId: string) {
     const channel = supabase.channel(`customization:${floorPlanId}`)
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        setActiveUsers(Object.values(state).flat() as PresenceState[]);
+        const presenceArray = Object.values(state).flat() as PresenceState[];
+        setActiveUsers(presenceArray);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log('User joined:', newPresences);

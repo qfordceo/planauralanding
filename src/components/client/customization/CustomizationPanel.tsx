@@ -7,7 +7,8 @@ import { AIRecommendations } from './AIRecommendations';
 import { useCustomizationPresence } from '@/hooks/useCustomizationPresence';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { UserAvatar } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CustomizationPanelProps {
   floorPlanId: string;
@@ -18,8 +19,24 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
   const activeUsers = useCustomizationPresence(floorPlanId);
   const [budgetAnalysis, setBudgetAnalysis] = useState<any>(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [selectedCustomizations, setSelectedCustomizations] = useState<Array<{
+    customization_id: string;
+    quantity: number;
+  }>>([]);
 
-  const handleCustomizationChange = async (customizations: any[]) => {
+  const handleCustomizationChange = (customizationId: string, quantity: number) => {
+    setSelectedCustomizations(prev => {
+      const newCustomizations = prev.filter(c => c.customization_id !== customizationId);
+      if (quantity > 0) {
+        newCustomizations.push({ customization_id: customizationId, quantity });
+      }
+      return newCustomizations;
+    });
+
+    calculateBudget(selectedCustomizations);
+  };
+
+  const calculateBudget = async (customizations: Array<{ customization_id: string; quantity: number }>) => {
     setIsCalculating(true);
     try {
       const { data, error } = await supabase.functions.invoke('calculate-budget', {
@@ -82,6 +99,7 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
             <TabsContent key={type} value={type}>
               <CustomizationList
                 type={type}
+                selectedCustomizations={selectedCustomizations}
                 onCustomizationChange={handleCustomizationChange}
               />
             </TabsContent>
@@ -97,8 +115,6 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
           <AIRecommendations
             isLoading={isCalculating}
             recommendations={budgetAnalysis?.recommendations}
-            sustainabilityImpact={budgetAnalysis?.sustainabilityImpact}
-            marketAnalysis={budgetAnalysis?.marketAnalysis}
           />
         </div>
       </CardContent>
