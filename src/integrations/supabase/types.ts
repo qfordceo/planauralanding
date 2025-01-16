@@ -3485,6 +3485,7 @@ export type Database = {
           client_approval_date: string | null
           client_approved: boolean | null
           completion_evidence: Json | null
+          completion_percentage: number | null
           contractor_submission_date: string | null
           contractor_submitted: boolean | null
           created_at: string
@@ -3505,6 +3506,7 @@ export type Database = {
           client_approval_date?: string | null
           client_approved?: boolean | null
           completion_evidence?: Json | null
+          completion_percentage?: number | null
           contractor_submission_date?: string | null
           contractor_submitted?: boolean | null
           created_at?: string
@@ -3525,6 +3527,7 @@ export type Database = {
           client_approval_date?: string | null
           client_approved?: boolean | null
           completion_evidence?: Json | null
+          completion_percentage?: number | null
           contractor_submission_date?: string | null
           contractor_submitted?: boolean | null
           created_at?: string
