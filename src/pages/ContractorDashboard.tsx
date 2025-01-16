@@ -13,7 +13,7 @@ import { ContractorRegistration } from "@/components/contractor/dashboard/Contra
 import { TermsModal } from "@/components/contractor/dashboard/TermsModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminDashboard from "./AdminDashboard";
-import ClientDashboard from "./ClientDashboard";
+import { ClientDashboard } from "@/components/client/ClientDashboard";
 
 const queryClient = new QueryClient();
 
@@ -145,10 +145,6 @@ export default function ContractorDashboard() {
     );
   }
 
-  const dashboardTitle = contractor?.business_name 
-    ? `${contractor.business_name}'s Dashboard`
-    : 'Contractor Dashboard';
-
   if (registering) {
     return (
       <ContractorRegistration
@@ -166,7 +162,6 @@ export default function ContractorDashboard() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">{dashboardTitle}</h1>
         <DashboardContent
           contractor={contractor}
           activeSection={activeSection}
