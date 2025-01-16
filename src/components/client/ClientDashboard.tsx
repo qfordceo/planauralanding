@@ -1,15 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, FileText, MessageSquare } from "lucide-react";
 import { ProjectTimeline } from "@/components/client/build-cost/ProjectTimeline";
 import { DocumentRepository } from "./documents/DocumentRepository";
 import { CommunicationHub } from "./communication/CommunicationHub";
-import { BuildCostCard } from "./BuildCostCard";
-import { MaterialsCard } from "./MaterialsCard";
 import { SavedFloorPlans } from "./SavedFloorPlans";
 import { SavedLandPlots } from "./SavedLandPlots";
+import { WelcomeSection } from "./dashboard/WelcomeSection";
 
 export function ClientDashboard() {
   const { data: activeProject } = useQuery({
@@ -39,8 +37,10 @@ export function ClientDashboard() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="grid gap-6">
-        {activeProject ? (
+      <WelcomeSection />
+      
+      {activeProject ? (
+        <div className="space-y-6">
           <Tabs defaultValue="timeline" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="timeline" className="flex items-center gap-2">
@@ -69,17 +69,13 @@ export function ClientDashboard() {
               <CommunicationHub projectId={activeProject.id} />
             </TabsContent>
           </Tabs>
-        ) : (
-          <Card>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                <SavedFloorPlans />
-                <SavedLandPlots />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2">
+          <SavedFloorPlans />
+          <SavedLandPlots />
+        </div>
+      )}
     </div>
   );
 }
