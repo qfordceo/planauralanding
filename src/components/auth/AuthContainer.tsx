@@ -1,61 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchParams } from "react-router-dom";
-import { AuthForm } from "./AuthForm";
-import { useAuthEvents } from "@/hooks/useAuthEvents";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 
 export function AuthContainer() {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const defaultTab = searchParams.get('type') || 'client';
 
-  useAuthEvents(setError);
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          console.error('Session check error:', sessionError);
-          setError("Unable to check login status. Please try again.");
-        }
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Session check error:', error);
-        setError("An unexpected error occurred. Please try again.");
-        setIsLoading(false);
-      }
-    };
-
-    checkSession();
-  }, []);
-
-  const handleError = (error: Error) => {
-    console.error('Auth error:', error);
-    if (error.message.includes('rate limit')) {
-      setError('Too many attempts. Please try again later.');
-    } else if (error.message.includes('Invalid login credentials')) {
-      setError('Invalid email or password. Please try again.');
-    } else if (error.message.includes('confirmation email')) {
-      toast({
-        title: "Email Confirmation Required",
-        description: "Please check your email and spam folder for the confirmation link.",
-        duration: 6000,
-      });
-    } else {
-      setError('An error occurred during login. Please try again.');
-    }
+  const handleError = (message: string) => {
+    console.error('Auth error:', message);
+    setError(message);
+    toast({
+      title: "Authentication Error",
+      description: message,
+      variant: "destructive",
+    });
   };
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
 
   return (
     <div className="container max-w-lg mx-auto py-8">
@@ -72,10 +38,64 @@ export function AuthContainer() {
             <TabsTrigger value="contractor">Contractor</TabsTrigger>
           </TabsList>
           <TabsContent value="client">
-            <AuthForm handleError={handleError} />
+            <Auth
+              supabaseClient={supabase}
+              appearance={{
+                theme: ThemeSupa,
+                style: {
+                  button: {
+                    backgroundColor: '#2D1810',
+                    color: '#FFFFFF',
+                    borderRadius: '0.375rem',
+                    fontWeight: '500',
+                    padding: '0.5rem 1rem',
+                    height: '2.5rem',
+                    fontSize: '0.875rem',
+                    lineHeight: '1.25rem',
+                  },
+                  anchor: { color: '#2D1810' },
+                  input: {
+                    borderRadius: '0.375rem',
+                  },
+                  message: {
+                    color: 'var(--foreground)',
+                  },
+                  label: {
+                    color: 'var(--foreground)',
+                    marginBottom: '0.5rem',
+                    display: 'block',
+                  }
+                }
+              }}
+              providers={[]}
+              redirectTo={window.location.origin + '/auth?type=client'}
+            />
           </TabsContent>
           <TabsContent value="contractor">
-            <AuthForm handleError={handleError} />
+            <Auth
+              supabaseClient={supabase}
+              appearance={{
+                theme: ThemeSupa,
+                style: {
+                  button: {
+                    backgroundColor: '#2D1810',
+                    color: '#FFFFFF',
+                    borderRadius: '0.375rem',
+                    fontWeight: '500',
+                    padding: '0.5rem 1rem',
+                    height: '2.5rem',
+                    fontSize: '0.875rem',
+                    lineHeight: '1.25rem',
+                  },
+                  anchor: { color: '#2D1810' },
+                  input: {
+                    borderRadius: '0.375rem',
+                  }
+                }
+              }}
+              providers={[]}
+              redirectTo={window.location.origin + '/auth?type=contractor'}
+            />
           </TabsContent>
         </Tabs>
       </div>

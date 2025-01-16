@@ -37,26 +37,36 @@ function App() {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session);
       setSession(session);
       setLoading(false);
     });
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
       setSession(session);
-      if (_event === 'SIGNED_IN') {
+      
+      if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user?.id);
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
+        });
       }
-      if (_event === 'SIGNED_OUT') {
+      
+      if (event === 'SIGNED_OUT') {
         console.log('User signed out');
         queryClient.clear();
+        toast({
+          title: "Signed out",
+          description: "You have been signed out successfully.",
+        });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [toast]);
 
   if (loading) {
     return (
@@ -88,16 +98,6 @@ function App() {
                 }
               />
               <Route
-                path="/client-dashboard"
-                element={
-                  session ? (
-                    <Navigate to="/dashboard" replace />
-                  ) : (
-                    <Navigate to="/auth" replace />
-                  )
-                }
-              />
-              <Route
                 path="/contractor-dashboard"
                 element={
                   session ? (
@@ -117,7 +117,6 @@ function App() {
                   )
                 }
               />
-              <Route path="/admin" element={<Navigate to="/admin-dashboard" replace />} />
               <Route path="/waitlist" element={<Waitlist />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
