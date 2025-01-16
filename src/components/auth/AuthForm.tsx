@@ -19,6 +19,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         try {
+          // Check if user has a profile
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('terms_accepted')
@@ -35,6 +36,7 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
             return;
           }
 
+          // Redirect based on terms acceptance and user type
           if (!profile?.terms_accepted) {
             navigate('/terms-acknowledgment');
           } else if (userType === 'contractor') {
@@ -44,21 +46,15 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
           }
         } catch (error) {
           console.error('Auth state change error:', error);
-          toast({
-            title: "Error",
-            description: "An error occurred during login. Please try again.",
-            variant: "destructive",
-          });
+          handleError(error as Error);
         }
-      } else if (event === 'SIGNED_OUT') {
-        navigate('/auth');
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, userType, toast]);
+  }, [navigate, userType, toast, handleError]);
 
   return (
     <div className="space-y-6">
