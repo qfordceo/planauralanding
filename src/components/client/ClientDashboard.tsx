@@ -71,9 +71,6 @@ export function ClientDashboard() {
           </Tabs>
         ) : (
           <Card>
-            <CardHeader>
-              <CardTitle>Welcome to Your Dashboard</CardTitle>
-            </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-2">
                 <SavedFloorPlans />
