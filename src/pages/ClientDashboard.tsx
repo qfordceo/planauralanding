@@ -70,8 +70,13 @@ export default function ClientDashboard() {
     enabled: !!profile?.id
   });
 
+  const dashboardTitle = profile?.email 
+    ? `${profile.email.split('@')[0]}'s Dashboard`
+    : 'My Dashboard';
+
   return (
     <div className="container mx-auto py-8 space-y-6">
+      <h1 className="text-3xl font-bold mb-4">{dashboardTitle}</h1>
       <DashboardHeader isLoading={isLoading} error={error} />
       {profile && (
         <DashboardGrid

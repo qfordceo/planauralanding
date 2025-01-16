@@ -104,11 +104,12 @@ export default function ContractorDashboard() {
     return (
       <QueryClientProvider client={queryClient}>
         <div className="container mx-auto p-6">
+          <h1 className="text-3xl font-bold mb-6">Admin Control Panel</h1>
           <Tabs defaultValue="contractor" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="contractor">Contractor Dashboard</TabsTrigger>
-              <TabsTrigger value="client">Client Dashboard</TabsTrigger>
-              <TabsTrigger value="admin">Admin Dashboard</TabsTrigger>
+              <TabsTrigger value="contractor">Contractor View</TabsTrigger>
+              <TabsTrigger value="client">Client View</TabsTrigger>
+              <TabsTrigger value="admin">Admin View</TabsTrigger>
             </TabsList>
             
             <TabsContent value="contractor">
@@ -144,6 +145,10 @@ export default function ContractorDashboard() {
     );
   }
 
+  const dashboardTitle = contractor?.business_name 
+    ? `${contractor.business_name}'s Dashboard`
+    : 'Contractor Dashboard';
+
   if (registering) {
     return (
       <ContractorRegistration
@@ -160,13 +165,16 @@ export default function ContractorDashboard() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <DashboardContent
-        contractor={contractor}
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        outbidCount={outbidCount}
-        defectCount={defectCount}
-      />
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6">{dashboardTitle}</h1>
+        <DashboardContent
+          contractor={contractor}
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          outbidCount={outbidCount}
+          defectCount={defectCount}
+        />
+      </div>
       <TermsModal
         showTermsModal={showTermsModal}
         setShowTermsModal={setShowTermsModal}
