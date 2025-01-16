@@ -2554,6 +2554,111 @@ export type Database = {
           },
         ]
       }
+      maintenance_logs: {
+        Row: {
+          attachments: Json | null
+          created_at: string
+          id: string
+          maintenance_date: string
+          notes: string | null
+          performed_by: string | null
+          schedule_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string
+          id?: string
+          maintenance_date: string
+          notes?: string | null
+          performed_by?: string | null
+          schedule_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string
+          id?: string
+          maintenance_date?: string
+          notes?: string | null
+          performed_by?: string | null
+          schedule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_logs_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_logs_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_logs_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      maintenance_schedules: {
+        Row: {
+          bim_model_id: string | null
+          component_name: string
+          created_at: string
+          frequency_days: number
+          id: string
+          last_maintenance_date: string | null
+          maintenance_instructions: string | null
+          maintenance_type: string
+          next_maintenance_date: string | null
+          updated_at: string
+          warranty_end_date: string | null
+          warranty_start_date: string | null
+        }
+        Insert: {
+          bim_model_id?: string | null
+          component_name: string
+          created_at?: string
+          frequency_days: number
+          id?: string
+          last_maintenance_date?: string | null
+          maintenance_instructions?: string | null
+          maintenance_type: string
+          next_maintenance_date?: string | null
+          updated_at?: string
+          warranty_end_date?: string | null
+          warranty_start_date?: string | null
+        }
+        Update: {
+          bim_model_id?: string | null
+          component_name?: string
+          created_at?: string
+          frequency_days?: number
+          id?: string
+          last_maintenance_date?: string | null
+          maintenance_instructions?: string | null
+          maintenance_type?: string
+          next_maintenance_date?: string | null
+          updated_at?: string
+          warranty_end_date?: string | null
+          warranty_start_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_schedules_bim_model_id_fkey"
+            columns: ["bim_model_id"]
+            isOneToOne: false
+            referencedRelation: "bim_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_order_tracking: {
         Row: {
           actual_delivery: string | null
@@ -4398,6 +4503,10 @@ export type Database = {
         Args: {
           contractor_id: string
         }
+        Returns: undefined
+      }
+      check_maintenance_notifications: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       cleanup_rate_limits: {
