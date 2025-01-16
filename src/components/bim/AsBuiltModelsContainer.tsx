@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AsBuiltModelsList } from "./AsBuiltModelsList";
 import { AsBuiltModelViewer } from "./AsBuiltModelViewer";
+import { Button } from "@/components/ui/button";
 
 export function AsBuiltModelsContainer() {
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);

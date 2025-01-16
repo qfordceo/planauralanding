@@ -202,30 +202,36 @@ export type Database = {
       }
       bim_models: {
         Row: {
+          as_built_date: string | null
           created_at: string | null
           floor_plan_id: string | null
           id: string
           ifc_file_path: string | null
+          is_as_built: boolean | null
           model_data: Json | null
           processing_errors: string[] | null
           processing_status: string | null
           updated_at: string | null
         }
         Insert: {
+          as_built_date?: string | null
           created_at?: string | null
           floor_plan_id?: string | null
           id?: string
           ifc_file_path?: string | null
+          is_as_built?: boolean | null
           model_data?: Json | null
           processing_errors?: string[] | null
           processing_status?: string | null
           updated_at?: string | null
         }
         Update: {
+          as_built_date?: string | null
           created_at?: string | null
           floor_plan_id?: string | null
           id?: string
           ifc_file_path?: string | null
+          is_as_built?: boolean | null
           model_data?: Json | null
           processing_errors?: string[] | null
           processing_status?: string | null
