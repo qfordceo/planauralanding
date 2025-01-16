@@ -17,6 +17,8 @@ export const AuthForm = ({ handleError }: AuthFormProps) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session); // Debug log
+      
       if (event === 'SIGNED_IN' && session) {
         try {
           // Check if user has a profile

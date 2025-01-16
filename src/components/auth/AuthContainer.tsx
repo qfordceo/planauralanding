@@ -3,9 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchParams } from "react-router-dom";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
+import { AuthForm } from "./AuthForm";
 
 export function AuthContainer() {
   const { toast } = useToast();
@@ -13,15 +11,12 @@ export function AuthContainer() {
   const [error, setError] = useState<string | null>(null);
   const defaultTab = searchParams.get('type') || 'client';
 
-  // Get the current window location origin
-  const redirectTo = `${window.location.origin}/auth`;
-
-  const handleError = (message: string) => {
-    console.error('Auth error:', message);
-    setError(message);
+  const handleError = (error: Error) => {
+    console.error('Auth error:', error);
+    setError(error.message);
     toast({
       title: "Authentication Error",
-      description: message,
+      description: error.message,
       variant: "destructive",
     });
   };
@@ -41,64 +36,10 @@ export function AuthContainer() {
             <TabsTrigger value="contractor">Contractor</TabsTrigger>
           </TabsList>
           <TabsContent value="client">
-            <Auth
-              supabaseClient={supabase}
-              appearance={{
-                theme: ThemeSupa,
-                style: {
-                  button: {
-                    backgroundColor: '#2D1810',
-                    color: '#FFFFFF',
-                    borderRadius: '0.375rem',
-                    fontWeight: '500',
-                    padding: '0.5rem 1rem',
-                    height: '2.5rem',
-                    fontSize: '0.875rem',
-                    lineHeight: '1.25rem',
-                  },
-                  anchor: { color: '#2D1810' },
-                  input: {
-                    borderRadius: '0.375rem',
-                  },
-                  message: {
-                    color: 'var(--foreground)',
-                  },
-                  label: {
-                    color: 'var(--foreground)',
-                    marginBottom: '0.5rem',
-                    display: 'block',
-                  }
-                }
-              }}
-              providers={[]}
-              redirectTo={redirectTo}
-            />
+            <AuthForm handleError={handleError} />
           </TabsContent>
           <TabsContent value="contractor">
-            <Auth
-              supabaseClient={supabase}
-              appearance={{
-                theme: ThemeSupa,
-                style: {
-                  button: {
-                    backgroundColor: '#2D1810',
-                    color: '#FFFFFF',
-                    borderRadius: '0.375rem',
-                    fontWeight: '500',
-                    padding: '0.5rem 1rem',
-                    height: '2.5rem',
-                    fontSize: '0.875rem',
-                    lineHeight: '1.25rem',
-                  },
-                  anchor: { color: '#2D1810' },
-                  input: {
-                    borderRadius: '0.375rem',
-                  }
-                }
-              }}
-              providers={[]}
-              redirectTo={redirectTo}
-            />
+            <AuthForm handleError={handleError} />
           </TabsContent>
         </Tabs>
       </div>
