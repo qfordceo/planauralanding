@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import { ClientDashboard } from "./components/client/ClientDashboard";
+import LandingPage from "./pages/LandingPage";
 import FloorPlanUpload from "./pages/FloorPlanUpload";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
@@ -12,8 +13,8 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <ClientDashboard />,
-        errorElement: <ErrorBoundary><ClientDashboard /></ErrorBoundary>,
+        element: <LandingPage />,
+        errorElement: <ErrorBoundary><LandingPage /></ErrorBoundary>,
       },
       {
         path: "client-dashboard",
