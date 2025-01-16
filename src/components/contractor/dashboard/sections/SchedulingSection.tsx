@@ -1,6 +1,6 @@
 import { Calendar } from "lucide-react";
 import { DashboardCard } from "@/components/contractor/DashboardCard";
-import { AvailabilityManager } from "@/components/contractor/availability/AvailabilityManager";
+import { ResourceAllocationManager } from "@/components/contractor/allocation/ResourceAllocationManager";
 
 interface SchedulingSectionProps {
   contractorId: string;
@@ -15,14 +15,14 @@ export function SchedulingSection({
 }: SchedulingSectionProps) {
   return (
     <DashboardCard
-      title="Schedule Manager"
-      description="Manage your availability, appointments, and work schedule."
+      title="Resource & Schedule Manager"
+      description="Manage your resource allocations, availability, and work schedule."
       icon={Calendar}
       buttonText={activeSection === 'scheduling' ? 'Close Schedule' : 'Manage Schedule'}
       onClick={() => setActiveSection(activeSection === 'scheduling' ? null : 'scheduling')}
       expanded={activeSection === 'scheduling'}
     >
-      {activeSection === 'scheduling' && <AvailabilityManager contractorId={contractorId} />}
+      {activeSection === 'scheduling' && <ResourceAllocationManager contractorId={contractorId} />}
     </DashboardCard>
   );
 }
