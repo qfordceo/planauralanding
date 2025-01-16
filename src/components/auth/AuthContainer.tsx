@@ -13,6 +13,9 @@ export function AuthContainer() {
   const [error, setError] = useState<string | null>(null);
   const defaultTab = searchParams.get('type') || 'client';
 
+  // Get the current window location origin
+  const redirectTo = `${window.location.origin}/auth`;
+
   const handleError = (message: string) => {
     console.error('Auth error:', message);
     setError(message);
@@ -68,7 +71,7 @@ export function AuthContainer() {
                 }
               }}
               providers={[]}
-              redirectTo={window.location.origin + '/auth?type=client'}
+              redirectTo={redirectTo}
             />
           </TabsContent>
           <TabsContent value="contractor">
@@ -94,7 +97,7 @@ export function AuthContainer() {
                 }
               }}
               providers={[]}
-              redirectTo={window.location.origin + '/auth?type=contractor'}
+              redirectTo={redirectTo}
             />
           </TabsContent>
         </Tabs>
