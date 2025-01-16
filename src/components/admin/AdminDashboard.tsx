@@ -4,6 +4,9 @@ import { useAdminData } from "@/hooks/useAdminData";
 import { Loader2 } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
 import { AdminDashboardControls } from "./dashboard/AdminDashboardControls";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminMetrics = lazy(() => import("./dashboard/AdminMetrics").then(module => ({ default: module.AdminMetrics })));
 const ProjectOversight = lazy(() => import("./dashboard/ProjectOversight").then(module => ({ default: module.ProjectOversight })));
@@ -18,6 +21,19 @@ const LoadingFallback = () => (
 export function AdminDashboard() {
   const { data, isLoading, error } = useAdminData();
   const { isImpersonating, stopImpersonation } = useAdmin();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   if (isLoading) {
     return (
@@ -27,14 +43,28 @@ export function AdminDashboard() {
     );
   }
 
-  if (error || !data?.profile?.is_admin) {
+  if (error) {
+    console.error('Admin dashboard error:', error);
     return (
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold text-red-600">
           Access Denied
         </h1>
         <p className="text-gray-600">
-          You don't have permission to access this page.
+          You don't have permission to access this page. Please make sure you are logged in with an admin account.
+        </p>
+      </div>
+    );
+  }
+
+  if (!data?.profile?.is_admin) {
+    return (
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold text-red-600">
+          Access Denied
+        </h1>
+        <p className="text-gray-600">
+          This page is only accessible to administrators.
         </p>
       </div>
     );

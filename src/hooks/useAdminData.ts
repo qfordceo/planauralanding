@@ -18,8 +18,21 @@ export function useAdminData() {
           return null;
         }
 
-        const [profileResponse, projectsResponse, approvalsResponse] = await Promise.all([
-          supabase.from('profiles').select('*').eq('id', user.id).single(),
+        console.log('Fetching profile for user:', user.id);
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Profile error:', profileError);
+          throw profileError;
+        }
+
+        console.log('Profile data:', profile);
+
+        const [projectsResponse, approvalsResponse] = await Promise.all([
           supabase.from('projects').select('count').single(),
           supabase.from('contractor_compliance_documents')
             .select('count')
@@ -27,17 +40,11 @@ export function useAdminData() {
             .single(),
         ]);
 
-        if (profileResponse.error) throw profileResponse.error;
         if (projectsResponse.error) throw projectsResponse.error;
         if (approvalsResponse.error) throw approvalsResponse.error;
 
-        // If user is admin, automatically redirect to admin dashboard
-        if (profileResponse.data?.is_admin && window.location.pathname !== '/admin-dashboard') {
-          navigate('/admin-dashboard');
-        }
-
         return {
-          profile: profileResponse.data,
+          profile,
           stats: {
             totalProjects: projectsResponse.data?.count || 0,
             pendingApprovals: approvalsResponse.data?.count || 0,
@@ -53,5 +60,7 @@ export function useAdminData() {
         throw error;
       }
     },
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 }
