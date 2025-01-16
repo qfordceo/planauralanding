@@ -4,12 +4,11 @@ import { ClientDashboard } from "./components/client/ClientDashboard";
 import LandingPage from "./pages/LandingPage";
 import FloorPlanUpload from "./pages/FloorPlanUpload";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import Auth from "./pages/Auth";
 
 const router = createBrowserRouter([
   {
-    path: "/",
     element: <Layout />,
-    errorElement: <ErrorBoundary><Layout /></ErrorBoundary>,
     children: [
       {
         path: "/",
@@ -22,10 +21,15 @@ const router = createBrowserRouter([
         errorElement: <ErrorBoundary><ClientDashboard /></ErrorBoundary>,
       },
       {
-        path: "floor-plans/upload",
+        path: "floor-plan-upload",
         element: <FloorPlanUpload />,
         errorElement: <ErrorBoundary><FloorPlanUpload /></ErrorBoundary>,
       },
+      {
+        path: "auth",
+        element: <Auth />,
+        errorElement: <ErrorBoundary><Auth /></ErrorBoundary>,
+      }
     ],
   },
 ]);
