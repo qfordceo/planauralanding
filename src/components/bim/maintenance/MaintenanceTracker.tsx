@@ -77,7 +77,6 @@ export function MaintenanceTracker({ modelId }: MaintenanceTrackerProps) {
 
       if (error) throw error;
 
-      // Update the schedule's last and next maintenance dates
       const { error: updateError } = await supabase
         .from('maintenance_schedules')
         .update({
