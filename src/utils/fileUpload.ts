@@ -21,26 +21,29 @@ export async function uploadFloorPlan(file: File): Promise<string> {
     const fileExt = SUPPORTED_FORMATS[fileType as SupportedFormat];
     const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
-    // Upload file with single response handling
-    const { error: uploadError } = await supabase.storage
+    // First, get the upload URL
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from('floor-plans')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true // Allow overwriting
+      });
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
       throw new Error(uploadError.message);
     }
 
-    // Get public URL in separate call
-    const { data: urlData } = supabase.storage
+    // Then get the public URL in a separate call
+    const { data: publicUrlData } = supabase.storage
       .from('floor-plans')
       .getPublicUrl(filePath);
 
-    if (!urlData?.publicUrl) {
+    if (!publicUrlData?.publicUrl) {
       throw new Error('Failed to get public URL');
     }
 
-    return urlData.publicUrl;
+    return publicUrlData.publicUrl;
   } catch (error) {
     console.error('Error in uploadFloorPlan:', error);
     throw error;
