@@ -26,6 +26,7 @@ export async function uploadFloorPlan(file: File) {
     .upload(fileName, file);
 
   if (uploadError) {
+    console.error('Upload error:', uploadError);
     throw uploadError;
   }
 
@@ -36,7 +37,7 @@ export async function uploadFloorPlan(file: File) {
 
   // For BIM files, process them first
   if (fileType !== 'image/jpeg' && fileType !== 'image/png') {
-    const processResponse = await supabase.functions
+    const { data: processData, error: processError } = await supabase.functions
       .invoke('process-bim-file', {
         body: { 
           fileUrl: publicUrl,
@@ -44,8 +45,14 @@ export async function uploadFloorPlan(file: File) {
         }
       });
 
-    if (processResponse.error) {
-      throw processResponse.error;
+    if (processError) {
+      console.error('Processing error:', processError);
+      throw processError;
+    }
+
+    // Return the processed data if available
+    if (processData) {
+      return publicUrl;
     }
   }
 
