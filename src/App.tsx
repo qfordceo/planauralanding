@@ -21,6 +21,11 @@ const router = createBrowserRouter([
         errorElement: <ErrorBoundary><ClientDashboard /></ErrorBoundary>,
       },
       {
+        path: "floor-plans/upload",
+        element: <FloorPlanUpload />,
+        errorElement: <ErrorBoundary><FloorPlanUpload /></ErrorBoundary>,
+      },
+      {
         path: "floor-plan-upload",
         element: <FloorPlanUpload />,
         errorElement: <ErrorBoundary><FloorPlanUpload /></ErrorBoundary>,
