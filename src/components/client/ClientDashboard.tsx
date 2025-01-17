@@ -10,7 +10,7 @@ import { SavedLandPlots } from "./SavedLandPlots";
 import { WelcomeSection } from "./dashboard/WelcomeSection";
 
 export function ClientDashboard() {
-  const { data: activeProject } = useQuery({
+  const { data: activeProject, isError } = useQuery({
     queryKey: ['active-project'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -24,11 +24,11 @@ export function ClientDashboard() {
         `)
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching project:', error);
-        return null;
+        throw error;
       }
 
       return data;
