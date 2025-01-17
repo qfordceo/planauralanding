@@ -1,5 +1,6 @@
+import { AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertCircle, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface UploadProgressProps {
   isLoading: boolean;
