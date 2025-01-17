@@ -12,33 +12,35 @@ export type SupportedFormat = keyof typeof SUPPORTED_FORMATS;
 
 export async function uploadFloorPlan(file: File): Promise<string> {
   try {
+    // Validate file type
     const fileType = file.type || `application/x-${file.name.split('.').pop()}`;
-    
     if (!Object.keys(SUPPORTED_FORMATS).includes(fileType)) {
       throw new Error("Unsupported file format");
     }
 
     const fileExt = SUPPORTED_FORMATS[fileType as SupportedFormat];
     const filePath = `${crypto.randomUUID()}.${fileExt}`;
-    
-    const { data, error: uploadError } = await supabase.storage
+
+    // Upload file with single response handling
+    const { error: uploadError } = await supabase.storage
       .from('floor-plans')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+      .upload(filePath, file);
 
     if (uploadError) {
       console.error('Upload error:', uploadError);
       throw new Error(uploadError.message);
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    // Get public URL in separate call
+    const { data: urlData } = supabase.storage
       .from('floor-plans')
       .getPublicUrl(filePath);
 
-    return publicUrl;
+    if (!urlData?.publicUrl) {
+      throw new Error('Failed to get public URL');
+    }
+
+    return urlData.publicUrl;
   } catch (error) {
     console.error('Error in uploadFloorPlan:', error);
     throw error;

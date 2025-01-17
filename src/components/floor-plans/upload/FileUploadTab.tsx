@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { uploadFloorPlan, SUPPORTED_FORMATS } from '@/utils/fileUpload';
+import { uploadFloorPlan } from '@/utils/fileUpload';
 import { UploadProgress } from './UploadProgress';
 
 interface FileUploadTabProps {
