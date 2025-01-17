@@ -15,7 +15,7 @@ interface FloorPlanViewerProps {
       points: Array<{ x: number; y: number }>;
       height: number;
     }>;
-    bimModelId?: string; // Added for clash detection
+    bimModelId?: string;
   };
   isLoading?: boolean;
 }
@@ -50,24 +50,28 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
-    // Create walls
-    sceneData.walls.forEach(wall => {
-      const wallGeometry = createWallGeometry(wall);
-      const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
-      const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
-      scene.add(wallMesh);
-    });
-
-    // Create rooms
-    sceneData.rooms.forEach(room => {
-      const roomGeometry = createRoomGeometry(room);
-      const roomMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0xeeeeee,
-        side: THREE.DoubleSide 
+    // Create walls if they exist
+    if (sceneData.walls?.length > 0) {
+      sceneData.walls.forEach(wall => {
+        const wallGeometry = createWallGeometry(wall);
+        const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+        const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
+        scene.add(wallMesh);
       });
-      const roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
-      scene.add(roomMesh);
-    });
+    }
+
+    // Create rooms if they exist
+    if (sceneData.rooms?.length > 0) {
+      sceneData.rooms.forEach(room => {
+        const roomGeometry = createRoomGeometry(room);
+        const roomMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0xeeeeee,
+          side: THREE.DoubleSide 
+        });
+        const roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
+        scene.add(roomMesh);
+      });
+    }
 
     // Position camera
     camera.position.set(0, 5, 10);
@@ -99,7 +103,9 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      containerRef.current?.removeChild(renderer.domElement);
+      if (containerRef.current && renderer.domElement) {
+        containerRef.current.removeChild(renderer.domElement);
+      }
       renderer.dispose();
     };
   }, [sceneData]);
@@ -148,6 +154,14 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
     return (
       <Card className="w-full h-[500px] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </Card>
+    );
+  }
+
+  if (!sceneData || (!sceneData.walls?.length && !sceneData.rooms?.length)) {
+    return (
+      <Card className="w-full h-[500px] flex items-center justify-center">
+        <p className="text-muted-foreground">No visualization data available</p>
       </Card>
     );
   }
