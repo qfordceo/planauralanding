@@ -16,15 +16,20 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = e.target.files?.[0];
-      if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    try {
       setIsLoading(true);
       setProgress(0);
       setError(null);
 
+      // Start upload animation
+      setProgress(20);
+      
       const publicUrl = await uploadFloorPlan(file);
+      
+      // Complete upload animation
       setProgress(100);
       onUploadComplete(publicUrl);
       

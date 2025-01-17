@@ -10,51 +10,37 @@ export const SUPPORTED_FORMATS = {
 
 export type SupportedFormat = keyof typeof SUPPORTED_FORMATS;
 
-export async function uploadFloorPlan(file: File) {
-  const fileType = file.type || `application/x-${file.name.split('.').pop()}`;
-  
-  if (!Object.keys(SUPPORTED_FORMATS).includes(fileType)) {
-    throw new Error("Unsupported file format");
-  }
+export async function uploadFloorPlan(file: File): Promise<string> {
+  try {
+    const fileType = file.type || `application/x-${file.name.split('.').pop()}`;
+    
+    if (!Object.keys(SUPPORTED_FORMATS).includes(fileType)) {
+      throw new Error("Unsupported file format");
+    }
 
-  const fileExt = SUPPORTED_FORMATS[fileType as SupportedFormat];
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
-  
-  // Upload file to Supabase Storage
-  const { data: uploadData, error: uploadError } = await supabase.storage
-    .from('floor-plans')
-    .upload(fileName, file);
-
-  if (uploadError) {
-    console.error('Upload error:', uploadError);
-    throw uploadError;
-  }
-
-  // Get public URL after successful upload
-  const { data: { publicUrl } } = supabase.storage
-    .from('floor-plans')
-    .getPublicUrl(fileName);
-
-  // For BIM files, process them first
-  if (fileType !== 'image/jpeg' && fileType !== 'image/png') {
-    const { data: processData, error: processError } = await supabase.functions
-      .invoke('process-bim-file', {
-        body: { 
-          fileUrl: publicUrl,
-          fileType: fileExt
-        }
+    const fileExt = SUPPORTED_FORMATS[fileType as SupportedFormat];
+    const filePath = `${crypto.randomUUID()}.${fileExt}`;
+    
+    const { data, error: uploadError } = await supabase.storage
+      .from('floor-plans')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
       });
 
-    if (processError) {
-      console.error('Processing error:', processError);
-      throw processError;
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw new Error(uploadError.message);
     }
 
-    // Return the processed data if available
-    if (processData) {
-      return publicUrl;
-    }
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('floor-plans')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error in uploadFloorPlan:', error);
+    throw error;
   }
-
-  return publicUrl;
 }
