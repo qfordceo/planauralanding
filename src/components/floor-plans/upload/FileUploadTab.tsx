@@ -48,6 +48,7 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
       const fileExt = SUPPORTED_FORMATS[fileType as keyof typeof SUPPORTED_FORMATS];
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
+      // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('floor-plans')
         .upload(fileName, file);
@@ -56,15 +57,16 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
         throw uploadError;
       }
 
+      // Get public URL after successful upload
       const { data: { publicUrl } } = supabase.storage
         .from('floor-plans')
         .getPublicUrl(fileName);
 
-      // For BIM files, we need to process them first
+      // For BIM files, process them first
       if (fileType !== 'image/jpeg' && fileType !== 'image/png') {
         setProgress(50);
         
-        const { data: processedData, error: processError } = await supabase.functions
+        const processResponse = await supabase.functions
           .invoke('process-bim-file', {
             body: { 
               fileUrl: publicUrl,
@@ -72,8 +74,8 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
             }
           });
 
-        if (processError) {
-          throw processError;
+        if (processResponse.error) {
+          throw processResponse.error;
         }
 
         setProgress(100);
