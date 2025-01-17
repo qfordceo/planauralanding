@@ -6,8 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const PIXELS_TO_FEET_RATIO = 0.08; // Calibrated ratio for more accurate measurements
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -21,7 +22,6 @@ serve(async (req) => {
 
     console.log('Processing floor plan:', imageUrl)
 
-    // Initialize Azure Computer Vision client
     const azureEndpoint = Deno.env.get('AZURE_CV_ENDPOINT')
     const azureKey = Deno.env.get('AZURE_CV_KEY')
 
@@ -29,8 +29,8 @@ serve(async (req) => {
       throw new Error('Azure CV credentials not configured')
     }
 
-    // Call Azure CV API to analyze the floor plan
-    const azureResponse = await fetch(`${azureEndpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,tags,read`, {
+    // Call Azure CV API with enhanced parameters
+    const azureResponse = await fetch(`${azureEndpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,tags,read,caption&language=en&model-version=latest`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -46,56 +46,77 @@ serve(async (req) => {
     }
 
     const analysisResult = await azureResponse.json()
-    console.log('Analysis result:', analysisResult)
+    console.log('Raw analysis result:', analysisResult)
 
-    // Process the analysis result
+    // Enhanced room detection and measurement
     const rooms = []
-    const totalArea = 0
-    const materialEstimates = []
+    const walls = []
+    let totalArea = 0
 
     if (analysisResult.objects) {
-      // Process detected objects to identify rooms
-      for (const obj of analysisResult.objects) {
-        if (obj.tags?.includes('room')) {
-          const width = Math.round(obj.boundingBox.w * 0.1) // Convert pixels to feet
-          const length = Math.round(obj.boundingBox.h * 0.1)
-          const area = width * length
+      // Improved room detection algorithm
+      const detectedRooms = analysisResult.objects.filter(obj => 
+        obj.tags?.some(tag => 
+          ['room', 'bedroom', 'bathroom', 'kitchen', 'living room'].includes(tag.toLowerCase())
+        )
+      )
 
-          rooms.push({
-            type: 'room',
-            dimensions: { width, length },
-            area,
-            features: obj.tags.filter(tag => ['window', 'door', 'sink', 'bathtub', 'shower'].includes(tag))
+      detectedRooms.forEach(room => {
+        // Calculate more accurate dimensions
+        const width = Math.round(room.boundingBox.w * PIXELS_TO_FEET_RATIO)
+        const length = Math.round(room.boundingBox.h * PIXELS_TO_FEET_RATIO)
+        const area = width * length
+
+        // Detect room type using both object tags and text recognition
+        const roomType = determineRoomType(room, analysisResult.readResult)
+
+        // Detect features within the room
+        const features = detectRoomFeatures(room, analysisResult.objects)
+
+        rooms.push({
+          type: roomType,
+          dimensions: { width, length },
+          area,
+          features
+        })
+
+        // Create walls for visualization
+        const roomCorners = getRoomCorners(room.boundingBox)
+        roomCorners.forEach((corner, i) => {
+          const nextCorner = roomCorners[(i + 1) % 4]
+          walls.push({
+            start: { x: corner.x, y: corner.y },
+            end: { x: nextCorner.x, y: nextCorner.y },
+            height: 8 // Standard wall height
           })
-        }
-      }
+        })
+
+        totalArea += area
+      })
     }
 
-    // Create response data
+    // Calculate material estimates with improved accuracy
+    const materialEstimates = rooms.map(room => ({
+      name: room.type,
+      flooring: {
+        area: room.area,
+        estimates: [
+          { type: 'Standard', cost: room.area * 5 }
+        ]
+      },
+      paint: {
+        area: calculateWallArea(room),
+        estimates: [
+          { type: 'Standard', cost: calculateWallArea(room) * 0.5 }
+        ]
+      }
+    }))
+
     const responseData = {
       rooms,
-      totalArea: rooms.reduce((sum, room) => sum + room.area, 0),
-      materialEstimates: [
-        {
-          name: 'Flooring',
-          flooring: {
-            area: totalArea,
-            estimates: [
-              { type: 'Standard', cost: totalArea * 5 }
-            ]
-          },
-          paint: {
-            area: rooms.reduce((sum, room) => {
-              const wallHeight = 8 // feet
-              const perimeter = (room.dimensions.width + room.dimensions.length) * 2
-              return sum + (perimeter * wallHeight)
-            }, 0),
-            estimates: [
-              { type: 'Standard', cost: totalArea * 0.5 }
-            ]
-          }
-        }
-      ],
+      walls,
+      totalArea,
+      materialEstimates,
       customizationOptions: {
         flooring: [
           { name: 'Standard Carpet', costPerSqFt: 3 },
@@ -111,7 +132,7 @@ serve(async (req) => {
       }
     }
 
-    // Store the analysis result
+    // Store analysis results
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -120,7 +141,7 @@ serve(async (req) => {
     const { error: dbError } = await supabase
       .from('floor_plan_analyses')
       .insert({
-        floor_plan_id: null, // This will be updated by the client if needed
+        floor_plan_id: null,
         analysis_data: responseData,
         material_estimates: responseData.materialEstimates,
         customizations: responseData.customizationOptions
@@ -128,7 +149,6 @@ serve(async (req) => {
 
     if (dbError) {
       console.error('Database error:', dbError)
-      // Continue even if storage fails - we still want to return the analysis
     }
 
     return new Response(
@@ -150,3 +170,85 @@ serve(async (req) => {
     )
   }
 })
+
+// Helper functions
+function determineRoomType(room: any, readResult: any): string {
+  const roomTypes = {
+    bedroom: ['bed', 'bedroom', 'master'],
+    bathroom: ['bath', 'bathroom', 'shower', 'toilet'],
+    kitchen: ['kitchen', 'cooking', 'dining'],
+    living: ['living', 'family', 'great'],
+    office: ['office', 'study', 'den']
+  }
+
+  // Check object tags
+  for (const [type, keywords] of Object.entries(roomTypes)) {
+    if (room.tags?.some((tag: string) => 
+      keywords.some(keyword => tag.toLowerCase().includes(keyword))
+    )) {
+      return type
+    }
+  }
+
+  // Check nearby text
+  if (readResult?.pages?.[0]?.lines) {
+    const nearbyText = readResult.pages[0].lines
+      .filter((line: any) => isNearby(room.boundingBox, line.boundingBox))
+      .map((line: any) => line.text.toLowerCase())
+      .join(' ')
+
+    for (const [type, keywords] of Object.entries(roomTypes)) {
+      if (keywords.some(keyword => nearbyText.includes(keyword))) {
+        return type
+      }
+    }
+  }
+
+  return 'room'
+}
+
+function detectRoomFeatures(room: any, objects: any[]): string[] {
+  const features = new Set<string>()
+  const featureTypes = ['window', 'door', 'sink', 'bathtub', 'shower', 'toilet', 'closet']
+
+  objects.forEach(obj => {
+    if (isWithinBounds(obj.boundingBox, room.boundingBox)) {
+      obj.tags?.forEach((tag: string) => {
+        if (featureTypes.includes(tag.toLowerCase())) {
+          features.add(tag.toLowerCase())
+        }
+      })
+    }
+  })
+
+  return Array.from(features)
+}
+
+function getRoomCorners(boundingBox: any) {
+  const { x, y, w, h } = boundingBox
+  return [
+    { x, y },
+    { x: x + w, y },
+    { x: x + w, y: y + h },
+    { x, y: y + h }
+  ]
+}
+
+function calculateWallArea(room: any): number {
+  const perimeter = 2 * (room.dimensions.width + room.dimensions.length)
+  const wallHeight = 8 // Standard ceiling height
+  return perimeter * wallHeight
+}
+
+function isNearby(box1: any, box2: any): boolean {
+  const maxDistance = 100 // pixels
+  return Math.abs(box1.x - box2.x) < maxDistance && 
+         Math.abs(box1.y - box2.y) < maxDistance
+}
+
+function isWithinBounds(innerBox: any, outerBox: any): boolean {
+  return innerBox.x >= outerBox.x &&
+         innerBox.y >= outerBox.y &&
+         innerBox.x + innerBox.w <= outerBox.x + outerBox.w &&
+         innerBox.y + innerBox.h <= outerBox.y + outerBox.h
+}
