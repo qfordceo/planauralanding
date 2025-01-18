@@ -2252,6 +2252,42 @@ export type Database = {
         }
         Relationships: []
       }
+      file_conversions: {
+        Row: {
+          conversion_status: string
+          converted_file_path: string | null
+          created_at: string
+          file_type: string
+          id: string
+          metadata: Json | null
+          original_file_path: string
+          processing_errors: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          conversion_status?: string
+          converted_file_path?: string | null
+          created_at?: string
+          file_type: string
+          id?: string
+          metadata?: Json | null
+          original_file_path: string
+          processing_errors?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          conversion_status?: string
+          converted_file_path?: string | null
+          created_at?: string
+          file_type?: string
+          id?: string
+          metadata?: Json | null
+          original_file_path?: string
+          processing_errors?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       floor_plan_analyses: {
         Row: {
           analysis_data: Json

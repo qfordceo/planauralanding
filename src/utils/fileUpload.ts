@@ -1,11 +1,12 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const SUPPORTED_FORMATS = {
+  'application/pdf': 'pdf',
+  'application/x-dwg': 'dwg',
+  'application/x-dxf': 'dxf',
   'image/jpeg': 'jpg',
   'image/png': 'png',
-  'application/x-ifc': 'ifc',
-  'application/x-dwg': 'dwg',
-  'application/x-rvt': 'rvt'
+  'image/svg+xml': 'svg'
 } as const;
 
 export type SupportedFormat = keyof typeof SUPPORTED_FORMATS;
@@ -21,12 +22,12 @@ export async function uploadFloorPlan(file: File): Promise<string> {
     const fileExt = SUPPORTED_FORMATS[fileType as SupportedFormat];
     const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
-    // First, get the upload URL
+    // Upload to floor-plan-originals bucket
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('floor-plans')
+      .from('floor-plan-originals')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: true // Allow overwriting
+        upsert: true
       });
 
     if (uploadError) {
@@ -34,9 +35,9 @@ export async function uploadFloorPlan(file: File): Promise<string> {
       throw new Error(uploadError.message);
     }
 
-    // Then get the public URL in a separate call
+    // Get the public URL
     const { data: publicUrlData } = supabase.storage
-      .from('floor-plans')
+      .from('floor-plan-originals')
       .getPublicUrl(filePath);
 
     if (!publicUrlData?.publicUrl) {

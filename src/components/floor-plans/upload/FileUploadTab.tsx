@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { uploadFloorPlan } from '@/utils/fileUpload';
 import { UploadProgress } from './UploadProgress';
+import { FileUpload } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FileUploadTabProps {
   onUploadComplete: (url: string) => void;
@@ -15,8 +18,23 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const supportedFormats = {
+    'application/pdf': ['.pdf'],
+    'application/x-dwg': ['.dwg'],
+    'application/x-dxf': ['.dxf'],
+    'image/jpeg': ['.jpg', '.jpeg'],
+    'image/png': ['.png'],
+    'image/svg+xml': ['.svg']
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: supportedFormats,
+    onDrop: handleFileDrop,
+    multiple: false
+  });
+
+  async function handleFileDrop(acceptedFiles: File[]) {
+    const file = acceptedFiles[0];
     if (!file) return;
 
     try {
@@ -26,12 +44,38 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
 
       // Start upload animation
       setProgress(20);
-      
-      const publicUrl = await uploadFloorPlan(file);
-      
-      // Complete upload animation
+
+      // Upload to floor-plan-originals bucket
+      const filePath = `${crypto.randomUUID()}-${file.name}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('floor-plan-originals')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      setProgress(50);
+
+      // Initiate conversion if needed
+      if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+        const { data: conversionData, error: conversionError } = await supabase.functions
+          .invoke('convert-floor-plan', {
+            body: { 
+              fileUrl: filePath,
+              fileType: file.type
+            }
+          });
+
+        if (conversionError) throw conversionError;
+        setProgress(75);
+      }
+
+      // Get the public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('floor-plan-originals')
+        .getPublicUrl(filePath);
+
       setProgress(100);
-      onUploadComplete(publicUrl);
+      onUploadComplete(publicUrlData.publicUrl);
       
       toast({
         title: "Success",
@@ -48,28 +92,36 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Upload Floor Plan</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Input
-          type="file"
-          accept=".jpg,.jpeg,.png,.ifc,.dwg,.rvt"
-          onChange={handleFileUpload}
-          disabled={isLoading}
-        />
+      <CardContent>
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+            ${isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 hover:border-primary'}`}
+        >
+          <input {...getInputProps()} />
+          <FileUpload className="mx-auto h-12 w-12 text-gray-400" />
+          <p className="mt-2 text-sm text-gray-600">
+            {isDragActive
+              ? "Drop the file here"
+              : "Drag and drop your floor plan, or click to select"}
+          </p>
+          <p className="mt-1 text-xs text-gray-500">
+            Supported formats: PDF, DWG, DXF, JPG, PNG, SVG
+          </p>
+        </div>
+        
         <UploadProgress 
           isLoading={isLoading}
           progress={progress}
           error={error}
         />
-        <div className="text-sm text-muted-foreground">
-          Supported formats: JPG, PNG, IFC (BIM), DWG (AutoCAD), RVT (Revit)
-        </div>
       </CardContent>
     </Card>
   );
