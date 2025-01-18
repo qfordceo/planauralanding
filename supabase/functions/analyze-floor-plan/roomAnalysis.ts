@@ -1,84 +1,55 @@
-const PIXELS_TO_FEET = 0.1;
+import { PIXELS_TO_FEET_RATIO, ROOM_TYPES, STANDARD_WALL_HEIGHT } from './constants.ts';
+import type { Room, RoomDimensions } from './types.ts';
 
-export function calculateRoomDimensions(boundingBox: number[]) {
-  const width = Math.round(boundingBox[2] * PIXELS_TO_FEET);
-  const length = Math.round(boundingBox[3] * PIXELS_TO_FEET);
+export function calculateDimensions(boundingBox: { w: number; h: number }): RoomDimensions {
   return {
-    width,
-    length,
-    area: width * length
+    width: Math.round(boundingBox.w * PIXELS_TO_FEET_RATIO),
+    length: Math.round(boundingBox.h * PIXELS_TO_FEET_RATIO),
+    area: Math.round(boundingBox.w * boundingBox.h * Math.pow(PIXELS_TO_FEET_RATIO, 2))
   };
 }
 
-export function detectRoomType(text: string, features: string[]) {
-  const roomTypes = {
-    'bedroom': ['bed', 'bedroom', 'master', 'guest'],
-    'bathroom': ['bath', 'bathroom', 'shower', 'wc'],
-    'kitchen': ['kitchen', 'cooking', 'stove'],
-    'living': ['living', 'family', 'great'],
-    'dining': ['dining', 'dinner'],
-    'garage': ['garage', 'parking'],
-    'utility': ['utility', 'laundry'],
-    'office': ['office', 'study', 'den']
-  };
-
+export function detectRoomType(text: string, tags: string[]): string {
   const lowerText = text.toLowerCase();
   
-  for (const [type, keywords] of Object.entries(roomTypes)) {
+  for (const [type, keywords] of Object.entries(ROOM_TYPES)) {
     if (keywords.some(keyword => lowerText.includes(keyword))) {
       return type;
     }
   }
 
-  if (features.includes('sink') && features.includes('shower')) return 'bathroom';
-  if (features.includes('sink') && !features.includes('shower')) return 'kitchen';
-  if (features.includes('window') && features.length === 1) return 'living';
+  // Fallback to feature-based detection
+  if (tags.includes('sink') && tags.includes('shower')) return 'bathroom';
+  if (tags.includes('sink') && !tags.includes('shower')) return 'kitchen';
+  if (tags.includes('window') && tags.length === 1) return 'living';
   
   return 'room';
 }
 
-export function calculateMaterialEstimates(rooms: any[]) {
-  const totalArea = rooms.reduce((sum, room) => sum + room.area, 0);
-  const wallHeight = 8;
+export function extractFeatures(obj: any, textResults: any): string[] {
+  const features = new Set<string>();
   
-  const flooringOptions = [
-    { name: 'Standard Carpet', costPerSqFt: 3 },
-    { name: 'Hardwood', costPerSqFt: 8 },
-    { name: 'Luxury Vinyl', costPerSqFt: 4 },
-    { name: 'Ceramic Tile', costPerSqFt: 6 }
-  ];
-
-  const paintOptions = [
-    { name: 'Basic Paint', costPerSqFt: 0.5 },
-    { name: 'Premium Paint', costPerSqFt: 0.8 },
-    { name: 'Designer Paint', costPerSqFt: 1.2 }
-  ];
-
-  const roomEstimates = rooms.map(room => {
-    const wallArea = ((room.dimensions.width + room.dimensions.length) * 2) * wallHeight;
-    return {
-      name: room.type,
-      flooring: {
-        area: room.area,
-        estimates: flooringOptions.map(option => ({
-          type: option.name,
-          cost: room.area * option.costPerSqFt
-        }))
-      },
-      paint: {
-        area: wallArea,
-        estimates: paintOptions.map(option => ({
-          type: option.name,
-          cost: wallArea * option.costPerSqFt
-        }))
+  if (obj.tags) {
+    const relevantTags = ['window', 'door', 'sink', 'bathtub', 'shower', 'closet'];
+    obj.tags.forEach((tag: string) => {
+      if (relevantTags.includes(tag.toLowerCase())) {
+        features.add(tag.toLowerCase());
       }
-    };
-  });
+    });
+  }
 
-  return {
-    totalArea,
-    rooms: roomEstimates,
-    flooringOptions,
-    paintOptions
-  };
+  // Extract features from nearby text
+  if (textResults?.lines) {
+    textResults.lines.forEach((line: any) => {
+      const featureKeywords = ['window', 'door', 'sink', 'bath', 'shower', 'closet'];
+      const text = line.text.toLowerCase();
+      featureKeywords.forEach(keyword => {
+        if (text.includes(keyword)) {
+          features.add(keyword);
+        }
+      });
+    });
+  }
+
+  return Array.from(features);
 }
