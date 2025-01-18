@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { uploadFloorPlan } from '@/utils/fileUpload';
 import { UploadProgress } from './UploadProgress';
-import { FileUpload } from 'lucide-react';
+import { Upload } from 'lucide-react'; // Changed from FileUpload to Upload
 import { useDropzone } from 'react-dropzone';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -106,7 +106,7 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
             ${isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 hover:border-primary'}`}
         >
           <input {...getInputProps()} />
-          <FileUpload className="mx-auto h-12 w-12 text-gray-400" />
+          <Upload className="mx-auto h-12 w-12 text-gray-400" />
           <p className="mt-2 text-sm text-gray-600">
             {isDragActive
               ? "Drop the file here"
