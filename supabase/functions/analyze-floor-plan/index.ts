@@ -6,9 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const PIXELS_TO_FEET_RATIO = 0.08; // Calibrated ratio for more accurate measurements
+const PIXELS_TO_FEET_RATIO = 0.05; // Calibrated for typical floor plan images
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -29,7 +30,7 @@ serve(async (req) => {
       throw new Error('Azure CV credentials not configured')
     }
 
-    // Call Azure CV API with enhanced parameters
+    // Call Azure CV API with enhanced parameters for floor plan analysis
     const azureResponse = await fetch(`${azureEndpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,tags,read,caption&language=en&model-version=latest`, {
       method: 'POST',
       headers: {
@@ -48,75 +49,81 @@ serve(async (req) => {
     const analysisResult = await azureResponse.json()
     console.log('Raw analysis result:', analysisResult)
 
-    // Enhanced room detection and measurement
+    // Enhanced room detection with better accuracy
     const rooms = []
     const walls = []
     let totalArea = 0
 
-    if (analysisResult.objects) {
-      // Improved room detection algorithm
-      const detectedRooms = analysisResult.objects.filter(obj => 
-        obj.tags?.some(tag => 
-          ['room', 'bedroom', 'bathroom', 'kitchen', 'living room'].includes(tag.toLowerCase())
-        )
-      )
+    // Process detected objects for room identification
+    const detectedRooms = (analysisResult.objects || []).filter(obj => {
+      const roomTags = ['room', 'bedroom', 'bathroom', 'kitchen', 'living room', 'dining room', 'garage']
+      return obj.tags?.some(tag => roomTags.includes(tag.toLowerCase()))
+    })
 
-      detectedRooms.forEach(room => {
-        // Calculate more accurate dimensions
-        const width = Math.round(room.boundingBox.w * PIXELS_TO_FEET_RATIO)
-        const length = Math.round(room.boundingBox.h * PIXELS_TO_FEET_RATIO)
-        const area = width * length
+    // Process text annotations for room labels
+    const textAnnotations = analysisResult.readResult?.pages?.[0]?.lines || []
+    const roomLabels = new Map()
 
-        // Detect room type using both object tags and text recognition
-        const roomType = determineRoomType(room, analysisResult.readResult)
-
-        // Detect features within the room
-        const features = detectRoomFeatures(room, analysisResult.objects)
-
-        rooms.push({
-          type: roomType,
-          dimensions: { width, length },
-          area,
-          features
-        })
-
-        // Create walls for visualization
-        const roomCorners = getRoomCorners(room.boundingBox)
-        roomCorners.forEach((corner, i) => {
-          const nextCorner = roomCorners[(i + 1) % 4]
-          walls.push({
-            start: { x: corner.x, y: corner.y },
-            end: { x: nextCorner.x, y: nextCorner.y },
-            height: 8 // Standard wall height
-          })
-        })
-
-        totalArea += area
-      })
-    }
-
-    // Calculate material estimates with improved accuracy
-    const materialEstimates = rooms.map(room => ({
-      name: room.type,
-      flooring: {
-        area: room.area,
-        estimates: [
-          { type: 'Standard', cost: room.area * 5 }
-        ]
-      },
-      paint: {
-        area: calculateWallArea(room),
-        estimates: [
-          { type: 'Standard', cost: calculateWallArea(room) * 0.5 }
-        ]
+    textAnnotations.forEach(text => {
+      const lowerText = text.text.toLowerCase()
+      if (lowerText.includes('room') || lowerText.includes('kitchen') || lowerText.includes('bath')) {
+        const box = text.boundingBox
+        roomLabels.set(JSON.stringify(box), text.text)
       }
-    }))
+    })
+
+    // Process each detected room
+    detectedRooms.forEach(room => {
+      const width = Math.round(room.boundingBox.w * PIXELS_TO_FEET_RATIO)
+      const length = Math.round(room.boundingBox.h * PIXELS_TO_FEET_RATIO)
+      const area = width * length
+
+      // Detect room features
+      const features = []
+      if (room.tags) {
+        const featureTypes = ['window', 'door', 'sink', 'bathtub', 'shower', 'closet']
+        room.tags.forEach(tag => {
+          if (featureTypes.includes(tag.toLowerCase())) {
+            features.push(tag.toLowerCase())
+          }
+        })
+      }
+
+      // Find closest room label
+      let roomType = 'room'
+      roomLabels.forEach((label, boxStr) => {
+        const box = JSON.parse(boxStr)
+        if (isNearby(room.boundingBox, box)) {
+          roomType = determineRoomType(label)
+        }
+      })
+
+      rooms.push({
+        type: roomType,
+        dimensions: { width, length },
+        area,
+        features
+      })
+
+      // Create walls for visualization
+      const corners = getRoomCorners(room.boundingBox)
+      corners.forEach((corner, i) => {
+        const nextCorner = corners[(i + 1) % 4]
+        walls.push({
+          start: { x: corner.x, y: corner.y },
+          end: { x: nextCorner.x, y: nextCorner.y },
+          height: 8 // Standard wall height
+        })
+      })
+
+      totalArea += area
+    })
 
     const responseData = {
       rooms,
       walls,
       totalArea,
-      materialEstimates,
+      materialEstimates: calculateMaterialEstimates(rooms),
       customizationOptions: {
         flooring: [
           { name: 'Standard Carpet', costPerSqFt: 3 },
@@ -141,7 +148,6 @@ serve(async (req) => {
     const { error: dbError } = await supabase
       .from('floor_plan_analyses')
       .insert({
-        floor_plan_id: null,
         analysis_data: responseData,
         material_estimates: responseData.materialEstimates,
         customizations: responseData.customizationOptions
@@ -172,56 +178,24 @@ serve(async (req) => {
 })
 
 // Helper functions
-function determineRoomType(room: any, readResult: any): string {
+function determineRoomType(text: string): string {
+  const lowerText = text.toLowerCase()
   const roomTypes = {
     bedroom: ['bed', 'bedroom', 'master'],
-    bathroom: ['bath', 'bathroom', 'shower', 'toilet'],
-    kitchen: ['kitchen', 'cooking', 'dining'],
+    bathroom: ['bath', 'bathroom', 'shower', 'wc'],
+    kitchen: ['kitchen', 'cooking'],
     living: ['living', 'family', 'great'],
-    office: ['office', 'study', 'den']
+    dining: ['dining', 'dinner'],
+    garage: ['garage', 'parking']
   }
 
-  // Check object tags
   for (const [type, keywords] of Object.entries(roomTypes)) {
-    if (room.tags?.some((tag: string) => 
-      keywords.some(keyword => tag.toLowerCase().includes(keyword))
-    )) {
+    if (keywords.some(keyword => lowerText.includes(keyword))) {
       return type
     }
   }
 
-  // Check nearby text
-  if (readResult?.pages?.[0]?.lines) {
-    const nearbyText = readResult.pages[0].lines
-      .filter((line: any) => isNearby(room.boundingBox, line.boundingBox))
-      .map((line: any) => line.text.toLowerCase())
-      .join(' ')
-
-    for (const [type, keywords] of Object.entries(roomTypes)) {
-      if (keywords.some(keyword => nearbyText.includes(keyword))) {
-        return type
-      }
-    }
-  }
-
   return 'room'
-}
-
-function detectRoomFeatures(room: any, objects: any[]): string[] {
-  const features = new Set<string>()
-  const featureTypes = ['window', 'door', 'sink', 'bathtub', 'shower', 'toilet', 'closet']
-
-  objects.forEach(obj => {
-    if (isWithinBounds(obj.boundingBox, room.boundingBox)) {
-      obj.tags?.forEach((tag: string) => {
-        if (featureTypes.includes(tag.toLowerCase())) {
-          features.add(tag.toLowerCase())
-        }
-      })
-    }
-  })
-
-  return Array.from(features)
 }
 
 function getRoomCorners(boundingBox: any) {
@@ -234,21 +208,45 @@ function getRoomCorners(boundingBox: any) {
   ]
 }
 
+function isNearby(box1: any, box2: any): boolean {
+  const maxDistance = 100 // pixels
+  const center1 = {
+    x: box1.x + box1.w / 2,
+    y: box1.y + box1.h / 2
+  }
+  const center2 = {
+    x: box2.x + box2.w / 2,
+    y: box2.y + box2.h / 2
+  }
+  
+  const distance = Math.sqrt(
+    Math.pow(center1.x - center2.x, 2) + 
+    Math.pow(center1.y - center2.y, 2)
+  )
+  
+  return distance < maxDistance
+}
+
+function calculateMaterialEstimates(rooms: any[]) {
+  return rooms.map(room => ({
+    name: room.type,
+    flooring: {
+      area: room.area,
+      estimates: [
+        { type: 'Standard', cost: room.area * 5 }
+      ]
+    },
+    paint: {
+      area: calculateWallArea(room),
+      estimates: [
+        { type: 'Standard', cost: calculateWallArea(room) * 0.5 }
+      ]
+    }
+  }))
+}
+
 function calculateWallArea(room: any): number {
   const perimeter = 2 * (room.dimensions.width + room.dimensions.length)
   const wallHeight = 8 // Standard ceiling height
   return perimeter * wallHeight
-}
-
-function isNearby(box1: any, box2: any): boolean {
-  const maxDistance = 100 // pixels
-  return Math.abs(box1.x - box2.x) < maxDistance && 
-         Math.abs(box1.y - box2.y) < maxDistance
-}
-
-function isWithinBounds(innerBox: any, outerBox: any): boolean {
-  return innerBox.x >= outerBox.x &&
-         innerBox.y >= outerBox.y &&
-         innerBox.x + innerBox.w <= outerBox.x + outerBox.w &&
-         innerBox.y + innerBox.h <= outerBox.y + outerBox.h
 }
