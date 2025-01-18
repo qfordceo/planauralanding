@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const PIXELS_TO_FEET_RATIO = 0.05; // Calibrated for typical floor plan images
+const PIXELS_TO_FEET_RATIO = 0.05;
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -30,8 +30,8 @@ serve(async (req) => {
       throw new Error('Azure CV credentials not configured')
     }
 
-    // Call Azure CV API with enhanced parameters for floor plan analysis
-    const azureResponse = await fetch(`${azureEndpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,tags,read,caption&language=en&model-version=latest`, {
+    // Call Azure CV API with only the features we need for floor plan analysis
+    const azureResponse = await fetch(`${azureEndpoint}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=objects,tags,read&language=en&model-version=latest`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,12 +49,11 @@ serve(async (req) => {
     const analysisResult = await azureResponse.json()
     console.log('Raw analysis result:', analysisResult)
 
-    // Enhanced room detection with better accuracy
+    // Process detected objects for room identification
     const rooms = []
     const walls = []
     let totalArea = 0
 
-    // Process detected objects for room identification
     const detectedRooms = (analysisResult.objects || []).filter(obj => {
       const roomTags = ['room', 'bedroom', 'bathroom', 'kitchen', 'living room', 'dining room', 'garage']
       return obj.tags?.some(tag => roomTags.includes(tag.toLowerCase()))
