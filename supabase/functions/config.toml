@@ -1,9 +1,17 @@
 project_id = "vaxxrwnfcaxvqvdhlsad"
 
+[functions.advisor]
+verify_jwt = true
+
+[functions.send-email]
+verify_jwt = true
+
+[functions.convert-floor-plan]
+verify_jwt = true
+
+[functions.analyze-floor-plan]
+verify_jwt = true
+
 [global.env]
 SUPABASE_URL = "env"
 SUPABASE_SERVICE_ROLE_KEY = "env"
-
-[[functions]]
-name = "fetch-material-prices"
-verify_jwt = true
