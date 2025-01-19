@@ -35,7 +35,33 @@ export async function uploadFloorPlan(file: File): Promise<string> {
       throw new Error(uploadError.message);
     }
 
-    // Get the public URL
+    // Initiate conversion if needed
+    if (fileType !== 'image/jpeg' && fileType !== 'image/png') {
+      const { data: conversionData, error: conversionError } = await supabase.functions
+        .invoke('convert-floor-plan', {
+          body: { 
+            fileUrl: filePath,
+            fileType
+          }
+        });
+
+      if (conversionError) {
+        throw conversionError;
+      }
+
+      // Return the converted file path if available
+      if (conversionData?.convertedFilePath) {
+        const { data: convertedUrlData } = supabase.storage
+          .from('floor-plans')
+          .getPublicUrl(conversionData.convertedFilePath);
+
+        if (convertedUrlData?.publicUrl) {
+          return convertedUrlData.publicUrl;
+        }
+      }
+    }
+
+    // Get the public URL for the original file
     const { data: publicUrlData } = supabase.storage
       .from('floor-plan-originals')
       .getPublicUrl(filePath);
