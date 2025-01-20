@@ -1,18 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { AnalysisResult, CustomizationOptions } from "@/types/floor-plans";
-
-interface AnalysisStage {
-  name: string;
-  progress: number;
-  status: 'pending' | 'processing' | 'complete' | 'error';
-}
-
-interface AnalysisMetrics {
-  confidence: number;
-  accuracy: number;
-  completeness: number;
-}
+import type { AnalysisStage, AnalysisMetrics } from "@/types/analysis";
 
 export function useAnalysis(imageUrl: string | null, customizations: CustomizationOptions) {
   const { data, isLoading, error, refetch } = useQuery({
@@ -32,10 +21,10 @@ export function useAnalysis(imageUrl: string | null, customizations: Customizati
 
   // Simulated stages for demo - in production, these would come from the backend
   const stages: AnalysisStage[] = [
-    { name: 'Image Processing', progress: 100, status: 'complete' },
-    { name: 'Room Detection', progress: 80, status: 'processing' },
-    { name: 'Feature Analysis', progress: 30, status: 'processing' },
-    { name: 'Cost Estimation', progress: 0, status: 'pending' }
+    { name: 'Image Processing', progress: 100, status: 'complete', weight: 25 },
+    { name: 'Room Detection', progress: 80, status: 'processing', weight: 25 },
+    { name: 'Feature Analysis', progress: 30, status: 'processing', weight: 25 },
+    { name: 'Cost Estimation', progress: 0, status: 'pending', weight: 25 }
   ];
 
   // Simulated metrics - in production, these would come from the backend

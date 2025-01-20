@@ -3,23 +3,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RefreshCw, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface AnalysisStage {
-  name: string;
-  status: 'pending' | 'processing' | 'complete' | 'error';
-  weight: number;
-}
+import type { AnalysisStage, AnalysisMetrics } from "@/types/analysis";
 
 interface AnalysisProgressProps {
   isLoading: boolean;
   error: Error | null;
   stages?: AnalysisStage[];
   onRetry?: () => void;
-  metrics?: {
-    confidence: number;
-    accuracy: number;
-    completeness: number;
-  };
+  metrics?: AnalysisMetrics;
 }
 
 export function AnalysisProgress({ 
