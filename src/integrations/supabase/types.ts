@@ -3731,6 +3731,70 @@ export type Database = {
           },
         ]
       }
+      project_risk_analysis: {
+        Row: {
+          ai_confidence_score: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          impact_level: string | null
+          mitigation_strategy: string | null
+          probability: number | null
+          project_id: string | null
+          risk_type: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_confidence_score?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          impact_level?: string | null
+          mitigation_strategy?: string | null
+          probability?: number | null
+          project_id?: string | null
+          risk_type: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_confidence_score?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          impact_level?: string | null
+          mitigation_strategy?: string | null
+          probability?: number | null
+          project_id?: string | null
+          risk_type?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_risk_analysis_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_risk_analysis_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_risk_analysis_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_roadmaps: {
         Row: {
           created_at: string | null
@@ -4635,6 +4699,56 @@ export type Database = {
           {
             foreignKeyName: "projects_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resource_allocation_analytics: {
+        Row: {
+          allocation_percentage: number | null
+          contractor_name: string | null
+          end_date: string | null
+          project_id: string | null
+          project_title: string | null
+          resource_email: string | null
+          resource_id: string | null
+          role: string | null
+          start_date: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "resource_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_statistics_secure"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "resource_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_allocations_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_allocations_resource_id_fkey"
+            columns: ["resource_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
