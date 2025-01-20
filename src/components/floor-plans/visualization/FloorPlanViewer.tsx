@@ -63,7 +63,11 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
 
   const createClashMarker = useCallback((position: { x: number, y: number, z: number }, id: string) => {
     const geometry = new THREE.SphereGeometry(0.2);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.8 });
+    const material = new THREE.MeshBasicMaterial({ 
+      color: 0xff6b6b, 
+      transparent: true, 
+      opacity: 0.8 
+    });
     const marker = new THREE.Mesh(geometry, material);
     marker.position.set(position.x, position.y, position.z);
     marker.userData.id = id;
@@ -95,8 +99,8 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
 
         if (report && report.model_data) {
           const newMarkers = report.model_data.elements
-            .filter(element => element.clash)
-            .map(element => createClashMarker(
+            .filter((element: any) => element.clash)
+            .map((element: any) => createClashMarker(
               element.position,
               element.id
             ));

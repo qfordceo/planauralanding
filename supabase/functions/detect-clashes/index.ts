@@ -10,13 +10,13 @@ const corsHeaders = {
 interface ClashDetectionRequest {
   modelData: {
     elements: Array<{
+      id: string;
       type: string;
       position: { x: number; y: number; z: number };
       dimensions: { width: number; height: number; depth: number };
       category: string;
     }>;
   };
-  floorPlanId: string;
 }
 
 serve(async (req) => {
@@ -25,19 +25,13 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
     const configuration = new Configuration({
       apiKey: Deno.env.get('OPENAI_API_KEY'),
     })
     const openai = new OpenAIApi(configuration)
 
-    const { modelData, floorPlanId } = await req.json() as ClashDetectionRequest
-
-    console.log('Analyzing model for clashes:', { floorPlanId })
+    const { modelData } = await req.json() as ClashDetectionRequest
+    console.log('Analyzing model for clashes:', { modelData })
 
     // Analyze the model data for clashes using OpenAI
     const completion = await openai.createChatCompletion({
@@ -49,7 +43,7 @@ serve(async (req) => {
         },
         {
           role: "user",
-          content: `Analyze this BIM model data for potential clashes, focusing on MEP and structural intersections: ${JSON.stringify(modelData)}`
+          content: `Analyze this BIM model data for potential clashes, focusing on MEP and structural intersections. Return a JSON response with clash locations and details: ${JSON.stringify(modelData)}`
         }
       ],
     })
@@ -57,6 +51,11 @@ serve(async (req) => {
     const analysis = completion.data.choices[0].message?.content || ''
     
     // Store the clash detection results
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
     const { data: report, error } = await supabaseClient
       .from('clash_detection_reports')
       .insert({
