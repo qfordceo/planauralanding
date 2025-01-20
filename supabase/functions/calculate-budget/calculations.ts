@@ -1,21 +1,36 @@
-import { MaterialCost, MarketRate, CostBreakdown } from './types';
+import type { MarketRates, MaterialCosts, BudgetResult } from './types.ts';
 
-export function calculateTotalCosts(
-  materials: MaterialCost[],
-  marketRates: MarketRate
-): CostBreakdown {
-  const materialCost = materials.reduce(
-    (sum, material) => sum + (material.price_per_unit * material.quantity),
-    0
-  ) * marketRates.material_multiplier;
+const OVERHEAD_PERCENTAGE = 0.15;
+const CONTINGENCY_PERCENTAGE = 0.10;
 
-  const laborCost = materialCost * 0.4 * marketRates.labor_multiplier; // 40% of material cost as baseline
-  const overheadCost = (materialCost + laborCost) * 0.15 * marketRates.overhead_multiplier; // 15% overhead
+export function calculateTotalBudget(
+  marketRates: MarketRates,
+  materialCosts: MaterialCosts
+): BudgetResult {
+  // Calculate base material cost with market multiplier
+  const totalMaterialCost = (materialCosts.baseMaterials + materialCosts.customMaterials) 
+    * marketRates.materialMultiplier 
+    * (1 + materialCosts.wastageEstimate);
+
+  // Calculate labor cost based on material cost and labor rate
+  const laborCost = totalMaterialCost * marketRates.laborRate * marketRates.locationFactor;
+
+  // Calculate overhead and contingency
+  const subtotal = totalMaterialCost + laborCost;
+  const overhead = subtotal * OVERHEAD_PERCENTAGE;
+  const contingency = subtotal * CONTINGENCY_PERCENTAGE;
+
+  // Calculate total cost
+  const totalCost = subtotal + overhead + contingency;
 
   return {
-    materials: materialCost,
-    labor: laborCost,
-    overhead: overheadCost,
-    total: materialCost + laborCost + overheadCost
+    totalCost,
+    breakdown: {
+      materials: totalMaterialCost,
+      labor: laborCost,
+      overhead,
+      contingency
+    },
+    marketFactors: marketRates
   };
 }

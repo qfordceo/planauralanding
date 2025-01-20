@@ -3,40 +3,33 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { corsHeaders } from '../_shared/cors.ts';
 import { getMarketRates } from './marketRates.ts';
 import { getMaterialCosts } from './materialCosts.ts';
-import { calculateTotalCosts } from './calculations.ts';
-import type { BudgetCalculationResult } from './types';
+import { calculateTotalBudget } from './calculations.ts';
+import type { BudgetInput, BudgetResult } from './types.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { location } = await req.json();
+    const { floorPlanId, landListingId, customizations } = await req.json() as BudgetInput;
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Fetch data in parallel
-    const [marketRates, materials] = await Promise.all([
-      getMarketRates(location, supabaseClient),
-      getMaterialCosts(supabaseClient)
-    ]);
+    // Get market rates for the area
+    const marketRates = await getMarketRates(supabase, landListingId);
+    
+    // Get material costs based on floor plan and customizations
+    const materialCosts = await getMaterialCosts(supabase, floorPlanId, customizations);
 
-    // Calculate costs
-    const breakdown = calculateTotalCosts(materials, marketRates);
-
-    const result: BudgetCalculationResult = {
-      breakdown,
-      materials,
-      marketRates
-    };
+    // Calculate total budget
+    const budget = calculateTotalBudget(marketRates, materialCosts);
 
     return new Response(
-      JSON.stringify(result),
+      JSON.stringify(budget),
       { 
         headers: { 
           ...corsHeaders,
@@ -44,6 +37,7 @@ serve(async (req) => {
         }
       }
     );
+
   } catch (error) {
     console.error('Error calculating budget:', error);
     return new Response(

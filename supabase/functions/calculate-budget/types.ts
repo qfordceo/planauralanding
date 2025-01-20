@@ -1,27 +1,28 @@
-export interface MaterialCost {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  price_per_unit: number;
+export interface BudgetInput {
+  floorPlanId: string;
+  landListingId: string;
+  customizations?: Record<string, any>;
 }
 
-export interface MarketRate {
-  location: string;
-  labor_multiplier: number;
-  material_multiplier: number;
-  overhead_multiplier: number;
+export interface MarketRates {
+  laborRate: number;
+  materialMultiplier: number;
+  locationFactor: number;
 }
 
-export interface CostBreakdown {
-  materials: number;
-  labor: number;
-  overhead: number;
-  total: number;
+export interface MaterialCosts {
+  baseMaterials: number;
+  customMaterials: number;
+  wastageEstimate: number;
 }
 
-export interface BudgetCalculationResult {
-  breakdown: CostBreakdown;
-  materials: MaterialCost[];
-  marketRates: MarketRate;
+export interface BudgetResult {
+  totalCost: number;
+  breakdown: {
+    materials: number;
+    labor: number;
+    overhead: number;
+    contingency: number;
+  };
+  marketFactors: MarketRates;
 }
