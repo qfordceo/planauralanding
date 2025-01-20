@@ -2695,6 +2695,39 @@ export type Database = {
           },
         ]
       }
+      market_rate_adjustments: {
+        Row: {
+          confidence_score: number | null
+          data_source: string | null
+          id: string
+          labor_multiplier: number
+          last_updated: string | null
+          location: string
+          material_multiplier: number
+          overhead_multiplier: number
+        }
+        Insert: {
+          confidence_score?: number | null
+          data_source?: string | null
+          id?: string
+          labor_multiplier?: number
+          last_updated?: string | null
+          location: string
+          material_multiplier?: number
+          overhead_multiplier?: number
+        }
+        Update: {
+          confidence_score?: number | null
+          data_source?: string | null
+          id?: string
+          labor_multiplier?: number
+          last_updated?: string | null
+          location?: string
+          material_multiplier?: number
+          overhead_multiplier?: number
+        }
+        Relationships: []
+      }
       material_order_tracking: {
         Row: {
           actual_delivery: string | null
@@ -4052,6 +4085,50 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_api_configs: {
+        Row: {
+          api_endpoint: string
+          api_key_name: string
+          api_type: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync: string | null
+          refresh_interval: unknown
+          supplier_id: string | null
+        }
+        Insert: {
+          api_endpoint: string
+          api_key_name: string
+          api_type: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync?: string | null
+          refresh_interval?: unknown
+          supplier_id?: string | null
+        }
+        Update: {
+          api_endpoint?: string
+          api_key_name?: string
+          api_type?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync?: string | null
+          refresh_interval?: unknown
+          supplier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_api_configs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "material_suppliers"
             referencedColumns: ["id"]
           },
         ]
