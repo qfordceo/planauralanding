@@ -4,6 +4,8 @@ import FullCalendar from "@fullcalendar/react";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import { TimelineEventContent } from "./components/TimelineEventContent";
 import { getStatusColor, getPhaseColor } from "./utils/statusColors";
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 import type { ProjectTask, Milestone, TimelineEvent, TimelineResource, TaskStatus } from "./types";
 
 interface GanttTimelineProps {
@@ -61,7 +63,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
       borderColor: getStatusColor(task.status as TaskStatus),
       extendedProps: {
         contractor: task.contractors?.[0]?.business_name || '',
-        status: task.status as TaskStatus,
+        status: task.status,
         phase: task.phase
       }
     })) || []),
@@ -121,12 +123,11 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
               </div>
             `;
             info.el.title = "";
-            new window.Tooltip(info.el, {
-              title: tooltip.outerHTML,
-              html: true,
+            tippy(info.el, {
+              content: tooltip,
+              allowHTML: true,
               placement: 'top',
-              trigger: 'hover',
-              container: 'body'
+              theme: 'light'
             });
           }
         }}

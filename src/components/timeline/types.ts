@@ -13,6 +13,7 @@ export interface ProjectTask {
   due_date: string;
   assigned_contractor_id: string;
   contractors?: Contractor[];
+  phase: string;
 }
 
 export interface Milestone {
@@ -20,6 +21,14 @@ export interface Milestone {
   title: string;
   due_date: string;
   status: string;
+  phase: string;
+}
+
+export interface TimelineEventExtendedProps {
+  contractor?: string;
+  status: TaskStatus | string;
+  phase: string;
+  type?: 'milestone';
 }
 
 export interface TimelineEvent {
@@ -28,10 +37,9 @@ export interface TimelineEvent {
   start: string;
   end: string;
   backgroundColor: string;
-  extendedProps: {
-    contractor: string;
-    status: TaskStatus;
-  };
+  borderColor?: string;
+  display?: string;
+  extendedProps: TimelineEventExtendedProps;
 }
 
 export interface TimelineResource {
