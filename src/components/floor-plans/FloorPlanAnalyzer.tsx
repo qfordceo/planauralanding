@@ -48,7 +48,6 @@ export function FloorPlanAnalyzer({ imageUrl: initialImageUrl }: FloorPlanAnalyz
         <AnalysisProgress 
           isLoading={isLoading}
           error={error as Error | null}
-          progress={75}
           stages={stages}
           onRetry={refetch}
           metrics={metrics}
