@@ -1,173 +1,154 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Calendar } from "@fullcalendar/react";
+import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
+import interactionPlugin from "@fullcalendar/interaction";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Clock, Calendar, AlertTriangle } from "lucide-react";
-import { format } from "date-fns";
-import { useEffect } from "react";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
-interface ResourceAllocation {
-  resource_id: string;
-  project_id: string;
-  role: string;
-  allocation_percentage: number;
-  start_date: string;
-  end_date: string;
-  resource_email: string;
-  contractor_id: string;
+interface ResourceAllocationManagerProps {
+  contractorId: string;
 }
 
-interface Milestone {
-  id: string;
-  title: string;
-  due_date: string;
-  status: string;
-}
+export function ResourceAllocationManager({ contractorId }: ResourceAllocationManagerProps) {
+  const queryClient = useQueryClient();
+  const [resources, setResources] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
 
-export function ResourceAllocationManager({ contractorId }: { contractorId: string }) {
-  const { toast } = useToast();
-
-  // Fetch resource allocations
-  const { data: allocations, isLoading: isLoadingAllocations } = useQuery({
-    queryKey: ['resource-allocations', contractorId],
+  // Fetch contractor availability
+  const { data: availability } = useQuery({
+    queryKey: ["contractor-availability", contractorId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('resource_availability_view')
-        .select('*')
-        .eq('contractor_id', contractorId);
+        .from("contractor_availability")
+        .select("*")
+        .eq("contractor_id", contractorId);
 
       if (error) throw error;
-      return data as ResourceAllocation[];
+      return data;
     },
   });
 
-  // Fetch related milestones
-  const { data: milestones } = useQuery({
-    queryKey: ['project-milestones', contractorId],
+  // Fetch tasks that can be assigned
+  const { data: tasks } = useQuery({
+    queryKey: ["project-tasks", contractorId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('project_milestones')
-        .select('*')
-        .eq('assigned_contractor_id', contractorId);
+        .from("project_tasks")
+        .select("*")
+        .is("assigned_contractor_id", null);
 
       if (error) throw error;
-      return data as Milestone[];
+      return data;
     },
   });
 
-  // Subscribe to real-time updates
+  // Update task assignment
+  const updateTaskAssignment = useMutation({
+    mutationFn: async ({ taskId, contractorId, startDate, endDate }: any) => {
+      const { error } = await supabase
+        .from("project_tasks")
+        .update({
+          assigned_contractor_id: contractorId,
+          start_date: startDate,
+          due_date: endDate,
+        })
+        .eq("id", taskId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project-tasks"] });
+      toast.success("Task assigned successfully");
+    },
+    onError: (error) => {
+      toast.error("Failed to assign task");
+      console.error("Error assigning task:", error);
+    },
+  });
+
+  // Transform availability data into FullCalendar resources
   useEffect(() => {
-    const channel = supabase
-      .channel('resource-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'resource_allocations',
-          filter: `contractor_id=eq.${contractorId}`
+    if (availability) {
+      const transformedResources = availability.map((slot: any) => ({
+        id: slot.id,
+        title: `Contractor ${slot.contractor_id}`,
+        businessHours: {
+          startTime: slot.start_time,
+          endTime: slot.end_time,
+          daysOfWeek: [slot.day_of_week],
         },
-        (payload) => {
-          toast({
-            title: "Resource Allocation Updated",
-            description: "The resource allocation has been updated.",
-          });
-        }
-      )
-      .subscribe();
+      }));
+      setResources(transformedResources);
+    }
+  }, [availability]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [contractorId, toast]);
+  // Transform tasks into FullCalendar events
+  useEffect(() => {
+    if (tasks) {
+      const transformedEvents = tasks.map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        start: task.start_date,
+        end: task.due_date,
+        resourceId: task.assigned_contractor_id,
+      }));
+      setEvents(transformedEvents);
+    }
+  }, [tasks]);
 
-  const getStatusColor = (percentage: number) => {
-    if (percentage < 50) return 'bg-green-100 text-green-800';
-    if (percentage < 80) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+  const handleEventDrop = async (info: any) => {
+    const { event, resource } = info;
+    
+    // Check if the new time slot conflicts with contractor availability
+    const isAvailable = availability?.some((slot: any) => 
+      slot.contractor_id === resource.id &&
+      new Date(event.start).getDay() === slot.day_of_week
+    );
+
+    if (!isAvailable) {
+      toast.error("Contractor is not available at this time");
+      info.revert();
+      return;
+    }
+
+    try {
+      await updateTaskAssignment.mutateAsync({
+        taskId: event.id,
+        contractorId: resource.id,
+        startDate: event.start,
+        endDate: event.end,
+      });
+    } catch (error) {
+      info.revert();
+    }
   };
-
-  if (isLoadingAllocations) {
-    return <div>Loading resource allocations...</div>;
-  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Resource Allocation
-        </CardTitle>
+        <CardTitle>Resource Allocation</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[600px] pr-4">
-          <div className="space-y-4">
-            {allocations?.map((allocation) => (
-              <Card key={allocation.resource_id} className="p-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <div className="font-medium">{allocation.resource_email}</div>
-                    <div className="text-sm text-muted-foreground">{allocation.role}</div>
-                    
-                    <div className="flex items-center gap-2 text-sm">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        {format(new Date(allocation.start_date), 'MMM d')} - 
-                        {format(new Date(allocation.end_date), 'MMM d, yyyy')}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span>Allocation</span>
-                        <span>{allocation.allocation_percentage}%</span>
-                      </div>
-                      <Progress 
-                        value={allocation.allocation_percentage} 
-                        className="h-2"
-                      />
-                    </div>
-                  </div>
-
-                  <div className={`px-2 py-1 rounded text-xs ${getStatusColor(allocation.allocation_percentage)}`}>
-                    {allocation.allocation_percentage}% Allocated
-                  </div>
-                </div>
-
-                {/* Related Milestones */}
-                {milestones?.filter(m => 
-                  new Date(m.due_date) >= new Date(allocation.start_date) &&
-                  new Date(m.due_date) <= new Date(allocation.end_date)
-                ).map(milestone => (
-                  <div key={milestone.id} className="mt-2 p-2 bg-muted rounded-md">
-                    <div className="flex items-center gap-2 text-sm">
-                      {milestone.status === 'completed' ? (
-                        <div className="text-green-500">✓</div>
-                      ) : new Date(milestone.due_date) < new Date() ? (
-                        <AlertTriangle className="h-4 w-4 text-red-500" />
-                      ) : (
-                        <Clock className="h-4 w-4" />
-                      )}
-                      <span>{milestone.title}</span>
-                      <span className="text-muted-foreground">
-                        (Due: {format(new Date(milestone.due_date), 'MMM d')})
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </Card>
-            ))}
-
-            {(!allocations || allocations.length === 0) && (
-              <div className="text-center text-muted-foreground">
-                No resource allocations found
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+        <Calendar
+          plugins={[resourceTimelinePlugin, interactionPlugin]}
+          initialView="resourceTimelineWeek"
+          editable={true}
+          droppable={true}
+          resources={resources}
+          events={events}
+          eventDrop={handleEventDrop}
+          slotMinTime="06:00:00"
+          slotMaxTime="20:00:00"
+          businessHours={true}
+          height="auto"
+          headerToolbar={{
+            left: 'prev,next today',
+            center: 'title',
+            right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
+          }}
+        />
       </CardContent>
     </Card>
   );
