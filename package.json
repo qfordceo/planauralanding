@@ -87,6 +87,7 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.172.0",
+    "three-csg-ts": "^3.1.13",
     "vaul": "^0.9.3",
     "vitest": "^2.1.8",
     "zod": "^3.23.8"

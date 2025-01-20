@@ -1,7 +1,9 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export function setupScene(container: HTMLDivElement) {
   const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf5f5f5);
   
   const camera = new THREE.PerspectiveCamera(
     75,
@@ -10,23 +12,41 @@ export function setupScene(container: HTMLDivElement) {
     1000
   );
   
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const renderer = new THREE.WebGLRenderer({ 
+    antialias: true,
+    alpha: true,
+    preserveDrawingBuffer: true // Required for image export
+  });
+  
   renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
 
   // Add lighting
-  const ambientLight = new THREE.AmbientLight(0x404040);
+  const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
   scene.add(ambientLight);
   
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   directionalLight.position.set(1, 1, 1);
+  directionalLight.castShadow = true;
   scene.add(directionalLight);
+
+  // Add hemisphere light for better ambient lighting
+  const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.5);
+  scene.add(hemisphereLight);
 
   // Position camera
   camera.position.set(0, 5, 10);
   camera.lookAt(0, 0, 0);
 
-  return { scene, camera, renderer };
+  // Add orbit controls
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.screenSpacePanning = true;
+
+  return { scene, camera, renderer, controls };
 }
 
 export function handleResize(
