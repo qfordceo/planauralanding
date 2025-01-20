@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,60 +12,58 @@ serve(async (req) => {
   }
 
   try {
-    const { type, data } = await req.json()
-    console.log(`Processing ${type} email with data:`, data)
-
-    const supabase = createClient(
+    const { type, recipientId, subject, html, contractId, contractorId } = await req.json()
+    
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    let emailContent
-    switch (type) {
-      case 'contract':
-        emailContent = {
-          subject: 'Contract Update',
-          body: `Contract status: ${data.status}`
-        }
-        break
-      case 'contractor':
-        emailContent = {
-          subject: 'Contractor Update',
-          body: `Update from contractor: ${data.message}`
-        }
-        break
-      case 'marketing':
-        emailContent = {
-          subject: data.subject,
-          body: data.content
-        }
-        break
-      default:
-        throw new Error('Invalid email type')
+    // Get recipient email
+    const { data: recipient, error: recipientError } = await supabaseClient
+      .from('profiles')
+      .select('email')
+      .eq('id', recipientId)
+      .single()
+
+    if (recipientError) throw recipientError
+
+    // Log notification
+    if (type === 'contract') {
+      await supabaseClient
+        .from('contract_signing_notifications')
+        .insert({
+          contract_id: contractId,
+          recipient_id: recipientId,
+          notification_type: 'email',
+          email_status: 'sent'
+        })
+    } else if (type === 'contractor') {
+      await supabaseClient
+        .from('contractor_notifications')
+        .insert({
+          contractor_id: contractorId,
+          type: 'email',
+          status: 'sent',
+          metadata: { subject, sent_at: new Date() }
+        })
     }
 
-    // Here you would integrate with your email service
-    // For now, we'll just log it
-    console.log('Sending email:', emailContent)
+    // Here you would integrate with your email service provider
+    // For example, using Resend, SendGrid, etc.
+    console.log(`Email would be sent to ${recipient.email} with subject: ${subject}`)
 
     return new Response(
-      JSON.stringify({ 
-        message: 'Email sent successfully',
-        type,
-        content: emailContent
-      }),
+      JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-
   } catch (error) {
-    console.error('Error sending email:', error)
+    console.error('Error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }

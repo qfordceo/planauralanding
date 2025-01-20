@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,44 +13,45 @@ serve(async (req) => {
 
   try {
     const { type, data } = await req.json()
-    console.log(`Processing ${type} advice request with data:`, data)
+    
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    let advice
+    let result = {}
+
     switch (type) {
       case 'build':
-        advice = await generateBuildAdvice(data)
+        // Build advisor logic
+        result = await handleBuildAdvice(data, supabaseClient)
         break
       case 'contractor':
-        advice = await generateContractorAdvice(data)
+        // Contractor advisor logic
+        result = await handleContractorAdvice(data, supabaseClient)
         break
       default:
-        throw new Error('Invalid advice type')
+        throw new Error('Invalid advisor type')
     }
 
     return new Response(
-      JSON.stringify({ 
-        message: 'Advice generated successfully',
-        advice 
-      }),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-
   } catch (error) {
-    console.error('Error generating advice:', error)
+    console.error('Error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }
 })
 
-async function generateBuildAdvice(data: any) {
-  // Build advice logic here
+async function handleBuildAdvice(data: any, supabase: any) {
+  // Implement build advice logic
   return {
     recommendations: [],
     estimatedCosts: {},
@@ -57,11 +59,11 @@ async function generateBuildAdvice(data: any) {
   }
 }
 
-async function generateContractorAdvice(data: any) {
-  // Contractor advice logic here
+async function handleContractorAdvice(data: any, supabase: any) {
+  // Implement contractor advice logic
   return {
     recommendations: [],
-    bestPractices: [],
-    warnings: []
+    marketInsights: {},
+    opportunities: []
   }
 }
