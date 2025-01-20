@@ -5,6 +5,7 @@ import { FloorPlanViewer } from "@/components/floor-plans/visualization/FloorPla
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { FileVersionList } from "./FileVersionList";
 
 interface AsBuiltModelViewerProps {
   modelId: string;
@@ -122,6 +123,8 @@ export function AsBuiltModelViewer({ modelId }: AsBuiltModelViewerProps) {
             </div>
           </div>
         )}
+
+        <FileVersionList modelId={modelId} />
       </CardContent>
     </Card>
   );
