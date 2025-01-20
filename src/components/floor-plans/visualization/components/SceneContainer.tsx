@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Scene } from '../scene/Scene';
 import { SceneData } from '../types';
+import * as THREE from 'three';
 
 interface SceneContainerProps {
   sceneData: SceneData;
