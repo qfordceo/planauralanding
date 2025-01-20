@@ -1,10 +1,9 @@
-import { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Video, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { VideoUploadForm } from './VideoUploadForm';
+import { VideoPreview } from './VideoPreview';
+import { UploadProgress } from './UploadProgress';
 
 export function VideoUpload() {
   const [uploading, setUploading] = useState(false);
@@ -12,30 +11,7 @@ export function VideoUpload() {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('video/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a video file",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate file size (100MB limit)
-    if (file.size > 100 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Video must be less than 100MB",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const handleUpload = async (file: File) => {
     setUploading(true);
     setProgress(0);
 
@@ -107,7 +83,7 @@ export function VideoUpload() {
       });
 
       setVideoPreview(publicUrl);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast({
         title: "Upload failed",
@@ -118,68 +94,22 @@ export function VideoUpload() {
       setUploading(false);
       setProgress(0);
     }
-  }, [toast]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'video/*': ['.mp4', '.mov', '.avi', '.mkv']
-    },
-    maxFiles: 1,
-    disabled: uploading
-  });
+  };
 
   return (
     <div className="space-y-4">
-      <div
-        {...getRootProps()}
-        className={`
-          border-2 border-dashed rounded-lg p-8 text-center transition-colors
-          ${isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 hover:border-primary'}
-          ${uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
-      >
-        <input {...getInputProps()} />
-        {uploading ? (
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-gray-400" />
-        ) : (
-          <Upload className="h-12 w-12 mx-auto text-gray-400" />
-        )}
-        <p className="mt-2 text-sm text-gray-600">
-          {isDragActive
-            ? "Drop the video here"
-            : "Drag and drop a video, or click to select"}
-        </p>
-        <p className="mt-1 text-xs text-gray-500">
-          Supported formats: MP4, MOV, AVI, MKV (max 100MB)
-        </p>
-      </div>
+      <VideoUploadForm 
+        onUpload={handleUpload}
+        uploading={uploading}
+      />
 
-      {uploading && (
-        <div className="space-y-2">
-          <Progress value={progress} className="w-full" />
-          <p className="text-sm text-center text-muted-foreground">
-            Uploading... {Math.round(progress)}%
-          </p>
-        </div>
-      )}
+      {uploading && <UploadProgress progress={progress} />}
 
       {videoPreview && !uploading && (
-        <div className="relative rounded-lg overflow-hidden">
-          <video
-            src={videoPreview}
-            controls
-            className="w-full"
-          />
-          <Button
-            variant="destructive"
-            size="icon"
-            className="absolute top-2 right-2"
-            onClick={() => setVideoPreview(null)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        <VideoPreview
+          url={videoPreview}
+          onClear={() => setVideoPreview(null)}
+        />
       )}
     </div>
   );
