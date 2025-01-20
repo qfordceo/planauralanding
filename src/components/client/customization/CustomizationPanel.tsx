@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CustomizationTabs } from './CustomizationTabs';
 import { BudgetSummary } from './BudgetSummary';
-import { AIRecommendations } from './AIRecommendations';
+import { AIMaterialSuggestions } from './AIMaterialSuggestions';
 import { useCustomizationPresence } from '@/hooks/useCustomizationPresence';
 import { useCustomizations } from '@/hooks/useCustomizations';
+import { useAIMaterialSuggestions } from '@/hooks/useAIMaterialSuggestions';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -18,8 +19,16 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
     selectedCustomizations,
     budgetAnalysis,
     isCalculating,
-    handleCustomizationChange
+    handleCustomizationChange,
+    preferences,
+    sustainability
   } = useCustomizations(floorPlanId);
+
+  const { suggestions, isLoading: isLoadingAI } = useAIMaterialSuggestions(
+    preferences,
+    budgetAnalysis?.totalCost || 0,
+    sustainability
+  );
 
   return (
     <Card>
@@ -54,9 +63,9 @@ export function CustomizationPanel({ floorPlanId }: CustomizationPanelProps) {
             budgetAnalysis={budgetAnalysis}
           />
           
-          <AIRecommendations
-            isLoading={isCalculating}
-            recommendations={budgetAnalysis?.recommendations}
+          <AIMaterialSuggestions
+            suggestions={suggestions}
+            isLoading={isLoadingAI}
           />
         </div>
       </CardContent>
