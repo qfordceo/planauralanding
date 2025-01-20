@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { processAnalysisResult } from './analysis.ts'
-import { downloadImageFromStorage, downloadExternalImage, analyzeImageWithAzure } from './utils.ts'
+import { preprocessImage } from './stages/preprocessing.ts'
+import { detectFeatures } from './stages/feature-detection.ts'
+import { analyzeRooms } from './stages/room-analysis.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,7 +17,6 @@ serve(async (req) => {
     const { imageUrl } = await req.json()
     console.log('Starting floor plan analysis:', { imageUrl })
 
-    // Define analysis stages with weights
     const stages = [
       { name: 'preprocessing', weight: 0.15, status: 'pending' },
       { name: 'feature_detection', weight: 0.25, status: 'pending' },
@@ -33,22 +32,20 @@ serve(async (req) => {
 
     // Stage 1: Preprocessing
     stages[0].status = 'processing'
-    const imageData = imageUrl.startsWith('https://') 
-      ? await downloadExternalImage(imageUrl)
-      : await downloadImageFromStorage(imageUrl)
+    const imageData = await preprocessImage(imageUrl)
     stages[0].status = 'complete'
     metrics.confidence += 25
 
     // Stage 2: Feature Detection
     stages[1].status = 'processing'
-    const azureAnalysis = await analyzeImageWithAzure(imageData)
+    const azureAnalysis = await detectFeatures(imageData)
     stages[1].status = 'complete'
     metrics.accuracy += 30
     metrics.confidence += 15
 
     // Stage 3: Room Analysis
     stages[2].status = 'processing'
-    const analysisResult = processAnalysisResult(azureAnalysis)
+    const analysisResult = await analyzeRooms(azureAnalysis)
     stages[2].status = 'complete'
     metrics.completeness += 35
     metrics.accuracy += 20
