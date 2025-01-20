@@ -56,17 +56,25 @@ export function VideoUpload() {
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
-      // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from('inspection-videos')
-        .upload(filePath, file, {
-          onUploadProgress: (progress) => {
-            const percent = (progress.loaded / progress.total) * 100;
-            setProgress(percent);
-          }
-        });
+      // Upload to storage using chunks to track progress
+      const chunkSize = 1024 * 1024; // 1MB chunks
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      let uploadedChunks = 0;
 
-      if (uploadError) throw uploadError;
+      for (let start = 0; start < file.size; start += chunkSize) {
+        const chunk = file.slice(start, start + chunkSize);
+        const { error: uploadError } = await supabase.storage
+          .from('inspection-videos')
+          .upload(`${filePath}_${start}`, chunk, {
+            upsert: true
+          });
+
+        if (uploadError) throw uploadError;
+        
+        uploadedChunks++;
+        const progressPercent = (uploadedChunks / totalChunks) * 100;
+        setProgress(progressPercent);
+      }
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
