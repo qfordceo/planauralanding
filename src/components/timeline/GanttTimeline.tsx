@@ -75,7 +75,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
       backgroundColor: getPhaseColor(milestone.phase),
       display: 'background',
       extendedProps: {
-        type: 'milestone',
+        type: 'milestone' as const,
         status: milestone.status,
         phase: milestone.phase
       }

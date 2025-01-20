@@ -1,4 +1,4 @@
-import { processAnalysisResult } from '../analysis';
+import { processAnalysisResult } from '../analysis.ts';
 
 export function analyzeRooms(azureAnalysis: any) {
   console.log('Starting room analysis');
