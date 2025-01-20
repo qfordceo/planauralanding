@@ -1,15 +1,20 @@
 import { calculateRoomDimensions, detectRoomType, calculateMaterialEstimates } from './roomAnalysis.ts';
+import { detectElectricalLayout, detectPlumbingLayout } from './utilityDetection.ts';
+import { calibrateScale } from './scaleCalibration.ts';
 
 export function processAnalysisResult(azureResult: any) {
   const detectedRooms = [];
   const processedAreas = new Set();
+  
+  // First calibrate the scale using known reference objects
+  const scaleFactor = calibrateScale(azureResult);
 
   if (azureResult.objects) {
     for (const obj of azureResult.objects) {
       if (obj.tags?.some((tag: string) => 
         ['room', 'bedroom', 'bathroom', 'kitchen', 'living'].includes(tag.toLowerCase()))) {
         
-        const dimensions = calculateRoomDimensions(obj.boundingBox);
+        const dimensions = calculateRoomDimensions(obj.boundingBox, scaleFactor);
         
         const nearbyText = azureResult.readResult?.pages?.[0]?.lines
           ?.filter((line: any) => {
@@ -22,6 +27,10 @@ export function processAnalysisResult(azureResult: any) {
 
         const roomType = detectRoomType(nearbyText, obj.tags);
         
+        // Enhanced feature detection
+        const electricalLayout = detectElectricalLayout(obj, azureResult);
+        const plumbingLayout = detectPlumbingLayout(obj, azureResult);
+        
         detectedRooms.push({
           type: roomType,
           dimensions: {
@@ -30,7 +39,11 @@ export function processAnalysisResult(azureResult: any) {
           },
           area: dimensions.area,
           features: obj.tags.filter((tag: string) => 
-            ['window', 'door', 'sink', 'bathtub', 'shower', 'closet'].includes(tag))
+            ['window', 'door', 'sink', 'bathtub', 'shower', 'closet', 'stairs'].includes(tag)),
+          utilities: {
+            electrical: electricalLayout,
+            plumbing: plumbingLayout
+          }
         });
 
         processedAreas.add(`${obj.boundingBox.join(',')}`);
@@ -47,6 +60,11 @@ export function processAnalysisResult(azureResult: any) {
     customizationOptions: {
       flooring: materialEstimates.flooringOptions,
       paint: materialEstimates.paintOptions
-    }
+    },
+    utilities: {
+      electrical: detectedRooms.map(room => room.utilities.electrical),
+      plumbing: detectedRooms.map(room => room.utilities.plumbing)
+    },
+    scaleFactor
   };
 }
