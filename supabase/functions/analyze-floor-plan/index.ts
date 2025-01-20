@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { processAnalysisResult } from './analysis.ts'
+import { downloadImageFromStorage, downloadExternalImage, analyzeImageWithAzure } from './utils.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,70 +14,67 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl, customizations } = await req.json()
-
+    const { imageUrl } = await req.json()
     console.log('Starting floor plan analysis:', { imageUrl })
 
-    // Initialize analysis stages
+    // Define analysis stages with weights
     const stages = [
-      { name: 'preprocessing', weight: 0.2 },
-      { name: 'feature_detection', weight: 0.3 },
-      { name: 'room_analysis', weight: 0.3 },
-      { name: 'material_estimation', weight: 0.2 }
+      { name: 'preprocessing', weight: 0.15, status: 'pending' },
+      { name: 'feature_detection', weight: 0.25, status: 'pending' },
+      { name: 'room_analysis', weight: 0.3, status: 'pending' },
+      { name: 'material_estimation', weight: 0.3, status: 'pending' }
     ]
 
-    let analysisResults = {
-      rooms: [],
-      totalArea: 0,
-      materialEstimates: [],
-      customizationOptions: {
-        flooring: [],
-        paint: []
-      },
-      metrics: {
-        confidence: 0,
-        accuracy: 0,
-        completeness: 0
-      }
+    let metrics = {
+      confidence: 0,
+      accuracy: 0,
+      completeness: 0
     }
 
-    // Process each stage
-    for (const stage of stages) {
-      console.log(`Processing stage: ${stage.name}`)
-      
-      // Simulate stage processing
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Update stage-specific metrics
-      switch (stage.name) {
-        case 'preprocessing':
-          analysisResults.metrics.confidence += 25
-          break
-        case 'feature_detection':
-          analysisResults.metrics.accuracy += 30
-          break
-        case 'room_analysis':
-          analysisResults.metrics.completeness += 25
-          break
-        case 'material_estimation':
-          analysisResults.metrics.confidence += 20
-          analysisResults.metrics.accuracy += 15
-          analysisResults.metrics.completeness += 20
-          break
-      }
+    // Stage 1: Preprocessing
+    stages[0].status = 'processing'
+    const imageData = imageUrl.startsWith('https://') 
+      ? await downloadExternalImage(imageUrl)
+      : await downloadImageFromStorage(imageUrl)
+    stages[0].status = 'complete'
+    metrics.confidence += 25
+
+    // Stage 2: Feature Detection
+    stages[1].status = 'processing'
+    const azureAnalysis = await analyzeImageWithAzure(imageData)
+    stages[1].status = 'complete'
+    metrics.accuracy += 30
+    metrics.confidence += 15
+
+    // Stage 3: Room Analysis
+    stages[2].status = 'processing'
+    const analysisResult = processAnalysisResult(azureAnalysis)
+    stages[2].status = 'complete'
+    metrics.completeness += 35
+    metrics.accuracy += 20
+
+    // Stage 4: Material Estimation
+    stages[3].status = 'processing'
+    const materialEstimates = analysisResult.materialEstimates
+    stages[3].status = 'complete'
+    metrics.completeness += 25
+    metrics.confidence += 20
+
+    // Normalize metrics
+    metrics = {
+      confidence: Math.min(Math.round(metrics.confidence), 100),
+      accuracy: Math.min(Math.round(metrics.accuracy), 100),
+      completeness: Math.min(Math.round(metrics.completeness), 100)
     }
 
-    // Normalize metrics to percentages
-    analysisResults.metrics = {
-      confidence: Math.min(Math.round(analysisResults.metrics.confidence), 100),
-      accuracy: Math.min(Math.round(analysisResults.metrics.accuracy), 100),
-      completeness: Math.min(Math.round(analysisResults.metrics.completeness), 100)
-    }
-
-    console.log('Analysis completed successfully:', analysisResults.metrics)
+    console.log('Analysis completed successfully:', metrics)
 
     return new Response(
-      JSON.stringify(analysisResults),
+      JSON.stringify({
+        ...analysisResult,
+        stages,
+        metrics
+      }),
       { 
         headers: { 
           ...corsHeaders,
@@ -89,8 +88,17 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        stage: 'error',
-        progress: 0
+        stages: [
+          { name: 'preprocessing', status: 'error' },
+          { name: 'feature_detection', status: 'pending' },
+          { name: 'room_analysis', status: 'pending' },
+          { name: 'material_estimation', status: 'pending' }
+        ],
+        metrics: {
+          confidence: 0,
+          accuracy: 0,
+          completeness: 0
+        }
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

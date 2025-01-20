@@ -6,14 +6,13 @@ import { useToast } from "@/hooks/use-toast";
 
 interface AnalysisStage {
   name: string;
-  progress: number;
   status: 'pending' | 'processing' | 'complete' | 'error';
+  weight: number;
 }
 
 interface AnalysisProgressProps {
   isLoading: boolean;
   error: Error | null;
-  progress: number;
   stages?: AnalysisStage[];
   onRetry?: () => void;
   metrics?: {
@@ -26,12 +25,32 @@ interface AnalysisProgressProps {
 export function AnalysisProgress({ 
   isLoading, 
   error, 
-  progress, 
   stages = [],
   onRetry,
   metrics 
 }: AnalysisProgressProps) {
   const { toast } = useToast();
+
+  const calculateProgress = () => {
+    if (!stages.length) return 0;
+    
+    let progress = 0;
+    stages.forEach(stage => {
+      if (stage.status === 'complete') {
+        progress += stage.weight * 100;
+      } else if (stage.status === 'processing') {
+        progress += (stage.weight * 100) / 2;
+      }
+    });
+    
+    return Math.round(progress);
+  };
+
+  const formatStageName = (name: string) => {
+    return name.split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
   if (!isLoading && !error) return null;
 
@@ -47,7 +66,7 @@ export function AnalysisProgress({
     <div className="space-y-6">
       {isLoading && (
         <div className="space-y-4">
-          <Progress value={progress} className="w-full" />
+          <Progress value={calculateProgress()} className="w-full" />
           
           {/* Stage Indicators */}
           <div className="grid gap-3">
@@ -63,10 +82,13 @@ export function AnalysisProgress({
                   {stage.status === 'error' && (
                     <AlertCircle className="h-4 w-4 text-red-500" />
                   )}
-                  <span className="text-sm font-medium">{stage.name}</span>
+                  <span className="text-sm font-medium">{formatStageName(stage.name)}</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {stage.progress}%
+                  {stage.status === 'complete' ? '100%' : 
+                   stage.status === 'processing' ? '50%' : 
+                   stage.status === 'error' ? 'Failed' : 
+                   'Pending'}
                 </span>
               </div>
             ))}
@@ -91,7 +113,7 @@ export function AnalysisProgress({
           )}
           
           <p className="text-sm text-muted-foreground text-center">
-            {progress < 100 ? 'Analyzing floor plan...' : 'Processing results...'}
+            {calculateProgress() < 100 ? 'Analyzing floor plan...' : 'Processing results...'}
           </p>
         </div>
       )}
