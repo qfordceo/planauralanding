@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import { PDFDocument } from 'https://esm.sh/pdf-lib@1.17.1'
+import DxfParser from 'https://esm.sh/dxf-parser@1.1.0'
+import { parse as parseSvg } from 'https://esm.sh/svg-parser@2.0.4'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -53,35 +55,42 @@ serve(async (req) => {
           dimensions: { width, height }
         }
 
-        // Convert to PNG (simplified for example)
+        // Convert to PNG
         convertedData = await page.toPng()
         break
 
       case 'application/x-dwg':
       case 'application/x-dxf':
         // CAD file processing
-        const cadData = await fileData.arrayBuffer()
-        metadata = {
-          fileSize: cadData.byteLength,
-          format: fileType === 'application/x-dwg' ? 'DWG' : 'DXF'
-        }
+        const parser = new DxfParser()
+        const cadData = await fileData.text()
+        const parsedDxf = parser.parseSync(cadData)
         
-        // Here we'd use a CAD processing library
-        // For now, we'll just store the original
-        convertedData = cadData
+        metadata = {
+          fileSize: cadData.length,
+          format: fileType === 'application/x-dwg' ? 'DWG' : 'DXF',
+          entities: parsedDxf.entities.length,
+          layers: Object.keys(parsedDxf.tables.layer).length
+        }
+
+        // Store the parsed data for further processing
+        convertedData = new TextEncoder().encode(JSON.stringify(parsedDxf))
         break
 
       case 'image/svg+xml':
         // Vector file processing
         const svgText = await fileData.text()
+        const parsedSvg = parseSvg(svgText)
+        
         metadata = {
           originalFormat: 'SVG',
+          elements: countElements(parsedSvg),
+          viewBox: extractViewBox(svgText),
           size: svgText.length
         }
         
-        // Here we'd process the SVG
-        // For now, store as-is
-        convertedData = fileData
+        // Convert SVG to a standardized format
+        convertedData = new TextEncoder().encode(JSON.stringify(parsedSvg))
         break
 
       default:
@@ -137,3 +146,19 @@ serve(async (req) => {
     )
   }
 })
+
+// Helper functions for SVG processing
+function countElements(ast: any): number {
+  let count = 0
+  if (ast.children) {
+    for (const child of ast.children) {
+      count += 1 + countElements(child)
+    }
+  }
+  return count
+}
+
+function extractViewBox(svgText: string): string | null {
+  const match = svgText.match(/viewBox=["']([^"']+)["']/)
+  return match ? match[1] : null
+}
