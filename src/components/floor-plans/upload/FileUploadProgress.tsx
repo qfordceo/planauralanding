@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { UploadProgress } from './UploadProgress';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
