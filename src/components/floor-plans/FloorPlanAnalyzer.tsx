@@ -24,7 +24,14 @@ export function FloorPlanAnalyzer({ imageUrl: initialImageUrl }: FloorPlanAnalyz
     }));
   };
 
-  const { data: analysis, isLoading, error, refetch } = useAnalysis(imageUrl, customizations);
+  const { 
+    data: analysis, 
+    isLoading, 
+    error, 
+    refetch,
+    stages,
+    metrics 
+  } = useAnalysis(imageUrl, customizations);
 
   const handleAnalyze = (url: string) => {
     setImageUrl(url);
@@ -41,7 +48,10 @@ export function FloorPlanAnalyzer({ imageUrl: initialImageUrl }: FloorPlanAnalyz
         <AnalysisProgress 
           isLoading={isLoading}
           error={error as Error | null}
-          progress={75} // This should be dynamic based on actual progress
+          progress={75}
+          stages={stages}
+          onRetry={refetch}
+          metrics={metrics}
         />
 
         {analysis && (
