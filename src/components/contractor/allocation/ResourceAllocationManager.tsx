@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar } from "@fullcalendar/react";
+import FullCalendar from "@fullcalendar/react"; // Changed from { Calendar }
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interactionPlugin from "@fullcalendar/interaction";
 import { supabase } from "@/integrations/supabase/client";
@@ -131,7 +131,7 @@ export function ResourceAllocationManager({ contractorId }: ResourceAllocationMa
         <CardTitle>Resource Allocation</CardTitle>
       </CardHeader>
       <CardContent>
-        <Calendar
+        <FullCalendar // Changed from Calendar to FullCalendar
           plugins={[resourceTimelinePlugin, interactionPlugin]}
           initialView="resourceTimelineWeek"
           editable={true}
