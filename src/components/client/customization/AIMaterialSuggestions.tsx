@@ -42,7 +42,7 @@ export function AIMaterialSuggestions({ suggestions, isLoading }: AIMaterialSugg
                 <h4 className="font-medium">{suggestion.material_name}</h4>
                 <p className="text-sm text-muted-foreground">{suggestion.description}</p>
               </div>
-              <Badge variant={suggestion.cost_impact > 0 ? "destructive" : "success"}>
+              <Badge variant={suggestion.cost_impact > 0 ? "destructive" : "secondary"}>
                 {suggestion.cost_impact > 0 ? '+' : ''}{suggestion.cost_impact}% cost
               </Badge>
             </div>

@@ -13,6 +13,12 @@ export function useCustomizations(floorPlanId: string) {
   const [isCalculating, setIsCalculating] = useState(false);
   const [options, setOptions] = useState<any[]>([]);
   const [selectedCustomizations, setSelectedCustomizations] = useState<CustomizationType[]>([]);
+  const [preferences, setPreferences] = useState({});
+  const [sustainability, setSustainability] = useState({
+    eco_friendly: false,
+    energy_efficient: false,
+    water_conserving: false
+  });
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -72,6 +78,8 @@ export function useCustomizations(floorPlanId: string) {
     selectedCustomizations,
     budgetAnalysis,
     isCalculating,
-    handleCustomizationChange
+    handleCustomizationChange,
+    preferences,
+    sustainability
   };
 }
