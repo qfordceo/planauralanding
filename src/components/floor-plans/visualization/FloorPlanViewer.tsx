@@ -44,6 +44,19 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
     setRenderer(newRenderer);
   }, []);
 
+  const createClashMarker = useCallback((position: { x: number, y: number, z: number }, id: string) => {
+    const geometry = new THREE.SphereGeometry(0.2);
+    const material = new THREE.MeshBasicMaterial({ 
+      color: 0xff6b6b, 
+      transparent: true, 
+      opacity: 0.8 
+    });
+    const marker = new THREE.Mesh(geometry, material);
+    marker.position.set(position.x, position.y, position.z);
+    marker.userData.id = id;
+    return marker;
+  }, []);
+
   const handleClashSelect = useCallback((clashId: string, position: { x: number, y: number, z: number }) => {
     if (camera && scene) {
       // Highlight the selected clash marker
@@ -60,19 +73,6 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
       setSelectedClash(clashId);
     }
   }, [camera, scene, clashMarkers]);
-
-  const createClashMarker = useCallback((position: { x: number, y: number, z: number }, id: string) => {
-    const geometry = new THREE.SphereGeometry(0.2);
-    const material = new THREE.MeshBasicMaterial({ 
-      color: 0xff6b6b, 
-      transparent: true, 
-      opacity: 0.8 
-    });
-    const marker = new THREE.Mesh(geometry, material);
-    marker.position.set(position.x, position.y, position.z);
-    marker.userData.id = id;
-    return marker;
-  }, []);
 
   useEffect(() => {
     if (scene && sceneData?.bimModelId) {
