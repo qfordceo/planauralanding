@@ -1,4 +1,4 @@
-import { downloadImageFromStorage, downloadExternalImage } from '../utils.ts';
+import { downloadImageFromStorage, downloadExternalImage } from '../utils/index.ts';
 
 export async function preprocessImage(imageUrl: string) {
   console.log('Starting image preprocessing:', { imageUrl });

@@ -1,4 +1,4 @@
-import { analyzeImageWithAzure } from '../utils';
+import { analyzeImageWithAzure } from '../utils/index.ts';
 
 export async function detectFeatures(imageData: ArrayBuffer) {
   console.log('Starting feature detection');
