@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { uploadFloorPlan } from '@/utils/fileUpload';
 import { UploadProgress } from './UploadProgress';
-import { Upload } from 'lucide-react'; // Changed from FileUpload to Upload
+import { Upload } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -30,57 +29,60 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: supportedFormats,
     onDrop: handleFileDrop,
-    multiple: false
+    multiple: true // Enable multiple file upload
   });
 
   async function handleFileDrop(acceptedFiles: File[]) {
-    const file = acceptedFiles[0];
-    if (!file) return;
+    if (acceptedFiles.length === 0) return;
+
+    setIsLoading(true);
+    setProgress(0);
+    setError(null);
 
     try {
-      setIsLoading(true);
-      setProgress(0);
-      setError(null);
+      // Process files sequentially
+      for (let i = 0; i < acceptedFiles.length; i++) {
+        const file = acceptedFiles[i];
+        setProgress((i / acceptedFiles.length) * 100);
 
-      // Start upload animation
-      setProgress(20);
+        // Start upload animation
+        const filePath = `${crypto.randomUUID()}-${file.name}`;
+        
+        // Upload to floor-plan-originals bucket
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('floor-plan-originals')
+          .upload(filePath, file);
 
-      // Upload to floor-plan-originals bucket
-      const filePath = `${crypto.randomUUID()}-${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('floor-plan-originals')
-        .upload(filePath, file);
+        if (uploadError) throw uploadError;
 
-      if (uploadError) throw uploadError;
+        // Initiate conversion if needed
+        if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+          const { data: conversionData, error: conversionError } = await supabase.functions
+            .invoke('convert-floor-plan', {
+              body: { 
+                fileUrl: filePath,
+                fileType: file.type
+              }
+            });
 
-      setProgress(50);
+          if (conversionError) throw conversionError;
+        }
 
-      // Initiate conversion if needed
-      if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
-        const { data: conversionData, error: conversionError } = await supabase.functions
-          .invoke('convert-floor-plan', {
-            body: { 
-              fileUrl: filePath,
-              fileType: file.type
-            }
-          });
+        // Get the public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('floor-plan-originals')
+          .getPublicUrl(filePath);
 
-        if (conversionError) throw conversionError;
-        setProgress(75);
+        // Notify completion for each file
+        onUploadComplete(publicUrlData.publicUrl);
+        
+        toast({
+          title: "Success",
+          description: `Floor plan ${i + 1} of ${acceptedFiles.length} uploaded successfully`,
+        });
       }
 
-      // Get the public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('floor-plan-originals')
-        .getPublicUrl(filePath);
-
       setProgress(100);
-      onUploadComplete(publicUrlData.publicUrl);
-      
-      toast({
-        title: "Success",
-        description: "Floor plan uploaded successfully",
-      });
     } catch (error) {
       console.error('Error uploading floor plan:', error);
       setError(error instanceof Error ? error.message : 'Failed to upload floor plan');
@@ -109,8 +111,8 @@ export function FileUploadTab({ onUploadComplete }: FileUploadTabProps) {
           <Upload className="mx-auto h-12 w-12 text-gray-400" />
           <p className="mt-2 text-sm text-gray-600">
             {isDragActive
-              ? "Drop the file here"
-              : "Drag and drop your floor plan, or click to select"}
+              ? "Drop the files here"
+              : "Drag and drop your floor plans, or click to select"}
           </p>
           <p className="mt-1 text-xs text-gray-500">
             Supported formats: PDF, DWG, DXF, JPG, PNG, SVG

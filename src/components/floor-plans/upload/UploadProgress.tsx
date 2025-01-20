@@ -12,9 +12,14 @@ export function UploadProgress({ isLoading, progress, error }: UploadProgressPro
   if (!isLoading && !error) return null;
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4">
       {isLoading && (
-        <Progress value={progress} className="w-full" />
+        <div className="space-y-2">
+          <Progress value={progress} className="w-full" />
+          <p className="text-sm text-muted-foreground text-center">
+            {progress < 100 ? 'Uploading files...' : 'Processing uploads...'}
+          </p>
+        </div>
       )}
       {error && (
         <Alert variant="destructive">
