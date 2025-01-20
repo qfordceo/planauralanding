@@ -2520,6 +2520,69 @@ export type Database = {
         }
         Relationships: []
       }
+      inspection_videos: {
+        Row: {
+          contractor_id: string | null
+          created_at: string
+          duration: number | null
+          file_size: number
+          format: string | null
+          id: string
+          keyframes_extracted: boolean | null
+          original_filename: string
+          processing_error: string | null
+          processing_status: string | null
+          storage_path: string
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          contractor_id?: string | null
+          created_at?: string
+          duration?: number | null
+          file_size: number
+          format?: string | null
+          id?: string
+          keyframes_extracted?: boolean | null
+          original_filename: string
+          processing_error?: string | null
+          processing_status?: string | null
+          storage_path: string
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contractor_id?: string | null
+          created_at?: string
+          duration?: number | null
+          file_size?: number
+          format?: string | null
+          id?: string
+          keyframes_extracted?: boolean | null
+          original_filename?: string
+          processing_error?: string | null
+          processing_status?: string | null
+          storage_path?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_videos_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_videos_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "resource_availability_view"
+            referencedColumns: ["contractor_id"]
+          },
+        ]
+      }
       insurance_providers: {
         Row: {
           average_rating: number | null
