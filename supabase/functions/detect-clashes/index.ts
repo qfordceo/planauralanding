@@ -8,12 +8,18 @@ const corsHeaders = {
 }
 
 interface ClashDetectionRequest {
-  modelData: any;
+  modelData: {
+    elements: Array<{
+      type: string;
+      position: { x: number; y: number; z: number };
+      dimensions: { width: number; height: number; depth: number };
+      category: string;
+    }>;
+  };
   floorPlanId: string;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -35,15 +41,15 @@ serve(async (req) => {
 
     // Analyze the model data for clashes using OpenAI
     const completion = await openai.createChatCompletion({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are a BIM clash detection expert. Analyze the provided model data to identify potential clashes between MEP and structural elements."
+          content: "You are a BIM clash detection expert. Analyze the provided model data to identify potential clashes between MEP and structural elements. Return a structured analysis with specific locations and severity levels."
         },
         {
           role: "user",
-          content: `Analyze this BIM model data for potential clashes: ${JSON.stringify(modelData)}`
+          content: `Analyze this BIM model data for potential clashes, focusing on MEP and structural intersections: ${JSON.stringify(modelData)}`
         }
       ],
     })

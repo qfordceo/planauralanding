@@ -1,10 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { ClashDetectionReport } from "@/components/clash-detection/ClashDetectionReport";
 import * as THREE from 'three';
 import { Scene } from './scene/Scene';
 import { ViewerControls } from './controls/ViewerControls';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface FloorPlanViewerProps {
   sceneData?: {
@@ -28,6 +30,9 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null);
   const [measurementMode, setMeasurementMode] = useState<'none' | 'distance' | 'area'>('none');
   const [layers, setLayers] = useState<{ [key: string]: THREE.Group }>({});
+  const [clashMarkers, setClashMarkers] = useState<THREE.Mesh[]>([]);
+  const [selectedClash, setSelectedClash] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleSceneReady = useCallback((
     newScene: THREE.Scene, 
@@ -38,6 +43,72 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
     setCamera(newCamera);
     setRenderer(newRenderer);
   }, []);
+
+  const handleClashSelect = useCallback((clashId: string, position: { x: number, y: number, z: number }) => {
+    if (camera && scene) {
+      // Highlight the selected clash marker
+      clashMarkers.forEach(marker => {
+        const material = marker.material as THREE.MeshBasicMaterial;
+        material.color.setHex(marker.userData.id === clashId ? 0xff0000 : 0xff6b6b);
+      });
+
+      // Move camera to clash location
+      const target = new THREE.Vector3(position.x, position.y, position.z);
+      camera.position.set(target.x + 5, target.y + 5, target.z + 5);
+      camera.lookAt(target);
+      
+      setSelectedClash(clashId);
+    }
+  }, [camera, scene, clashMarkers]);
+
+  const createClashMarker = useCallback((position: { x: number, y: number, z: number }, id: string) => {
+    const geometry = new THREE.SphereGeometry(0.2);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff6b6b, transparent: true, opacity: 0.8 });
+    const marker = new THREE.Mesh(geometry, material);
+    marker.position.set(position.x, position.y, position.z);
+    marker.userData.id = id;
+    return marker;
+  }, []);
+
+  useEffect(() => {
+    if (scene && sceneData?.bimModelId) {
+      // Clear existing clash markers
+      clashMarkers.forEach(marker => scene.remove(marker));
+      setClashMarkers([]);
+
+      // Fetch and display clash detection results
+      const fetchClashes = async () => {
+        const { data: report, error } = await supabase
+          .from('clash_detection_reports')
+          .select('*')
+          .eq('id', sceneData.bimModelId)
+          .single();
+
+        if (error) {
+          toast({
+            title: "Error loading clash data",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (report && report.model_data) {
+          const newMarkers = report.model_data.elements
+            .filter(element => element.clash)
+            .map(element => createClashMarker(
+              element.position,
+              element.id
+            ));
+
+          newMarkers.forEach(marker => scene.add(marker));
+          setClashMarkers(newMarkers);
+        }
+      };
+
+      fetchClashes();
+    }
+  }, [scene, sceneData?.bimModelId, createClashMarker, toast]);
 
   const handleLayerToggle = useCallback((layerName: string, enabled: boolean) => {
     if (layers[layerName]) {
@@ -115,12 +186,19 @@ export function FloorPlanViewer({ sceneData, isLoading }: FloorPlanViewerProps) 
         />
         
         <Card className="col-span-3 h-[500px]">
-          <Scene sceneData={sceneData} onSceneReady={handleSceneReady} />
+          <Scene 
+            sceneData={sceneData} 
+            onSceneReady={handleSceneReady}
+          />
         </Card>
       </div>
       
       {sceneData?.bimModelId && (
-        <ClashDetectionReport modelId={sceneData.bimModelId} />
+        <ClashDetectionReport 
+          modelId={sceneData.bimModelId}
+          onClashSelect={handleClashSelect}
+          selectedClashId={selectedClash}
+        />
       )}
     </div>
   );

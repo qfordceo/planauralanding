@@ -13,10 +13,16 @@ import { AnalysisResults } from "./components/AnalysisResults"
 import { DownloadButton } from "./components/DownloadButton"
 
 interface ClashDetectionReportProps {
-  modelId?: string
+  modelId?: string;
+  onClashSelect?: (clashId: string, position: { x: number, y: number, z: number }) => void;
+  selectedClashId?: string | null;
 }
 
-export function ClashDetectionReport({ modelId }: ClashDetectionReportProps) {
+export function ClashDetectionReport({ 
+  modelId, 
+  onClashSelect,
+  selectedClashId 
+}: ClashDetectionReportProps) {
   const { toast } = useToast()
 
   const { data: report, isLoading } = useQuery({
@@ -82,6 +88,9 @@ export function ClashDetectionReport({ modelId }: ClashDetectionReportProps) {
         <AnalysisResults 
           results={report.analysis_results}
           resolutionNotes={report.resolution_notes}
+          onClashSelect={onClashSelect}
+          selectedClashId={selectedClashId}
+          modelData={report.model_data}
         />
         <div className="flex justify-end gap-2">
           <DownloadButton report={report} />
