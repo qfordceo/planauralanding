@@ -5,6 +5,7 @@ import LandingPage from "./pages/LandingPage";
 import FloorPlanUpload from "./pages/FloorPlanUpload";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Auth from "./pages/Auth";
+import ContractorInspectionVideos from "./pages/ContractorInspectionVideos";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,11 @@ const router = createBrowserRouter([
         path: "auth",
         element: <Auth />,
         errorElement: <ErrorBoundary><Auth /></ErrorBoundary>,
+      },
+      {
+        path: "contractor/inspection-videos",
+        element: <ContractorInspectionVideos />,
+        errorElement: <ErrorBoundary><ContractorInspectionVideos /></ErrorBoundary>,
       }
     ],
   },
