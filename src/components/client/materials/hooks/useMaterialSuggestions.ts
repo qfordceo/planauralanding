@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import type { MaterialCategory } from "@/types/materials";
+import { useToast } from "@/hooks/use-toast";
+import type { MaterialCategory } from "../types";
 
 export function useMaterialSuggestions(floorPlanId: string) {
   const { toast } = useToast();

@@ -1,6 +1,22 @@
-import { MaterialCategory as MaterialCategoryType, MaterialItem } from "@/types/materials";
+export interface MaterialCategory {
+  name: string;
+  items: MaterialItem[];
+  estimatedCost: number;
+}
 
-export type MaterialCategory = MaterialCategoryType;
+export interface MaterialItem {
+  name: string;
+  description: string;
+  estimatedCost: number;
+  unit: string;
+  quantity: number;
+  category: string;
+  selectedProduct?: {
+    name: string;
+    price: number;
+    url?: string;
+  };
+}
 
 export interface MaterialsCostSummaryProps {
   materialCategories: MaterialCategory[];
