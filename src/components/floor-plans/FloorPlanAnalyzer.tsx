@@ -29,6 +29,13 @@ export function FloorPlanAnalyzer({ imageUrl }: FloorPlanAnalyzerProps) {
     paintCostPerSqFt: 0.5
   });
 
+  const handleCustomizationChange = (updates: Partial<CustomizationOptions>) => {
+    setCustomizations(prev => ({
+      ...prev,
+      ...updates
+    }));
+  };
+
   const { data: analysis, isLoading, error, refetch } = useQuery({
     queryKey: ['floor-plan-analysis', imageUrl, customizations],
     queryFn: async () => {
@@ -155,7 +162,7 @@ export function FloorPlanAnalyzer({ imageUrl }: FloorPlanAnalyzerProps) {
           <FloorPlanAnalysisResults
             analysis={analysis}
             customizations={customizations}
-            onCustomizationChange={setCustomizations}
+            onCustomizationChange={handleCustomizationChange}
           />
         ) : null}
       </CardContent>
