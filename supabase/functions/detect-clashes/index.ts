@@ -35,7 +35,7 @@ serve(async (req) => {
 
     // Analyze the model data for clashes using OpenAI
     const completion = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
