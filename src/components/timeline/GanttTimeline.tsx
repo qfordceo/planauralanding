@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import FullCalendar from "@fullcalendar/react";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import { TimelineEventContent } from "./components/TimelineEventContent";
-import { getStatusColor } from "./utils/statusColors";
+import { getStatusColor, getPhaseColor } from "./utils/statusColors";
 import type { ProjectTask, Milestone, TimelineEvent, TimelineResource, TaskStatus } from "./types";
 
 interface GanttTimelineProps {
@@ -20,6 +20,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
           id,
           title,
           status,
+          phase,
           start_date,
           due_date,
           assigned_contractor_id,
@@ -41,7 +42,7 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_milestones')
-        .select('id, title, due_date, status')
+        .select('id, title, due_date, status, phase')
         .eq('build_estimate_id', projectId)
         .order('due_date', { ascending: true });
 
@@ -56,10 +57,12 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
       title: task.title,
       start: task.start_date,
       end: task.due_date,
-      backgroundColor: getStatusColor(task.status as TaskStatus),
+      backgroundColor: getPhaseColor(task.phase),
+      borderColor: getStatusColor(task.status as TaskStatus),
       extendedProps: {
         contractor: task.contractors?.[0]?.business_name || '',
-        status: task.status as TaskStatus
+        status: task.status as TaskStatus,
+        phase: task.phase
       }
     })) || []),
     ...(milestones?.map(milestone => ({
@@ -67,21 +70,27 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
       title: milestone.title,
       start: milestone.due_date,
       end: milestone.due_date,
-      backgroundColor: '#8b5cf6', // violet-500 for milestones
+      backgroundColor: getPhaseColor(milestone.phase),
+      display: 'background',
       extendedProps: {
-        contractor: '',
-        status: 'not_started' as TaskStatus // Default status for milestones
+        type: 'milestone',
+        status: milestone.status,
+        phase: milestone.phase
       }
     })) || [])
   ];
 
   const resources: TimelineResource[] = [
-    { id: 'tasks', title: 'Tasks' },
-    { id: 'milestones', title: 'Milestones' }
+    { id: 'planning', title: 'Planning Phase' },
+    { id: 'foundation', title: 'Foundation' },
+    { id: 'framing', title: 'Framing' },
+    { id: 'mechanical', title: 'Mechanical' },
+    { id: 'finishing', title: 'Finishing' },
+    { id: 'inspection', title: 'Inspection' }
   ];
 
   return (
-    <div className="h-[600px] bg-background">
+    <div className="h-[600px] bg-background rounded-lg border">
       <FullCalendar
         plugins={[resourceTimelinePlugin]}
         initialView="resourceTimelineMonth"
@@ -96,6 +105,31 @@ export function GanttTimeline({ projectId }: GanttTimelineProps) {
         resourceAreaWidth="15%"
         height="100%"
         slotMinWidth={100}
+        resourceGroupField="phase"
+        resourceAreaHeaderContent="Project Phases"
+        eventDidMount={(info) => {
+          // Add tooltips
+          if (info.event.extendedProps.type !== 'milestone') {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'bg-background p-2 rounded shadow-lg border text-sm';
+            tooltip.innerHTML = `
+              <div class="font-medium">${info.event.title}</div>
+              <div class="text-muted-foreground">
+                Phase: ${info.event.extendedProps.phase}<br>
+                Status: ${info.event.extendedProps.status}<br>
+                ${info.event.extendedProps.contractor ? `Assigned to: ${info.event.extendedProps.contractor}` : ''}
+              </div>
+            `;
+            info.el.title = "";
+            new window.Tooltip(info.el, {
+              title: tooltip.outerHTML,
+              html: true,
+              placement: 'top',
+              trigger: 'hover',
+              container: 'body'
+            });
+          }
+        }}
       />
     </div>
   );
