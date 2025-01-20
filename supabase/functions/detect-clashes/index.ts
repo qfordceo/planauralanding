@@ -39,13 +39,21 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: "You are a BIM clash detection expert. Analyze the provided model data to identify potential clashes between MEP and structural elements. Return a structured analysis with specific locations and severity levels."
+          content: `You are a BIM clash detection expert. Analyze the provided model data to identify potential clashes between MEP and structural elements. 
+          Focus on:
+          1. Intersections between pipes and walls/floors
+          2. HVAC ducts crossing structural beams
+          3. Electrical conduits conflicting with plumbing
+          4. Spatial clearance violations
+          Return a structured analysis with specific locations and severity levels.`
         },
         {
           role: "user",
-          content: `Analyze this BIM model data for potential clashes, focusing on MEP and structural intersections. Return a JSON response with clash locations and details: ${JSON.stringify(modelData)}`
+          content: `Analyze this BIM model data for potential clashes, focusing on MEP and structural intersections. 
+          Return a detailed JSON response with clash locations and severity levels: ${JSON.stringify(modelData)}`
         }
       ],
+      temperature: 0.2, // Lower temperature for more focused, analytical responses
     })
 
     const analysis = completion.data.choices[0].message?.content || ''
@@ -61,19 +69,25 @@ serve(async (req) => {
       .insert({
         model_data: modelData,
         analysis_results: analysis,
-        status: 'pending_review'
+        status: 'pending_review',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Error storing clash report:', error)
+      throw error
+    }
 
     console.log('Clash detection completed:', { reportId: report.id })
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        report 
+        report,
+        analysis 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
