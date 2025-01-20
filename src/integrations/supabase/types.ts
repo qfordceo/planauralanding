@@ -98,6 +98,70 @@ export type Database = {
           },
         ]
       }
+      bim_file_versions: {
+        Row: {
+          bim_model_id: string | null
+          change_summary: string | null
+          checksum: string | null
+          created_at: string | null
+          created_by: string | null
+          file_format: string
+          file_path: string
+          file_size: number | null
+          id: string
+          metadata: Json | null
+          version_number: number
+        }
+        Insert: {
+          bim_model_id?: string | null
+          change_summary?: string | null
+          checksum?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          file_format: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          metadata?: Json | null
+          version_number: number
+        }
+        Update: {
+          bim_model_id?: string | null
+          change_summary?: string | null
+          checksum?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          file_format?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          metadata?: Json | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bim_file_versions_bim_model_id_fkey"
+            columns: ["bim_model_id"]
+            isOneToOne: false
+            referencedRelation: "bim_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bim_file_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bim_file_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bim_material_selections: {
         Row: {
           bim_material_id: string | null
@@ -204,38 +268,59 @@ export type Database = {
         Row: {
           as_built_date: string | null
           created_at: string | null
+          dwg_file_path: string | null
+          file_format: string | null
           floor_plan_id: string | null
           id: string
           ifc_file_path: string | null
           is_as_built: boolean | null
+          last_validated: string | null
+          metadata: Json | null
           model_data: Json | null
           processing_errors: string[] | null
           processing_status: string | null
           updated_at: string | null
+          validation_errors: Json | null
+          validation_status: string | null
+          version: string | null
         }
         Insert: {
           as_built_date?: string | null
           created_at?: string | null
+          dwg_file_path?: string | null
+          file_format?: string | null
           floor_plan_id?: string | null
           id?: string
           ifc_file_path?: string | null
           is_as_built?: boolean | null
+          last_validated?: string | null
+          metadata?: Json | null
           model_data?: Json | null
           processing_errors?: string[] | null
           processing_status?: string | null
           updated_at?: string | null
+          validation_errors?: Json | null
+          validation_status?: string | null
+          version?: string | null
         }
         Update: {
           as_built_date?: string | null
           created_at?: string | null
+          dwg_file_path?: string | null
+          file_format?: string | null
           floor_plan_id?: string | null
           id?: string
           ifc_file_path?: string | null
           is_as_built?: boolean | null
+          last_validated?: string | null
+          metadata?: Json | null
           model_data?: Json | null
           processing_errors?: string[] | null
           processing_status?: string | null
           updated_at?: string | null
+          validation_errors?: Json | null
+          validation_status?: string | null
+          version?: string | null
         }
         Relationships: [
           {
