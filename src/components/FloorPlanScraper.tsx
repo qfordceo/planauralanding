@@ -4,6 +4,7 @@ import { FileUploadTab } from './floor-plans/upload/FileUploadTab';
 import { UrlUploadTab } from './floor-plans/upload/UrlUploadTab';
 import { FloorPlanPreview } from './floor-plans/preview/FloorPlanPreview';
 import { FloorPlanViewer } from './floor-plans/visualization/FloorPlanViewer';
+import { ComplianceChecker } from './compliance/ComplianceChecker';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -49,8 +50,9 @@ export const FloorPlanScraper = () => {
             sceneData={visualizationData} 
             isLoading={isVisualizationLoading} 
           />
+          <ComplianceChecker floorPlanId={visualizationData?.id} />
         </div>
       )}
     </div>
   );
-};
+}

@@ -678,6 +678,131 @@ export type Database = {
           },
         ]
       }
+      compliance_checks: {
+        Row: {
+          checked_at: string
+          created_at: string
+          details: Json | null
+          floor_plan_id: string | null
+          id: string
+          location_data: Json | null
+          rule_id: string | null
+          status: Database["public"]["Enums"]["compliance_check_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          checked_at?: string
+          created_at?: string
+          details?: Json | null
+          floor_plan_id?: string | null
+          id?: string
+          location_data?: Json | null
+          rule_id?: string | null
+          status?: Database["public"]["Enums"]["compliance_check_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          checked_at?: string
+          created_at?: string
+          details?: Json | null
+          floor_plan_id?: string | null
+          id?: string
+          location_data?: Json | null
+          rule_id?: string | null
+          status?: Database["public"]["Enums"]["compliance_check_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_checks_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_checks_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_reports: {
+        Row: {
+          created_at: string
+          floor_plan_id: string | null
+          generated_at: string
+          id: string
+          pdf_url: string | null
+          report_data: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          floor_plan_id?: string | null
+          generated_at?: string
+          id?: string
+          pdf_url?: string | null
+          report_data?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          floor_plan_id?: string | null
+          generated_at?: string
+          id?: string
+          pdf_url?: string | null
+          report_data?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_reports_floor_plan_id_fkey"
+            columns: ["floor_plan_id"]
+            isOneToOne: false
+            referencedRelation: "floor_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_rules: {
+        Row: {
+          category: string
+          check_type: string
+          code_reference: string | null
+          created_at: string
+          description: string
+          id: string
+          location_specific: boolean | null
+          parameters: Json | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          check_type: string
+          code_reference?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          location_specific?: boolean | null
+          parameters?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          check_type?: string
+          code_reference?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          location_specific?: boolean | null
+          parameters?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       compliance_verification_logs: {
         Row: {
           contractor_id: string | null
@@ -4928,6 +5053,7 @@ export type Database = {
     }
     Enums: {
       clash_report_status: "pending_review" | "reviewed" | "resolved"
+      compliance_check_status: "passed" | "failed" | "warning" | "pending"
       contract_signing_status:
         | "pending"
         | "client_signed"
