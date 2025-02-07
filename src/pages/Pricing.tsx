@@ -150,7 +150,7 @@ export default function Pricing() {
         {/* Per-Pre-Inspection Pricing Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-heading font-medium text-primary mb-8">
-            Per-Pre-Inspection Pricing (For Non-Subscribers)
+            Individual Pre-Inspection Pricing (No Subscription)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <Card className="flex flex-col">
