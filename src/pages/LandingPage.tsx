@@ -86,12 +86,6 @@ export default function LandingPage() {
       {/* Features Section */}
       <section className="py-24 px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="glass-card p-8 rounded-xl">
-            <h3 className="text-xl font-heading font-medium text-primary mb-4">Premium Land Plots</h3>
-            <p className="text-muted-foreground">
-              Carefully curated land listings in prime locations, perfect for your future home.
-            </p>
-          </div>
           <div 
             className="glass-card p-8 rounded-xl cursor-pointer hover:shadow-lg transition-shadow"
             onClick={() => navigate("/pricing")}
@@ -102,6 +96,12 @@ export default function LandingPage() {
             </h3>
             <p className="text-muted-foreground">
               Advanced AI-powered pre-inspection technology for builders and contractors.
+            </p>
+          </div>
+          <div className="glass-card p-8 rounded-xl">
+            <h3 className="text-xl font-heading font-medium text-primary mb-4">Premium Land Plots</h3>
+            <p className="text-muted-foreground">
+              Carefully curated land listings in prime locations, perfect for your future home.
             </p>
           </div>
           <div className="glass-card p-8 rounded-xl">
