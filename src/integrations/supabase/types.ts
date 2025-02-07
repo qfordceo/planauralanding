@@ -2645,6 +2645,72 @@ export type Database = {
         }
         Relationships: []
       }
+      inspection_add_ons: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      inspection_plans: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          inspection_limit: number
+          is_active: boolean | null
+          name: string
+          plan_type: string
+          price: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          inspection_limit: number
+          is_active?: boolean | null
+          name: string
+          plan_type: string
+          price: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          inspection_limit?: number
+          is_active?: boolean | null
+          name?: string
+          plan_type?: string
+          price?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       inspection_videos: {
         Row: {
           contractor_id: string | null

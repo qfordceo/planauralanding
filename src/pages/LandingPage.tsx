@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
-import { Construction, Phone, MapPin } from "lucide-react"
+import { Construction, Phone, MapPin, FileSearch } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function LandingPage() {
@@ -91,10 +92,16 @@ export default function LandingPage() {
               Carefully curated land listings in prime locations, perfect for your future home.
             </p>
           </div>
-          <div className="glass-card p-8 rounded-xl">
-            <h3 className="text-xl font-heading font-medium text-primary mb-4">Custom Floor Plans</h3>
+          <div 
+            className="glass-card p-8 rounded-xl cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate("/pricing")}
+          >
+            <h3 className="text-xl font-heading font-medium text-primary mb-4 flex items-center gap-2">
+              <FileSearch className="h-5 w-5" />
+              AI Quality Inspections
+            </h3>
             <p className="text-muted-foreground">
-              Browse and customize floor plans that match your lifestyle and preferences.
+              Advanced AI-powered pre-inspection technology for builders and contractors.
             </p>
           </div>
           <div className="glass-card p-8 rounded-xl">

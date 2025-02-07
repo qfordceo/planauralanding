@@ -1,3 +1,4 @@
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import { ClientDashboard } from "./components/client/ClientDashboard";
@@ -6,6 +7,7 @@ import FloorPlanUpload from "./pages/FloorPlanUpload";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Auth from "./pages/Auth";
 import ContractorInspectionVideos from "./pages/ContractorInspectionVideos";
+import Pricing from "./pages/Pricing";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +17,11 @@ const router = createBrowserRouter([
         path: "/",
         element: <LandingPage />,
         errorElement: <ErrorBoundary><LandingPage /></ErrorBoundary>,
+      },
+      {
+        path: "/pricing",
+        element: <Pricing />,
+        errorElement: <ErrorBoundary><Pricing /></ErrorBoundary>,
       },
       {
         path: "client-dashboard",
