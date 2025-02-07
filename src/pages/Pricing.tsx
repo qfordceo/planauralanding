@@ -16,7 +16,6 @@ const stripePriceIds = {
   singleInspection: 'SINGLE_INSPECTION_PRICE_ID',
   tenInspections: 'TEN_INSPECTIONS_PRICE_ID',
   twentyFiveInspections: 'TWENTY_FIVE_INSPECTIONS_PRICE_ID',
-  fiftyInspections: 'FIFTY_INSPECTIONS_PRICE_ID'
 }
 
 export default function Pricing() {
@@ -152,7 +151,7 @@ export default function Pricing() {
           <h2 className="text-3xl font-heading font-medium text-primary mb-8">
             Individual Pre-Inspection Pricing (No Subscription)
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>Single Pre-Inspection</CardTitle>
@@ -201,24 +200,6 @@ export default function Pricing() {
                 <Button 
                   className="w-full mt-auto"
                   onClick={() => handleOneTimePurchase(stripePriceIds.twentyFiveInspections, 25)}
-                >
-                  Purchase
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>50 Pre-Inspections</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-1">
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$375</span>
-                </div>
-                <div className="flex-1"></div>
-                <Button 
-                  className="w-full mt-auto"
-                  onClick={() => handleOneTimePurchase(stripePriceIds.fiftyInspections, 50)}
                 >
                   Purchase
                 </Button>
