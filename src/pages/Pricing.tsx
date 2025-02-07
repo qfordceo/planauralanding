@@ -21,7 +21,7 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold">$19.99</span>
+                  <span className="text-3xl font-bold">$24.99</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
                 <ul className="space-y-2 mb-6">
@@ -94,7 +94,7 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold">$99</span>
+                  <span className="text-3xl font-bold">$9</span>
                 </div>
                 <ul className="space-y-2 mb-6">
                   <li>1 AI Pre-Inspection</li>
@@ -114,8 +114,8 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold">$890</span>
-                  <p className="text-muted-foreground">$89 per inspection</p>
+                  <span className="text-3xl font-bold">$85</span>
+                  <p className="text-muted-foreground">$8.50 per inspection</p>
                 </div>
                 <ul className="space-y-2 mb-6">
                   <li>10 AI Pre-Inspections</li>
@@ -135,8 +135,8 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold">$2,100</span>
-                  <p className="text-muted-foreground">$84 per inspection</p>
+                  <span className="text-3xl font-bold">$200</span>
+                  <p className="text-muted-foreground">$8 per inspection</p>
                 </div>
                 <ul className="space-y-2 mb-6">
                   <li>25 AI Pre-Inspections</li>
@@ -156,8 +156,8 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold">$3,750</span>
-                  <p className="text-muted-foreground">$75 per inspection</p>
+                  <span className="text-3xl font-bold">$375</span>
+                  <p className="text-muted-foreground">$7.50 per inspection</p>
                 </div>
                 <ul className="space-y-2 mb-6">
                   <li>50 AI Pre-Inspections</li>
