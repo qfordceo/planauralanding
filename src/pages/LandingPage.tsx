@@ -1,52 +1,12 @@
 
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
-import { Construction, Phone, MapPin, Check } from "lucide-react"
+import { Construction, Phone, MapPin } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function LandingPage() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
-
-  const pricingTiers = [
-    {
-      name: "Basic",
-      price: "199",
-      description: "Perfect for single-family homes",
-      features: [
-        "AI-powered inspection analysis",
-        "Basic compliance report",
-        "24-hour turnaround",
-        "PDF report generation",
-      ]
-    },
-    {
-      name: "Professional",
-      price: "399",
-      description: "Ideal for property managers",
-      features: [
-        "Everything in Basic",
-        "Advanced compliance checks",
-        "Priority processing",
-        "Multi-property dashboard",
-        "Detailed material analysis",
-        "Code violation detection"
-      ]
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      description: "For construction companies & large portfolios",
-      features: [
-        "Everything in Professional",
-        "Custom API integration",
-        "Bulk property analysis",
-        "White-label reports",
-        "Dedicated support",
-        "Custom compliance rules"
-      ]
-    }
-  ]
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] flex flex-col">
@@ -117,56 +77,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-heading font-medium text-primary text-center mb-12">
-            Simple, Transparent Pricing
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {pricingTiers.map((tier) => (
-              <div key={tier.name} className="glass-card p-8 rounded-xl flex flex-col">
-                <h3 className="text-xl font-heading font-medium text-primary mb-2">{tier.name}</h3>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold">
-                    {tier.price === "Custom" ? tier.price : `$${tier.price}`}
-                  </span>
-                  {tier.price !== "Custom" && <span className="text-muted-foreground">/inspection</span>}
-                </div>
-                <p className="text-muted-foreground mb-6">{tier.description}</p>
-                <ul className="space-y-3 mb-8 flex-grow">
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-muted-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button 
-                  className="w-full"
-                  variant={tier.name === "Professional" ? "default" : "outline"}
-                  onClick={() => navigate("/contact")}
-                >
-                  {tier.price === "Custom" ? "Contact Sales" : "Get Started"}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Information */}
-      <div className="mt-8 flex flex-col items-center gap-2 text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Phone className="h-4 w-4" />
-          <span>877-595-5672</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4" />
-          <span>13355 Noel Road, Suite 1100 - Dallas, TX 75240</span>
-        </div>
-      </div>
-
       {/* Features Section */}
       <section className="py-24 px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -190,6 +100,18 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Contact Information */}
+      <div className="mt-8 flex flex-col items-center gap-2 text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Phone className="h-4 w-4" />
+          <span>877-595-5672</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4" />
+          <span>13355 Noel Road, Suite 1100 - Dallas, TX 75240</span>
+        </div>
+      </div>
     </div>
   )
 }
