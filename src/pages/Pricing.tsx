@@ -15,20 +15,20 @@ export default function Pricing() {
             Subscription Model
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>Contractor Plan</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$24.99</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 flex-1 mb-6">
                   <li>Up to 5 AI Pre-Inspections per month</li>
                 </ul>
                 <Button 
-                  className="w-full"
+                  className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
                 >
                   Get Started
@@ -36,21 +36,21 @@ export default function Pricing() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>Small Builder Plan</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$199</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 flex-1 mb-6">
                   <li>1-5 active projects</li>
                   <li>Up to 50 AI Pre-Inspections per month</li>
                 </ul>
                 <Button 
-                  className="w-full"
+                  className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
                 >
                   Get Started
@@ -58,21 +58,21 @@ export default function Pricing() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>Mid-Sized Builder Plan</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$799</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 flex-1 mb-6">
                   <li>5-15 active projects</li>
                   <li>Up to 250 AI Pre-Inspections per month</li>
                 </ul>
                 <Button 
-                  className="w-full"
+                  className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
                 >
                   Get Started
@@ -88,19 +88,19 @@ export default function Pricing() {
             Per-Inspection Pricing (For Non-Subscribers)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>Single Inspection</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$9</span>
                 </div>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 flex-1 mb-6">
                   <li>1 AI Pre-Inspection</li>
                 </ul>
                 <Button 
-                  className="w-full"
+                  className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
                 >
                   Purchase
@@ -108,20 +108,19 @@ export default function Pricing() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>10 Inspections</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$85</span>
-                  <p className="text-muted-foreground">$8.50 per inspection</p>
                 </div>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 flex-1 mb-6">
                   <li>10 AI Pre-Inspections</li>
                 </ul>
                 <Button 
-                  className="w-full"
+                  className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
                 >
                   Purchase
@@ -129,20 +128,19 @@ export default function Pricing() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>25 Inspections</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$200</span>
-                  <p className="text-muted-foreground">$8 per inspection</p>
                 </div>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 flex-1 mb-6">
                   <li>25 AI Pre-Inspections</li>
                 </ul>
                 <Button 
-                  className="w-full"
+                  className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
                 >
                   Purchase
@@ -150,20 +148,19 @@ export default function Pricing() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>50 Inspections</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$375</span>
-                  <p className="text-muted-foreground">$7.50 per inspection</p>
                 </div>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 flex-1 mb-6">
                   <li>50 AI Pre-Inspections</li>
                 </ul>
                 <Button 
-                  className="w-full"
+                  className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
                 >
                   Purchase
