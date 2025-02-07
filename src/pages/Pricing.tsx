@@ -9,10 +9,10 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Local Subscription Model Section */}
+        {/* Subscription Model Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-heading font-medium text-primary mb-8">
-            Local Subscription Model (Dallas Market Test)
+            Subscription Model
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card>
@@ -77,25 +77,6 @@ export default function Pricing() {
                 >
                   Get Started
                 </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Add-On Section */}
-          <div className="mt-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Add-On: In-Person AI-Enhanced Pre-Inspections</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <span className="text-2xl font-bold">$250</span>
-                  <span className="text-muted-foreground"> per visit (Dallas area)</span>
-                </div>
-                <ul className="space-y-2">
-                  <li>Includes AI-powered report + human verification</li>
-                  <li>Ideal for builders hesitant to rely solely on AI</li>
-                </ul>
               </CardContent>
             </Card>
           </div>
