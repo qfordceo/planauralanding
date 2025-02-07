@@ -2,9 +2,74 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useNavigate } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
+import { loadStripe } from "@stripe/stripe-js"
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+
+const stripePriceIds = {
+  contractor: 'CONTRACTOR_PLAN_PRICE_ID', // Replace with actual Stripe price IDs
+  smallBuilder: 'SMALL_BUILDER_PLAN_PRICE_ID',
+  midBuilder: 'MID_BUILDER_PLAN_PRICE_ID',
+  singleInspection: 'SINGLE_INSPECTION_PRICE_ID',
+  tenInspections: 'TEN_INSPECTIONS_PRICE_ID',
+  twentyFiveInspections: 'TWENTY_FIVE_INSPECTIONS_PRICE_ID',
+  fiftyInspections: 'FIFTY_INSPECTIONS_PRICE_ID'
+}
 
 export default function Pricing() {
   const navigate = useNavigate()
+  const { toast } = useToast()
+
+  const handleSubscribe = async (priceId: string) => {
+    try {
+      const { data: { sessionId }, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId, mode: 'subscription' }
+      })
+
+      if (error) throw error
+
+      const stripe = await stripePromise
+      if (!stripe) throw new Error('Stripe failed to initialize')
+
+      const { error: stripeError } = await stripe.redirectToCheckout({ sessionId })
+      if (stripeError) throw stripeError
+
+    } catch (error) {
+      console.error('Payment error:', error)
+      toast({
+        title: "Error",
+        description: "Failed to initiate payment. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleOneTimePurchase = async (priceId: string, quantity: number = 1) => {
+    try {
+      const { data: { sessionId }, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId, mode: 'payment', quantity }
+      })
+
+      if (error) throw error
+
+      const stripe = await stripePromise
+      if (!stripe) throw new Error('Stripe failed to initialize')
+
+      const { error: stripeError } = await stripe.redirectToCheckout({ sessionId })
+      if (stripeError) throw stripeError
+
+    } catch (error) {
+      console.error('Payment error:', error)
+      toast({
+        title: "Error",
+        description: "Failed to initiate payment. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">
@@ -29,7 +94,7 @@ export default function Pricing() {
                 </ul>
                 <Button 
                   className="w-full mt-auto"
-                  onClick={() => navigate("/waitlist")}
+                  onClick={() => handleSubscribe(stripePriceIds.contractor)}
                 >
                   Get Started
                 </Button>
@@ -51,7 +116,7 @@ export default function Pricing() {
                 </ul>
                 <Button 
                   className="w-full mt-auto"
-                  onClick={() => navigate("/waitlist")}
+                  onClick={() => handleSubscribe(stripePriceIds.smallBuilder)}
                 >
                   Get Started
                 </Button>
@@ -73,7 +138,7 @@ export default function Pricing() {
                 </ul>
                 <Button 
                   className="w-full mt-auto"
-                  onClick={() => navigate("/waitlist")}
+                  onClick={() => handleSubscribe(stripePriceIds.midBuilder)}
                 >
                   Get Started
                 </Button>
@@ -99,7 +164,7 @@ export default function Pricing() {
                 <div className="flex-1"></div>
                 <Button 
                   className="w-full mt-auto"
-                  onClick={() => navigate("/waitlist")}
+                  onClick={() => handleOneTimePurchase(stripePriceIds.singleInspection)}
                 >
                   Purchase
                 </Button>
@@ -117,7 +182,7 @@ export default function Pricing() {
                 <div className="flex-1"></div>
                 <Button 
                   className="w-full mt-auto"
-                  onClick={() => navigate("/waitlist")}
+                  onClick={() => handleOneTimePurchase(stripePriceIds.tenInspections, 10)}
                 >
                   Purchase
                 </Button>
@@ -135,7 +200,7 @@ export default function Pricing() {
                 <div className="flex-1"></div>
                 <Button 
                   className="w-full mt-auto"
-                  onClick={() => navigate("/waitlist")}
+                  onClick={() => handleOneTimePurchase(stripePriceIds.twentyFiveInspections, 25)}
                 >
                   Purchase
                 </Button>
@@ -153,7 +218,7 @@ export default function Pricing() {
                 <div className="flex-1"></div>
                 <Button 
                   className="w-full mt-auto"
-                  onClick={() => navigate("/waitlist")}
+                  onClick={() => handleOneTimePurchase(stripePriceIds.fiftyInspections, 50)}
                 >
                   Purchase
                 </Button>
