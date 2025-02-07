@@ -1,11 +1,52 @@
+
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
-import { Construction, Phone, MapPin } from "lucide-react"
+import { Construction, Phone, MapPin, Check } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function LandingPage() {
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+
+  const pricingTiers = [
+    {
+      name: "Basic",
+      price: "199",
+      description: "Perfect for single-family homes",
+      features: [
+        "AI-powered inspection analysis",
+        "Basic compliance report",
+        "24-hour turnaround",
+        "PDF report generation",
+      ]
+    },
+    {
+      name: "Professional",
+      price: "399",
+      description: "Ideal for property managers",
+      features: [
+        "Everything in Basic",
+        "Advanced compliance checks",
+        "Priority processing",
+        "Multi-property dashboard",
+        "Detailed material analysis",
+        "Code violation detection"
+      ]
+    },
+    {
+      name: "Enterprise",
+      price: "Custom",
+      description: "For construction companies & large portfolios",
+      features: [
+        "Everything in Professional",
+        "Custom API integration",
+        "Bulk property analysis",
+        "White-label reports",
+        "Dedicated support",
+        "Custom compliance rules"
+      ]
+    }
+  ]
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] flex flex-col">
@@ -50,23 +91,67 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="pt-32 px-6 flex flex-col items-center text-center">
         <h1 className="text-4xl md:text-6xl font-heading font-medium text-primary mb-4 tracking-tight">
-          Your Dream Home Awaits
+          AI-Powered Home Inspection
         </h1>
         <p className="text-xl md:text-2xl font-heading text-accent mb-6">
-          From Plot to Perfection
+          Revolutionizing Property Inspection with Artificial Intelligence
         </p>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-12 px-4">
-          From finding the perfect plot of land to designing your custom home, 
-          we're here to make your journey seamless and inspiring.
+          Our advanced AI technology analyzes floor plans and property data to provide comprehensive inspection reports, compliance checks, and potential issue detection.
         </p>
         <div className="flex gap-4">
           <Button 
             size={isMobile ? "default" : "lg"}
-            onClick={() => navigate("/waitlist")}
+            onClick={() => navigate("/demo")}
             className="bg-primary text-white hover:bg-primary/90"
           >
-            Join the Waitlist
+            Try Demo
           </Button>
+          <Button 
+            size={isMobile ? "default" : "lg"}
+            variant="outline"
+            onClick={() => navigate("/waitlist")}
+          >
+            Join Waitlist
+          </Button>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-heading font-medium text-primary text-center mb-12">
+            Simple, Transparent Pricing
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {pricingTiers.map((tier) => (
+              <div key={tier.name} className="glass-card p-8 rounded-xl flex flex-col">
+                <h3 className="text-xl font-heading font-medium text-primary mb-2">{tier.name}</h3>
+                <div className="mb-4">
+                  <span className="text-4xl font-bold">
+                    {tier.price === "Custom" ? tier.price : `$${tier.price}`}
+                  </span>
+                  {tier.price !== "Custom" && <span className="text-muted-foreground">/inspection</span>}
+                </div>
+                <p className="text-muted-foreground mb-6">{tier.description}</p>
+                <ul className="space-y-3 mb-8 flex-grow">
+                  {tier.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-sm text-muted-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  className="w-full"
+                  variant={tier.name === "Professional" ? "default" : "outline"}
+                  onClick={() => navigate("/contact")}
+                >
+                  {tier.price === "Custom" ? "Contact Sales" : "Get Started"}
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
