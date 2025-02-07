@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import { Construction, Phone, MapPin } from "lucide-react"
@@ -51,31 +50,37 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="pt-32 px-6 flex flex-col items-center text-center">
         <h1 className="text-4xl md:text-6xl font-heading font-medium text-primary mb-4 tracking-tight">
-          AI-Powered Home Inspection
+          Your Dream Home Awaits
         </h1>
         <p className="text-xl md:text-2xl font-heading text-accent mb-6">
-          Revolutionizing Property Inspection with Artificial Intelligence
+          From Plot to Perfection
         </p>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-12 px-4">
-          Our advanced AI technology analyzes floor plans and property data to provide comprehensive inspection reports, compliance checks, and potential issue detection.
+          From finding the perfect plot of land to designing your custom home, 
+          we're here to make your journey seamless and inspiring.
         </p>
         <div className="flex gap-4">
           <Button 
             size={isMobile ? "default" : "lg"}
-            onClick={() => navigate("/demo")}
+            onClick={() => navigate("/waitlist")}
             className="bg-primary text-white hover:bg-primary/90"
           >
-            Try Demo
-          </Button>
-          <Button 
-            size={isMobile ? "default" : "lg"}
-            variant="outline"
-            onClick={() => navigate("/waitlist")}
-          >
-            Join Waitlist
+            Join the Waitlist
           </Button>
         </div>
       </section>
+
+      {/* Contact Information */}
+      <div className="mt-8 flex flex-col items-center gap-2 text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Phone className="h-4 w-4" />
+          <span>877-595-5672</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4" />
+          <span>13355 Noel Road, Suite 1100 - Dallas, TX 75240</span>
+        </div>
+      </div>
 
       {/* Features Section */}
       <section className="py-24 px-6">
@@ -100,18 +105,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Contact Information */}
-      <div className="mt-8 flex flex-col items-center gap-2 text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Phone className="h-4 w-4" />
-          <span>877-595-5672</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4" />
-          <span>13355 Noel Road, Suite 1100 - Dallas, TX 75240</span>
-        </div>
-      </div>
     </div>
   )
 }
