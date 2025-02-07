@@ -24,7 +24,7 @@ export default function Pricing() {
                   <span className="text-3xl font-bold">$24.99</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <ul className="space-y-2 flex-1 mb-6">
+                <ul className="space-y-2 mb-6 flex-1">
                   <li>Up to 5 AI Pre-Inspections per month</li>
                 </ul>
                 <Button 
@@ -45,7 +45,7 @@ export default function Pricing() {
                   <span className="text-3xl font-bold">$199</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <ul className="space-y-2 flex-1 mb-6">
+                <ul className="space-y-2 mb-6 flex-1">
                   <li>1-5 active projects</li>
                   <li>Up to 50 AI Pre-Inspections per month</li>
                 </ul>
@@ -67,7 +67,7 @@ export default function Pricing() {
                   <span className="text-3xl font-bold">$799</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <ul className="space-y-2 flex-1 mb-6">
+                <ul className="space-y-2 mb-6 flex-1">
                   <li>5-15 active projects</li>
                   <li>Up to 250 AI Pre-Inspections per month</li>
                 </ul>
@@ -96,9 +96,7 @@ export default function Pricing() {
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$9</span>
                 </div>
-                <ul className="space-y-2 flex-1 mb-6">
-                  <li>1 AI Pre-Inspection</li>
-                </ul>
+                <div className="flex-1"></div>
                 <Button 
                   className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
@@ -116,9 +114,7 @@ export default function Pricing() {
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$85</span>
                 </div>
-                <ul className="space-y-2 flex-1 mb-6">
-                  <li>10 AI Pre-Inspections</li>
-                </ul>
+                <div className="flex-1"></div>
                 <Button 
                   className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
@@ -136,9 +132,7 @@ export default function Pricing() {
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$200</span>
                 </div>
-                <ul className="space-y-2 flex-1 mb-6">
-                  <li>25 AI Pre-Inspections</li>
-                </ul>
+                <div className="flex-1"></div>
                 <Button 
                   className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
@@ -156,9 +150,7 @@ export default function Pricing() {
                 <div className="mb-4">
                   <span className="text-3xl font-bold">$375</span>
                 </div>
-                <ul className="space-y-2 flex-1 mb-6">
-                  <li>50 AI Pre-Inspections</li>
-                </ul>
+                <div className="flex-1"></div>
                 <Button 
                   className="w-full mt-auto"
                   onClick={() => navigate("/waitlist")}
