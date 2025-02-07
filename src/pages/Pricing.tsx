@@ -147,15 +147,15 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Per-Inspection Pricing Section */}
+        {/* Per-Pre-Inspection Pricing Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-heading font-medium text-primary mb-8">
-            Per-Inspection Pricing (For Non-Subscribers)
+            Per-Pre-Inspection Pricing (For Non-Subscribers)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <Card className="flex flex-col">
               <CardHeader>
-                <CardTitle>Single Inspection</CardTitle>
+                <CardTitle>Single Pre-Inspection</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
@@ -173,7 +173,7 @@ export default function Pricing() {
 
             <Card className="flex flex-col">
               <CardHeader>
-                <CardTitle>10 Inspections</CardTitle>
+                <CardTitle>10 Pre-Inspections</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
@@ -191,7 +191,7 @@ export default function Pricing() {
 
             <Card className="flex flex-col">
               <CardHeader>
-                <CardTitle>25 Inspections</CardTitle>
+                <CardTitle>25 Pre-Inspections</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
@@ -209,7 +209,7 @@ export default function Pricing() {
 
             <Card className="flex flex-col">
               <CardHeader>
-                <CardTitle>50 Inspections</CardTitle>
+                <CardTitle>50 Pre-Inspections</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col flex-1">
                 <div className="mb-4">
@@ -250,3 +250,4 @@ export default function Pricing() {
     </div>
   )
 }
+
