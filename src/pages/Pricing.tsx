@@ -15,7 +15,7 @@ export default function Pricing() {
   const { toast } = useToast()
 
   // Fetch stripe products from our database
-  const { data: stripeProducts } = useQuery({
+  const { data: stripeProducts, isLoading, error } = useQuery({
     queryKey: ['stripeProducts'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -23,7 +23,10 @@ export default function Pricing() {
         .select('*')
         .order('price_amount')
       
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching products:', error)
+        throw error
+      }
       return data
     }
   })
@@ -100,8 +103,18 @@ export default function Pricing() {
     }
   }
 
-  if (!stripeProducts) {
+  if (isLoading) {
     return <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">Loading...</div>
+  }
+
+  if (error || !stripeProducts) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">
+        <div className="text-center text-red-600">
+          Failed to load pricing information. Please try again later.
+        </div>
+      </div>
+    )
   }
 
   const subscriptionPlans = stripeProducts.filter(p => p.price_type === 'subscription')
@@ -156,7 +169,9 @@ export default function Pricing() {
                   <div className="mb-4">
                     <span className="text-3xl font-bold">${plan.price_amount}</span>
                   </div>
-                  <div className="flex-1"></div>
+                  <div className="flex-1">
+                    <p>{plan.description}</p>
+                  </div>
                   <Button 
                     className="w-full mt-auto"
                     onClick={() => handleOneTimePurchase(plan.price_id)}
