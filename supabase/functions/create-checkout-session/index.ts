@@ -22,6 +22,10 @@ serve(async (req) => {
   try {
     const { priceId, mode, quantity } = await req.json()
     
+    if (!priceId || !mode) {
+      throw new Error('Missing required parameters')
+    }
+
     console.log('Received request with:', { priceId, mode, quantity })
 
     // Create Stripe checkout session
@@ -36,6 +40,7 @@ serve(async (req) => {
       mode: mode, // 'subscription' or 'payment'
       success_url: `${req.headers.get('origin')}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/pricing`,
+      allow_promotion_codes: true,
     })
 
     console.log('Created Stripe session:', session.id)

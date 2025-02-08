@@ -45,11 +45,13 @@ export default function Pricing() {
         return
       }
 
-      const { data: { sessionId }, error: checkoutError } = await supabase.functions.invoke('create-checkout-session', {
+      const response = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId, mode: 'subscription' }
       })
 
-      if (checkoutError) throw checkoutError
+      if (response.error) throw response.error
+
+      const { data: { sessionId } } = response
 
       const stripe = await stripePromise
       if (!stripe) throw new Error('Stripe failed to initialize')
@@ -81,11 +83,13 @@ export default function Pricing() {
         return
       }
 
-      const { data: { sessionId }, error: checkoutError } = await supabase.functions.invoke('create-checkout-session', {
+      const response = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId, mode: 'payment', quantity }
       })
 
-      if (checkoutError) throw checkoutError
+      if (response.error) throw response.error
+
+      const { data: { sessionId } } = response
 
       const stripe = await stripePromise
       if (!stripe) throw new Error('Stripe failed to initialize')
