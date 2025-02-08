@@ -1,25 +1,32 @@
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { loadStripe } from "@stripe/stripe-js"
+import { useQuery } from "@tanstack/react-query"
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
-const stripePriceIds = {
-  contractor: 'price_1OzAzLAP9qoW6mSWL1Xrz9QU', // Contractor Plan $24.99/month
-  smallBuilder: 'price_1OzB0HAP9qoW6mSWCdMjwn2z', // Small Builder Plan $199/month
-  midBuilder: 'price_1OzB0vAP9qoW6mSWZQQBzGx3', // Mid-Sized Builder Plan $799/month
-  singleInspection: 'price_1OzB1RAP9qoW6mSWaMNvliC4', // Single Pre-Inspection $9
-  tenInspections: 'price_1OzB1tAP9qoW6mSWm9UYy1x9', // 10 Pre-Inspections $85
-  twentyFiveInspections: 'price_1OzB2LAP9qoW6mSWcGBRFKBf', // 25 Pre-Inspections $200
-}
-
 export default function Pricing() {
   const navigate = useNavigate()
   const { toast } = useToast()
+
+  // Fetch stripe products from our database
+  const { data: stripeProducts } = useQuery({
+    queryKey: ['stripeProducts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stripe_products')
+        .select('*')
+        .order('price_amount')
+      
+      if (error) throw error
+      return data
+    }
+  })
 
   const handleSubscribe = async (priceId: string) => {
     try {
@@ -93,6 +100,13 @@ export default function Pricing() {
     }
   }
 
+  if (!stripeProducts) {
+    return <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">Loading...</div>
+  }
+
+  const subscriptionPlans = stripeProducts.filter(p => p.price_type === 'subscription')
+  const oneTimePlans = stripeProducts.filter(p => p.price_type === 'one_time')
+
   return (
     <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">
       <div className="max-w-7xl mx-auto">
@@ -102,70 +116,28 @@ export default function Pricing() {
             Subscription Model
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Contractor Plan</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-1">
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$24.99</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-                <ul className="space-y-2 mb-6 flex-1">
-                  <li>Up to 5 AI Pre-Inspections per month</li>
-                </ul>
-                <Button 
-                  className="w-full mt-auto"
-                  onClick={() => handleSubscribe(stripePriceIds.contractor)}
-                >
-                  Get Started
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Small Builder Plan</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-1">
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$199</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-                <ul className="space-y-2 mb-6 flex-1">
-                  <li>1-5 active projects</li>
-                  <li>Up to 50 AI Pre-Inspections per month</li>
-                </ul>
-                <Button 
-                  className="w-full mt-auto"
-                  onClick={() => handleSubscribe(stripePriceIds.smallBuilder)}
-                >
-                  Get Started
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Mid-Sized Builder Plan</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-1">
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$799</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-                <ul className="space-y-2 mb-6 flex-1">
-                  <li>5-15 active projects</li>
-                  <li>Up to 250 AI Pre-Inspections per month</li>
-                </ul>
-                <Button 
-                  className="w-full mt-auto"
-                  onClick={() => handleSubscribe(stripePriceIds.midBuilder)}
-                >
-                  Get Started
-                </Button>
-              </CardContent>
-            </Card>
+            {subscriptionPlans.map((plan) => (
+              <Card key={plan.id} className="flex flex-col">
+                <CardHeader>
+                  <CardTitle>{plan.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col flex-1">
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold">${plan.price_amount}</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                  <ul className="space-y-2 mb-6 flex-1">
+                    <li>{plan.description}</li>
+                  </ul>
+                  <Button 
+                    className="w-full mt-auto"
+                    onClick={() => handleSubscribe(plan.price_id)}
+                  >
+                    Get Started
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 
@@ -175,59 +147,25 @@ export default function Pricing() {
             Individual Pre-Inspection Pricing (No Subscription)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Single Pre-Inspection</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-1">
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$9</span>
-                </div>
-                <div className="flex-1"></div>
-                <Button 
-                  className="w-full mt-auto"
-                  onClick={() => handleOneTimePurchase(stripePriceIds.singleInspection)}
-                >
-                  Purchase
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>10 Pre-Inspections</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-1">
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$85</span>
-                </div>
-                <div className="flex-1"></div>
-                <Button 
-                  className="w-full mt-auto"
-                  onClick={() => handleOneTimePurchase(stripePriceIds.tenInspections, 10)}
-                >
-                  Purchase
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>25 Pre-Inspections</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-1">
-                <div className="mb-4">
-                  <span className="text-3xl font-bold">$200</span>
-                </div>
-                <div className="flex-1"></div>
-                <Button 
-                  className="w-full mt-auto"
-                  onClick={() => handleOneTimePurchase(stripePriceIds.twentyFiveInspections, 25)}
-                >
-                  Purchase
-                </Button>
-              </CardContent>
-            </Card>
+            {oneTimePlans.map((plan) => (
+              <Card key={plan.id} className="flex flex-col">
+                <CardHeader>
+                  <CardTitle>{plan.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col flex-1">
+                  <div className="mb-4">
+                    <span className="text-3xl font-bold">${plan.price_amount}</span>
+                  </div>
+                  <div className="flex-1"></div>
+                  <Button 
+                    className="w-full mt-auto"
+                    onClick={() => handleOneTimePurchase(plan.price_id)}
+                  >
+                    Purchase
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 

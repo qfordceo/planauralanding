@@ -4578,6 +4578,45 @@ export type Database = {
           },
         ]
       }
+      stripe_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          price_amount: number
+          price_currency: string | null
+          price_id: string
+          price_interval: string | null
+          price_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          price_amount: number
+          price_currency?: string | null
+          price_id: string
+          price_interval?: string | null
+          price_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          price_amount?: number
+          price_currency?: string | null
+          price_id?: string
+          price_interval?: string | null
+          price_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           created_at: string
