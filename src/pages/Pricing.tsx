@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useNavigate } from "react-router-dom"
@@ -10,12 +9,12 @@ import { loadStripe } from "@stripe/stripe-js"
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 const stripePriceIds = {
-  contractor: 'CONTRACTOR_PLAN_PRICE_ID', // Replace with actual Stripe price IDs
-  smallBuilder: 'SMALL_BUILDER_PLAN_PRICE_ID',
-  midBuilder: 'MID_BUILDER_PLAN_PRICE_ID',
-  singleInspection: 'SINGLE_INSPECTION_PRICE_ID',
-  tenInspections: 'TEN_INSPECTIONS_PRICE_ID',
-  twentyFiveInspections: 'TWENTY_FIVE_INSPECTIONS_PRICE_ID',
+  contractor: 'price_1OzAzLAP9qoW6mSWL1Xrz9QU', // Contractor Plan $24.99/month
+  smallBuilder: 'price_1OzB0HAP9qoW6mSWCdMjwn2z', // Small Builder Plan $199/month
+  midBuilder: 'price_1OzB0vAP9qoW6mSWZQQBzGx3', // Mid-Sized Builder Plan $799/month
+  singleInspection: 'price_1OzB1RAP9qoW6mSWaMNvliC4', // Single Pre-Inspection $9
+  tenInspections: 'price_1OzB1tAP9qoW6mSWm9UYy1x9', // 10 Pre-Inspections $85
+  twentyFiveInspections: 'price_1OzB2LAP9qoW6mSWcGBRFKBf', // 25 Pre-Inspections $200
 }
 
 export default function Pricing() {
@@ -24,11 +23,23 @@ export default function Pricing() {
 
   const handleSubscribe = async (priceId: string) => {
     try {
-      const { data: { sessionId }, error } = await supabase.functions.invoke('create-checkout-session', {
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to subscribe to a plan.",
+          variant: "destructive"
+        })
+        navigate("/auth")
+        return
+      }
+
+      const { data: { sessionId }, error: checkoutError } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId, mode: 'subscription' }
       })
 
-      if (error) throw error
+      if (checkoutError) throw checkoutError
 
       const stripe = await stripePromise
       if (!stripe) throw new Error('Stripe failed to initialize')
@@ -48,11 +59,23 @@ export default function Pricing() {
 
   const handleOneTimePurchase = async (priceId: string, quantity: number = 1) => {
     try {
-      const { data: { sessionId }, error } = await supabase.functions.invoke('create-checkout-session', {
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to make a purchase.",
+          variant: "destructive"
+        })
+        navigate("/auth")
+        return
+      }
+
+      const { data: { sessionId }, error: checkoutError } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId, mode: 'payment', quantity }
       })
 
-      if (error) throw error
+      if (checkoutError) throw checkoutError
 
       const stripe = await stripePromise
       if (!stripe) throw new Error('Stripe failed to initialize')
@@ -231,4 +254,3 @@ export default function Pricing() {
     </div>
   )
 }
-
