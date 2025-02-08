@@ -20,6 +20,8 @@ serve(async (req) => {
 
   try {
     const { priceId, mode, quantity } = await req.json()
+    
+    console.log('Received request with:', { priceId, mode, quantity })
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -35,6 +37,8 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/pricing`,
     })
 
+    console.log('Created Stripe session:', session.id)
+
     return new Response(
       JSON.stringify({ sessionId: session.id }),
       {
@@ -43,6 +47,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Error creating checkout session:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
