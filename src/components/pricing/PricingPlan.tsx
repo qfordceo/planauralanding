@@ -28,15 +28,16 @@ export function PricingPlan({
           {isSubscription && <span className="text-muted-foreground">/month</span>}
         </div>
         <div className="flex-1">
-          <p>{description}</p>
+          <p className="text-muted-foreground">{description}</p>
         </div>
         <Button 
           className="w-full mt-6"
           onClick={onSelect}
+          variant="default"
         >
           {isSubscription ? 'Get Started' : 'Purchase'}
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }
