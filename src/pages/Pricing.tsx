@@ -120,23 +120,36 @@ export default function Pricing() {
     )
   }
 
-  const subscriptionPlans = stripeProducts.filter(p => p.price_type === 'subscription')
-  const oneTimePlans = stripeProducts.filter(p => p.price_type === 'one_time')
+  // Filter valid products only
+  const validProducts = stripeProducts.filter(product => 
+    product && 
+    product.price_id && 
+    product.name && 
+    product.description && 
+    product.price_amount
+  )
+
+  const subscriptionPlans = validProducts.filter(p => p.price_type === 'subscription')
+  const oneTimePlans = validProducts.filter(p => p.price_type === 'one_time')
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">
       <div className="max-w-7xl mx-auto">
-        <PricingSection
-          title="Builder Plans"
-          plans={subscriptionPlans}
-          onSelect={handleSubscribe}
-        />
+        {subscriptionPlans.length > 0 && (
+          <PricingSection
+            title="Builder Plans"
+            plans={subscriptionPlans}
+            onSelect={handleSubscribe}
+          />
+        )}
         
-        <PricingSection
-          title="Pre-Inspection Packages"
-          plans={oneTimePlans}
-          onSelect={handleOneTimePurchase}
-        />
+        {oneTimePlans.length > 0 && (
+          <PricingSection
+            title="Pre-Inspection Packages"
+            plans={oneTimePlans}
+            onSelect={handleOneTimePurchase}
+          />
+        )}
 
         <EnterprisePlan />
       </div>
