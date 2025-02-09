@@ -39,20 +39,17 @@ serve(async (req) => {
       throw new Error('Stripe secret key not configured')
     }
 
-    console.log('Retrieved secret key from database')
-
-    const stripe = new Stripe(secretData.value, {
-      apiVersion: '2023-10-16',
+    // Log key format details without exposing the key
+    const keyValue = secretData.value.trim()
+    console.log('Key format check:', {
+      length: keyValue.length,
+      prefix: keyValue.substring(0, 7),
+      hasWhitespace: /\s/.test(keyValue)
     })
 
-    // Test the Stripe connection
-    try {
-      await stripe.paymentMethods.list({ limit: 1 })
-      console.log('Stripe connection test successful')
-    } catch (stripeError) {
-      console.error('Stripe connection test failed:', stripeError)
-      throw new Error('Invalid Stripe configuration')
-    }
+    const stripe = new Stripe(keyValue, {
+      apiVersion: '2023-10-16',
+    })
 
     const { priceId, mode, quantity } = await req.json()
     
