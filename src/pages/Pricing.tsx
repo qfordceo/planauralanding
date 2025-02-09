@@ -1,11 +1,11 @@
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { loadStripe } from "@stripe/stripe-js"
 import { useQuery } from "@tanstack/react-query"
+import { PricingSection } from "@/components/pricing/PricingSection"
+import { EnterprisePlan } from "@/components/pricing/EnterprisePlan"
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
@@ -14,7 +14,6 @@ export default function Pricing() {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  // Fetch stripe products from our database
   const { data: stripeProducts, isLoading, error } = useQuery({
     queryKey: ['stripeProducts'],
     queryFn: async () => {
@@ -69,7 +68,7 @@ export default function Pricing() {
     }
   }
 
-  const handleOneTimePurchase = async (priceId: string, quantity: number = 1) => {
+  const handleOneTimePurchase = async (priceId: string) => {
     try {
       const { data: { session }, error } = await supabase.auth.getSession()
       
@@ -84,7 +83,7 @@ export default function Pricing() {
       }
 
       const response = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId, mode: 'payment', quantity }
+        body: { priceId, mode: 'payment' }
       })
 
       if (response.error) throw response.error
@@ -127,86 +126,19 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Subscription Model Section */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-heading font-medium text-primary mb-8">
-            Builder Plans
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {subscriptionPlans.map((plan) => (
-              <Card key={plan.id} className="flex flex-col">
-                <CardHeader>
-                  <CardTitle>{plan.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1">
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">${plan.price_amount}</span>
-                    <span className="text-muted-foreground">/month</span>
-                  </div>
-                  <div className="flex-1">
-                    <p>{plan.description}</p>
-                  </div>
-                  <Button 
-                    className="w-full mt-6"
-                    onClick={() => handleSubscribe(plan.price_id)}
-                  >
-                    Get Started
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <PricingSection
+          title="Builder Plans"
+          plans={subscriptionPlans}
+          onSelect={handleSubscribe}
+        />
+        
+        <PricingSection
+          title="Pre-Inspection Packages"
+          plans={oneTimePlans}
+          onSelect={handleOneTimePurchase}
+        />
 
-        {/* Pre-Inspection Packages Section */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-heading font-medium text-primary mb-8">
-            Pre-Inspection Packages
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {oneTimePlans.map((plan) => (
-              <Card key={plan.id} className="flex flex-col">
-                <CardHeader>
-                  <CardTitle>{plan.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1">
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">${plan.price_amount}</span>
-                  </div>
-                  <div className="flex-1">
-                    <p>{plan.description}</p>
-                  </div>
-                  <Button 
-                    className="w-full mt-6"
-                    onClick={() => handleOneTimePurchase(plan.price_id)}
-                  >
-                    Purchase
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Enterprise Section */}
-        <div>
-          <h2 className="text-3xl font-heading font-medium text-primary mb-8">
-            Enterprise Solutions
-          </h2>
-          <Card>
-            <CardContent className="py-6">
-              <p className="text-lg mb-4">
-                For large-scale builders requiring high-volume inspection solutions, we offer custom enterprise plans.
-              </p>
-              <Button 
-                size="lg"
-                onClick={() => navigate("/contact")}
-              >
-                Contact Us for Enterprise Pricing
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        <EnterprisePlan />
       </div>
     </div>
   )
