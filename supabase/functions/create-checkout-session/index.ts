@@ -20,6 +20,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    console.log('Fetching Stripe secret key from database...')
     const { data: secretData, error: secretError } = await supabaseClient
       .from('stripe_secrets')
       .select('value')
@@ -27,14 +28,19 @@ serve(async (req) => {
       .single()
 
     if (secretError) {
+      console.error('Database error:', secretError)
       throw new Error('Failed to fetch Stripe secret key')
     }
 
     if (!secretData?.value) {
+      console.error('No secret key found in database')
       throw new Error('Stripe secret key not configured')
     }
 
-    const stripe = new Stripe(secretData.value.trim(), {
+    const stripeKey = secretData.value.trim()
+    console.log('Retrieved stripe key length:', stripeKey.length)
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     })
 
@@ -44,6 +50,7 @@ serve(async (req) => {
       throw new Error('Missing required parameters')
     }
 
+    console.log('Creating checkout session with mode:', mode)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -66,6 +73,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Checkout session error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
