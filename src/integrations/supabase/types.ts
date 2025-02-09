@@ -4595,9 +4595,11 @@ export type Database = {
       }
       stripe_products: {
         Row: {
+          active: boolean | null
           created_at: string
           description: string | null
           id: number
+          metadata: Json | null
           name: string
           price_amount: number
           price_currency: string | null
@@ -4607,9 +4609,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean | null
           created_at?: string
           description?: string | null
           id?: number
+          metadata?: Json | null
           name: string
           price_amount: number
           price_currency?: string | null
@@ -4619,9 +4623,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean | null
           created_at?: string
           description?: string | null
           id?: number
+          metadata?: Json | null
           name?: string
           price_amount?: number
           price_currency?: string | null
