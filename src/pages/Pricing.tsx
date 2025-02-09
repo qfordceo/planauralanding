@@ -120,17 +120,8 @@ export default function Pricing() {
     )
   }
 
-  // Filter valid products only
-  const validProducts = stripeProducts.filter(product => 
-    product && 
-    product.price_id && 
-    product.name && 
-    product.description && 
-    product.price_amount
-  )
-
-  const subscriptionPlans = validProducts.filter(p => p.price_type === 'subscription')
-  const oneTimePlans = validProducts.filter(p => p.price_type === 'one_time')
+  const subscriptionPlans = stripeProducts.filter(p => p.price_type === 'subscription')
+  const oneTimePlans = stripeProducts.filter(p => p.price_type === 'one_time')
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">
