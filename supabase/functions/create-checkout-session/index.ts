@@ -15,30 +15,12 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    console.log('Fetching Stripe secret key from database...')
-    const { data: secretData, error: secretError } = await supabaseClient
-      .from('stripe_secrets')
-      .select('value')
-      .eq('key', 'secret_key')
-      .single()
-
-    if (secretError) {
-      console.error('Database error:', secretError)
-      throw new Error('Failed to fetch Stripe secret key')
-    }
-
-    if (!secretData?.value) {
-      console.error('No secret key found in database')
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeKey) {
       throw new Error('Stripe secret key not configured')
     }
 
-    const stripeKey = secretData.value.trim()
-    console.log('Retrieved stripe key length:', stripeKey.length)
+    console.log('Using Stripe key length:', stripeKey.length)
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
