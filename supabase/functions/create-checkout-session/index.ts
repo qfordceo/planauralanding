@@ -29,13 +29,30 @@ serve(async (req) => {
       .eq('key', 'secret_key')
       .single()
 
-    if (secretError || !secretData) {
-      throw new Error('Failed to fetch Stripe secret key')
+    if (secretError) {
+      console.error('Database error:', secretError)
+      throw new Error('Failed to fetch Stripe secret key from database')
     }
+
+    if (!secretData || !secretData.value) {
+      console.error('No secret key found in database')
+      throw new Error('Stripe secret key not configured')
+    }
+
+    console.log('Retrieved secret key from database')
 
     const stripe = new Stripe(secretData.value, {
       apiVersion: '2023-10-16',
     })
+
+    // Test the Stripe connection
+    try {
+      await stripe.paymentMethods.list({ limit: 1 })
+      console.log('Stripe connection test successful')
+    } catch (stripeError) {
+      console.error('Stripe connection test failed:', stripeError)
+      throw new Error('Invalid Stripe configuration')
+    }
 
     const { priceId, mode, quantity } = await req.json()
     
@@ -43,7 +60,7 @@ serve(async (req) => {
       throw new Error('Missing required parameters')
     }
 
-    console.log('Received request with:', { priceId, mode, quantity })
+    console.log('Creating checkout session with:', { priceId, mode, quantity })
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -60,7 +77,7 @@ serve(async (req) => {
       allow_promotion_codes: true,
     })
 
-    console.log('Created Stripe session:', session.id)
+    console.log('Successfully created Stripe session:', session.id)
 
     return new Response(
       JSON.stringify({ sessionId: session.id }),
@@ -70,7 +87,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error creating checkout session:', error)
+    console.error('Error in create-checkout-session:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -80,4 +97,3 @@ serve(async (req) => {
     )
   }
 })
-
