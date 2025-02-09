@@ -24,7 +24,6 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
-      // Setting to test mode since we're using test keys
       typescript: true
     })
 
@@ -34,8 +33,16 @@ serve(async (req) => {
       throw new Error('Missing required parameters')
     }
 
-    console.log('Creating checkout session with:', { mode, priceId })
+    // First validate the price exists
+    const price = await stripe.prices.retrieve(priceId)
+    if (!price) {
+      throw new Error('Invalid price ID')
+    }
+
+    console.log('Creating checkout session with:', { mode, priceId, price: price.id })
+    
     const session = await stripe.checkout.sessions.create({
+      mode: mode,
       payment_method_types: ['card'],
       line_items: [
         {
@@ -43,7 +50,6 @@ serve(async (req) => {
           quantity: quantity || 1,
         },
       ],
-      mode: mode,
       success_url: `${req.headers.get('origin')}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/pricing`,
       allow_promotion_codes: true,

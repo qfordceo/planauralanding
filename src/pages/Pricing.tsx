@@ -22,6 +22,7 @@ export default function Pricing() {
         .single()
       
       if (error) throw error
+      console.log('Fetched Stripe config:', data)
       return data
     }
   })
@@ -43,36 +44,39 @@ export default function Pricing() {
     }
   })
 
-  const handleSubscribe = async (priceId: string) => {
+  const handleCheckout = async (priceId: string, mode: 'subscription' | 'payment') => {
     try {
       if (!stripeConfig?.value) {
         throw new Error('Stripe configuration not loaded')
       }
 
-      const { data: { session }, error } = await supabase.auth.getSession()
+      const { data: { session }, error: authError } = await supabase.auth.getSession()
       
       if (!session) {
         toast({
           title: "Authentication required",
-          description: "Please sign in to subscribe to a plan.",
+          description: "Please sign in to continue.",
           variant: "destructive"
         })
         navigate("/auth")
         return
       }
 
-      console.log('Creating checkout session for price:', priceId)
+      console.log('Creating checkout session for price:', priceId, 'mode:', mode)
       const response = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId, mode: 'subscription' }
+        body: { priceId, mode }
       })
 
-      if (response.error) throw response.error
+      if (response.error) {
+        console.error('Checkout error:', response.error)
+        throw response.error
+      }
 
       const { data: { sessionId } } = response
       console.log('Got session ID:', sessionId)
 
       const stripe = await loadStripe(stripeConfig.value)
-      if (!stripe) throw new Error('Stripe failed to initialize')
+      if (!stripe) throw new Error('Failed to initialize Stripe')
 
       const { error: stripeError } = await stripe.redirectToCheckout({ sessionId })
       if (stripeError) throw stripeError
@@ -81,51 +85,7 @@ export default function Pricing() {
       console.error('Payment error:', error)
       toast({
         title: "Error",
-        description: "Failed to initiate payment. Please try again.",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const handleOneTimePurchase = async (priceId: string) => {
-    try {
-      if (!stripeConfig?.value) {
-        throw new Error('Stripe configuration not loaded')
-      }
-
-      const { data: { session }, error } = await supabase.auth.getSession()
-      
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to make a purchase.",
-          variant: "destructive"
-        })
-        navigate("/auth")
-        return
-      }
-
-      console.log('Creating one-time checkout session for price:', priceId)
-      const response = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId, mode: 'payment' }
-      })
-
-      if (response.error) throw response.error
-
-      const { data: { sessionId } } = response
-      console.log('Got session ID:', sessionId)
-
-      const stripe = await loadStripe(stripeConfig.value)
-      if (!stripe) throw new Error('Stripe failed to initialize')
-
-      const { error: stripeError } = await stripe.redirectToCheckout({ sessionId })
-      if (stripeError) throw stripeError
-
-    } catch (error) {
-      console.error('Payment error:', error)
-      toast({
-        title: "Error",
-        description: "Failed to initiate payment. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to initiate payment. Please try again.",
         variant: "destructive"
       })
     }
@@ -155,7 +115,7 @@ export default function Pricing() {
           <PricingSection
             title="Builder Plans"
             plans={subscriptionPlans}
-            onSelect={handleSubscribe}
+            onSelect={(priceId) => handleCheckout(priceId, 'subscription')}
           />
         )}
         
@@ -163,7 +123,7 @@ export default function Pricing() {
           <PricingSection
             title="Pre-Inspection Packages"
             plans={oneTimePlans}
-            onSelect={handleOneTimePurchase}
+            onSelect={(priceId) => handleCheckout(priceId, 'payment')}
           />
         )}
 
