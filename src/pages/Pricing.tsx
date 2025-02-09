@@ -130,7 +130,7 @@ export default function Pricing() {
         {/* Subscription Model Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-heading font-medium text-primary mb-8">
-            Subscription Model
+            Builder Plans
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {subscriptionPlans.map((plan) => (
@@ -143,11 +143,11 @@ export default function Pricing() {
                     <span className="text-3xl font-bold">${plan.price_amount}</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
-                  <ul className="space-y-2 mb-6 flex-1">
-                    <li>{plan.description}</li>
-                  </ul>
+                  <div className="flex-1">
+                    <p>{plan.description}</p>
+                  </div>
                   <Button 
-                    className="w-full mt-auto"
+                    className="w-full mt-6"
                     onClick={() => handleSubscribe(plan.price_id)}
                   >
                     Get Started
@@ -158,10 +158,10 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Per-Pre-Inspection Pricing Section */}
+        {/* Pre-Inspection Packages Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-heading font-medium text-primary mb-8">
-            Individual Pre-Inspection Pricing (No Subscription)
+            Pre-Inspection Packages
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {oneTimePlans.map((plan) => (
@@ -177,7 +177,7 @@ export default function Pricing() {
                     <p>{plan.description}</p>
                   </div>
                   <Button 
-                    className="w-full mt-auto"
+                    className="w-full mt-6"
                     onClick={() => handleOneTimePurchase(plan.price_id)}
                   >
                     Purchase
