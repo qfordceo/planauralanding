@@ -7,12 +7,24 @@ import { useQuery } from "@tanstack/react-query"
 import { PricingSection } from "@/components/pricing/PricingSection"
 import { EnterprisePlan } from "@/components/pricing/EnterprisePlan"
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
-
 export default function Pricing() {
   const navigate = useNavigate()
   const { toast } = useToast()
+
+  // Fetch Stripe products and publishable key
+  const { data: stripeConfig } = useQuery({
+    queryKey: ['stripeConfig'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stripe_config')
+        .select('value')
+        .eq('key', 'publishable_key')
+        .single()
+      
+      if (error) throw error
+      return data
+    }
+  })
 
   const { data: stripeProducts, isLoading, error } = useQuery({
     queryKey: ['stripeProducts'],
@@ -32,6 +44,10 @@ export default function Pricing() {
 
   const handleSubscribe = async (priceId: string) => {
     try {
+      if (!stripeConfig?.value) {
+        throw new Error('Stripe configuration not loaded')
+      }
+
       const { data: { session }, error } = await supabase.auth.getSession()
       
       if (!session) {
@@ -52,7 +68,7 @@ export default function Pricing() {
 
       const { data: { sessionId } } = response
 
-      const stripe = await stripePromise
+      const stripe = await loadStripe(stripeConfig.value)
       if (!stripe) throw new Error('Stripe failed to initialize')
 
       const { error: stripeError } = await stripe.redirectToCheckout({ sessionId })
@@ -70,6 +86,10 @@ export default function Pricing() {
 
   const handleOneTimePurchase = async (priceId: string) => {
     try {
+      if (!stripeConfig?.value) {
+        throw new Error('Stripe configuration not loaded')
+      }
+
       const { data: { session }, error } = await supabase.auth.getSession()
       
       if (!session) {
@@ -90,7 +110,7 @@ export default function Pricing() {
 
       const { data: { sessionId } } = response
 
-      const stripe = await stripePromise
+      const stripe = await loadStripe(stripeConfig.value)
       if (!stripe) throw new Error('Stripe failed to initialize')
 
       const { error: stripeError } = await stripe.redirectToCheckout({ sessionId })

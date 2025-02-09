@@ -4578,6 +4578,21 @@ export type Database = {
           },
         ]
       }
+      stripe_config: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       stripe_products: {
         Row: {
           created_at: string
