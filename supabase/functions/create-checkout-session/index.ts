@@ -10,19 +10,16 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Fetch Stripe secret key from database
     const { data: secretData, error: secretError } = await supabaseClient
       .from('stripe_secrets')
       .select('value')
@@ -30,24 +27,14 @@ serve(async (req) => {
       .single()
 
     if (secretError) {
-      console.error('Database error:', secretError)
-      throw new Error('Failed to fetch Stripe secret key from database')
+      throw new Error('Failed to fetch Stripe secret key')
     }
 
-    if (!secretData || !secretData.value) {
-      console.error('No secret key found in database')
+    if (!secretData?.value) {
       throw new Error('Stripe secret key not configured')
     }
 
-    // Log key format details without exposing the key
-    const keyValue = secretData.value.trim()
-    console.log('Key format check:', {
-      length: keyValue.length,
-      prefix: keyValue.substring(0, 7),
-      hasWhitespace: /\s/.test(keyValue)
-    })
-
-    const stripe = new Stripe(keyValue, {
+    const stripe = new Stripe(secretData.value.trim(), {
       apiVersion: '2023-10-16',
     })
 
@@ -57,9 +44,6 @@ serve(async (req) => {
       throw new Error('Missing required parameters')
     }
 
-    console.log('Creating checkout session with:', { priceId, mode, quantity })
-
-    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -68,13 +52,11 @@ serve(async (req) => {
           quantity: quantity || 1,
         },
       ],
-      mode: mode, // 'subscription' or 'payment'
+      mode: mode,
       success_url: `${req.headers.get('origin')}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/pricing`,
       allow_promotion_codes: true,
     })
-
-    console.log('Successfully created Stripe session:', session.id)
 
     return new Response(
       JSON.stringify({ sessionId: session.id }),
@@ -84,7 +66,6 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error in create-checkout-session:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

@@ -5351,18 +5351,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
-      reset_test_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      setup_test_contract: {
-        Args: {
-          p_project_id: string
-          p_status: Database["public"]["Enums"]["test_contract_status"]
-          p_workflow_stage: Database["public"]["Enums"]["test_workflow_stage"]
-        }
-        Returns: string
-      }
       should_fetch_listings: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -5446,12 +5434,6 @@ export type Database = {
         | "not_applicable"
         | "needs_review"
         | "approved"
-      test_contract_status: "draft" | "review" | "signed" | "completed"
-      test_workflow_stage:
-        | "setup"
-        | "client_review"
-        | "contractor_review"
-        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
