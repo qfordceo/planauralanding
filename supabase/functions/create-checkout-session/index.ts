@@ -27,9 +27,9 @@ serve(async (req) => {
       typescript: true
     })
 
-    const { priceId, mode, quantity } = await req.json()
+    const { priceId, quantity } = await req.json()
     
-    if (!priceId || !mode) {
+    if (!priceId) {
       throw new Error('Missing required parameters')
     }
 
@@ -39,10 +39,10 @@ serve(async (req) => {
       throw new Error('Invalid price ID')
     }
 
-    console.log('Creating checkout session with:', { mode, priceId, price: price.id })
+    console.log('Creating checkout session with:', { priceId, price: price.id })
     
     const session = await stripe.checkout.sessions.create({
-      mode: mode,
+      mode: price.type === 'recurring' ? 'subscription' : 'payment',
       payment_method_types: ['card'],
       line_items: [
         {

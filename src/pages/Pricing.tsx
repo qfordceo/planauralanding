@@ -44,7 +44,7 @@ export default function Pricing() {
     }
   })
 
-  const handleCheckout = async (priceId: string, mode: 'subscription' | 'payment') => {
+  const handleCheckout = async (priceId: string) => {
     try {
       if (!stripeConfig?.value) {
         throw new Error('Stripe configuration not loaded')
@@ -62,9 +62,9 @@ export default function Pricing() {
         return
       }
 
-      console.log('Creating checkout session for price:', priceId, 'mode:', mode)
+      console.log('Creating checkout session for price:', priceId)
       const response = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId, mode }
+        body: { priceId }
       })
 
       if (response.error) {
@@ -115,7 +115,7 @@ export default function Pricing() {
           <PricingSection
             title="Builder Plans"
             plans={subscriptionPlans}
-            onSelect={(priceId) => handleCheckout(priceId, 'subscription')}
+            onSelect={handleCheckout}
           />
         )}
         
@@ -123,7 +123,7 @@ export default function Pricing() {
           <PricingSection
             title="Pre-Inspection Packages"
             plans={oneTimePlans}
-            onSelect={(priceId) => handleCheckout(priceId, 'payment')}
+            onSelect={handleCheckout}
           />
         )}
 
