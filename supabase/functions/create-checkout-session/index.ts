@@ -20,26 +20,28 @@ serve(async (req) => {
       throw new Error('Stripe secret key not configured')
     }
 
-    console.log('Using Stripe key starting with:', stripeKey.substring(0, 8))
+    console.log('Creating Stripe instance with key starting with:', stripeKey.substring(0, 8))
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       typescript: true
     })
 
-    const { priceId, quantity } = await req.json()
+    const { priceId } = await req.json()
     
     if (!priceId) {
-      throw new Error('Missing required parameters')
+      throw new Error('Price ID is required')
     }
+
+    console.log('Attempting to retrieve price:', priceId)
 
     // First validate the price exists
     const price = await stripe.prices.retrieve(priceId)
     if (!price) {
-      throw new Error('Invalid price ID')
+      throw new Error(`Invalid price ID: ${priceId}`)
     }
 
-    console.log('Creating checkout session with:', { priceId, price: price.id })
+    console.log('Creating checkout session with price:', price.id)
     
     const session = await stripe.checkout.sessions.create({
       mode: price.type === 'recurring' ? 'subscription' : 'payment',
@@ -47,7 +49,7 @@ serve(async (req) => {
       line_items: [
         {
           price: priceId,
-          quantity: quantity || 1,
+          quantity: 1,
         },
       ],
       success_url: `${req.headers.get('origin')}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
@@ -67,7 +69,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Checkout session error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: {
+          message: error.message,
+          type: error.type,
+          code: error.code
+        }
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

@@ -39,7 +39,7 @@ export default function Pricing() {
         console.error('Error fetching products:', error)
         throw error
       }
-      console.log('Fetched products:', data)
+      console.log('Available products and prices:', data)
       return data
     }
   })
@@ -49,6 +49,8 @@ export default function Pricing() {
       if (!stripeConfig?.value) {
         throw new Error('Stripe configuration not loaded')
       }
+
+      console.log('Initiating checkout with price ID:', priceId)
 
       const { data: { session }, error: authError } = await supabase.auth.getSession()
       
@@ -62,24 +64,31 @@ export default function Pricing() {
         return
       }
 
-      console.log('Creating checkout session for price:', priceId)
       const response = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId }
       })
 
       if (response.error) {
         console.error('Checkout error:', response.error)
-        throw response.error
+        toast({
+          title: "Checkout Error",
+          description: response.error.message || "Failed to create checkout session",
+          variant: "destructive"
+        })
+        return
       }
 
       const { data: { sessionId } } = response
-      console.log('Got session ID:', sessionId)
+      console.log('Created Stripe session:', sessionId)
 
       const stripe = await loadStripe(stripeConfig.value)
       if (!stripe) throw new Error('Failed to initialize Stripe')
 
       const { error: stripeError } = await stripe.redirectToCheckout({ sessionId })
-      if (stripeError) throw stripeError
+      if (stripeError) {
+        console.error('Stripe redirect error:', stripeError)
+        throw stripeError
+      }
 
     } catch (error) {
       console.error('Payment error:', error)
@@ -107,6 +116,9 @@ export default function Pricing() {
 
   const subscriptionPlans = stripeProducts.filter(p => p.price_type === 'subscription')
   const oneTimePlans = stripeProducts.filter(p => p.price_type === 'one_time')
+
+  console.log('Rendering subscription plans:', subscriptionPlans)
+  console.log('Rendering one-time plans:', oneTimePlans)
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] py-12 px-4">
