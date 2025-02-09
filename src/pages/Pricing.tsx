@@ -38,6 +38,7 @@ export default function Pricing() {
         console.error('Error fetching products:', error)
         throw error
       }
+      console.log('Fetched products:', data)
       return data
     }
   })
@@ -60,6 +61,7 @@ export default function Pricing() {
         return
       }
 
+      console.log('Creating checkout session for price:', priceId)
       const response = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId, mode: 'subscription' }
       })
@@ -67,6 +69,7 @@ export default function Pricing() {
       if (response.error) throw response.error
 
       const { data: { sessionId } } = response
+      console.log('Got session ID:', sessionId)
 
       const stripe = await loadStripe(stripeConfig.value)
       if (!stripe) throw new Error('Stripe failed to initialize')
@@ -102,6 +105,7 @@ export default function Pricing() {
         return
       }
 
+      console.log('Creating one-time checkout session for price:', priceId)
       const response = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId, mode: 'payment' }
       })
@@ -109,6 +113,7 @@ export default function Pricing() {
       if (response.error) throw response.error
 
       const { data: { sessionId } } = response
+      console.log('Got session ID:', sessionId)
 
       const stripe = await loadStripe(stripeConfig.value)
       if (!stripe) throw new Error('Stripe failed to initialize')

@@ -20,10 +20,12 @@ serve(async (req) => {
       throw new Error('Stripe secret key not configured')
     }
 
-    console.log('Using Stripe key length:', stripeKey.length)
+    console.log('Using Stripe key starting with:', stripeKey.substring(0, 8))
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
+      // Setting to test mode since we're using test keys
+      typescript: true
     })
 
     const { priceId, mode, quantity } = await req.json()
@@ -32,7 +34,7 @@ serve(async (req) => {
       throw new Error('Missing required parameters')
     }
 
-    console.log('Creating checkout session with mode:', mode)
+    console.log('Creating checkout session with:', { mode, priceId })
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -46,6 +48,8 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/pricing`,
       allow_promotion_codes: true,
     })
+
+    console.log('Created session:', session.id)
 
     return new Response(
       JSON.stringify({ sessionId: session.id }),
